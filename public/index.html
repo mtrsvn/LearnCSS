@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LearnCSS — Master CSS & Get Certified</title>
+    <meta name="description" content="Learn CSS through interactive lessons, quizzes, and earn your professional certification. 10 comprehensive topics, video tutorials, and a final exam.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+<div id="toast-container" class="toast-container"></div>
+
+<!-- ══════════════════════════════════════════════════════
+     MODAL OVERLAY
+══════════════════════════════════════════════════════ -->
+<div id="modal-overlay" class="modal-overlay hidden">
+
+    <!-- ─── Sign Up Modal ─── -->
+    <div id="modal-signup" class="modal modal-wide hidden">
+        <button class="modal-close" data-close>✕</button>
+        <div class="auth-logo">LearnCSS</div>
+        <h2>Create Account</h2>
+        <p class="auth-sub">Fill in your details to get started.</p>
+
+        <div class="signup-grid">
+            <div class="field">
+                <label for="su-fname">First Name</label>
+                <input type="text" id="su-fname" placeholder="Juan" autocomplete="given-name">
+            </div>
+            <div class="field">
+                <label for="su-lname">Last Name</label>
+                <input type="text" id="su-lname" placeholder="dela Cruz" autocomplete="family-name">
+            </div>
+            <div class="field">
+                <label for="su-email">Email Address</label>
+                <input type="email" id="su-email" placeholder="juan@email.com" autocomplete="email">
+            </div>
+            <div class="field">
+                <label for="su-phone">Contact Number</label>
+                <input type="tel" id="su-phone" placeholder="+63 9XX XXX XXXX" autocomplete="tel">
+            </div>
+            <div class="field">
+                <label for="su-bdate">Birthdate</label>
+                <input type="text" id="su-bdate" placeholder="MM/DD/YYYY" maxlength="10" autocomplete="bday" inputmode="numeric">
+            </div>
+            <div class="field">
+                <label for="su-afftype">Affiliation Type</label>
+                <select id="su-afftype">
+                <option value="school">University / School</option>
+                <option value="company">Company / Organization</option>
+            </select>
+            </div>
+            <div class="field field-full">
+                <label for="su-affname" id="aff-name-label">School / Institution Name</label>
+                <input type="text" id="su-affname" placeholder="e.g. University of the Philippines">
+            </div>
+            <div class="field">
+                <label for="su-password">Password</label>
+                <div class="input-wrap">
+                    <input type="password" id="su-password" placeholder="Min. 6 characters" autocomplete="new-password">
+                    <button class="toggle-pw" type="button" data-target="su-password">Show</button>
+                </div>
+            </div>
+            <div class="field">
+                <label for="su-confirm">Confirm Password</label>
+                <div class="input-wrap">
+                    <input type="password" id="su-confirm" placeholder="Repeat password" autocomplete="new-password">
+                    <button class="toggle-pw" type="button" data-target="su-confirm">Show</button>
+                </div>
+            </div>
+        </div>
+
+        <button id="signup-btn" class="btn-primary btn-full" style="margin-top:1.1rem;">Create Account</button>
+        <p class="auth-switch">Already have an account? <a href="#" id="go-login">Sign in</a></p>
+    </div>
+
+    <!-- ─── Login Modal ─── -->
+    <div id="modal-login" class="modal hidden">
+        <button class="modal-close" data-close>✕</button>
+        <div class="auth-logo">LearnCSS</div>
+        <h2>Welcome back</h2>
+        <p class="auth-sub">Sign in to continue your progress.</p>
+        <div class="field">
+            <label for="li-email">Email Address</label>
+            <input type="email" id="li-email" placeholder="juan@email.com" autocomplete="email">
+        </div>
+        <div class="field">
+            <label for="li-password">Password</label>
+            <div class="input-wrap">
+                <input type="password" id="li-password" placeholder="Your password" autocomplete="current-password">
+                <button class="toggle-pw" type="button" data-target="li-password">Show</button>
+            </div>
+        </div>
+        <div style="text-align:right; margin-bottom:1.1rem;">
+            <a href="#" id="go-forgot" class="auth-link">Forgot password?</a>
+        </div>
+        <button id="login-btn" class="btn-primary btn-full">Sign In</button>
+        <p class="auth-switch">Don't have an account? <a href="#" id="go-signup-2">Create one</a></p>
+    </div>
+
+    <!-- ─── Forgot Password Modal ─── -->
+    <div id="modal-forgot" class="modal hidden">
+        <button class="modal-close" data-close>✕</button>
+        <div class="auth-logo">LearnCSS</div>
+        <h2>Reset Password</h2>
+        <p class="auth-sub">We'll help you recover your account.</p>
+        <div class="field">
+            <label for="fp-email">Email Address</label>
+            <input type="email" id="fp-email" placeholder="juan@email.com">
+        </div>
+        <button id="forgot-btn" class="btn-primary btn-full">Find Account</button>
+        <p class="auth-switch"><a href="#" id="go-login-2">← Back to Sign In</a></p>
+    </div>
+
+    <!-- ─── Buy Voucher Modal ─── -->
+    <div id="modal-buy-voucher" class="modal hidden">
+        <button class="modal-close" data-close>✕</button>
+        <div class="auth-logo">LearnCSS</div>
+        <h2>Purchase Voucher</h2>
+        <p class="auth-sub">Get access to the Final Certification Exam.</p>
+
+        <div class="voucher-product-card">
+            <div class="vpc-info">
+                <div class="vpc-icon"><i data-lucide="medal"></i></div>
+                <div>
+                    <p class="vpc-name">Certification Exam Voucher</p>
+                    <p class="vpc-desc">One-time use · Unlocks the Final Exam</p>
+                </div>
+            </div>
+            <div class="vpc-price">₱299</div>
+        </div>
+
+        <div id="buy-step-1">
+            <div class="voucher-promo">
+                <p class="promo-text">
+                    <strong>Unlock Your Professional Potential.</strong><br>
+                    Invest in your future with the LearnCSS Certification. This voucher provides exclusive access to our rigorous final examination, designed to validate your mastery of modern web styling.
+                </p>
+                <ul class="promo-features">
+                    <li>Official Industry-Recognized Certificate</li>
+                    <li>One-time Exam Access</li>
+                    <li>Verified Credentials for LinkedIn/Resume</li>
+                </ul>
+                <p class="promo-price">Price: ₱299.00</p>
+            </div>
+            <button id="buy-confirm-btn" class="btn-primary btn-full" style="margin-top:1.5rem;">Purchase Now</button>
+        </div>
+
+        <div id="buy-step-2" class="hidden">
+            <div class="voucher-success">
+                <div class="vs-icon"><i data-lucide="check-circle"></i></div>
+                <p>Payment successful! Here is your voucher code:</p>
+                <div class="voucher-code-display" id="generated-code">—</div>
+                <p class="vs-note">Copy this code and enter it when starting the Final Exam.</p>
+            </div>
+            <button id="done-buying-btn" class="btn-primary btn-full">Done</button>
+        </div>
+    </div>
+
+    <!-- ─── Voucher Code Entry Modal ─── -->
+    <div id="modal-enter-voucher" class="modal hidden">
+        <button class="modal-close" data-close>✕</button>
+        <div class="auth-logo">LearnCSS</div>
+        <h2>Enter Voucher Code</h2>
+        <p class="auth-sub">A valid voucher code is required to access the Final Certification Exam.</p>
+        <div class="field">
+            <label for="voucher-input">Voucher Code</label>
+            <input type="text" id="voucher-input" placeholder="e.g. CSSM-XXXX-XXXX" autocomplete="off" style="text-transform:uppercase; letter-spacing:0.08em;">
+        </div>
+        <div class="voucher-hint">
+            Don't have a voucher? <a href="#" id="go-buy-voucher">Purchase one →</a>
+        </div>
+        <button id="redeem-voucher-btn" class="btn-primary btn-full" style="margin-top:1rem;">Start Final Exam</button>
+    </div>
+
+</div><!-- end modal-overlay -->
+
+
+<!-- ══════════════════════════════════════════════════════
+     APP SCREENS
+══════════════════════════════════════════════════════ -->
+<div id="app">
+
+    <!-- ─── Landing ─────────────────────────────────── -->
+    <section id="landing-screen" class="screen active">
+        <nav class="landing-nav">
+            <div class="nav-logo">LearnCSS</div>
+            <div class="nav-actions">
+                <button class="btn-ghost" id="nav-login-btn">Sign In</button>
+                <button class="btn-primary" id="nav-signup-btn">Get Started</button>
+            </div>
+        </nav>
+
+        <div class="hero">
+            <!-- Floating code snippets -->
+            <div class="floating-code" style="top:15%;left:8%;animation-delay:0s;">color: #7c3aed;</div>
+            <div class="floating-code" style="top:25%;right:10%;animation-delay:4s;">display: flex;</div>
+            <div class="floating-code" style="top:60%;left:5%;animation-delay:8s;">border-radius: 16px;</div>
+            <div class="floating-code" style="top:70%;right:6%;animation-delay:12s;">background: gradient;</div>
+            <div class="floating-code" style="top:45%;left:15%;animation-delay:16s;">animation: ease;</div>
+
+            <h1>Learn CSS.<br><span class="gradient-text">Get Certified.</span></h1>
+            <p class="hero-desc">Master the core principles of modern web styling through interactive lessons, quizzes, and earn your professional CSS certification.</p>
+            <div class="hero-cta">
+                <button class="btn-primary btn-lg" id="hero-signup-btn">Start for Free</button>
+                <button class="btn-ghost btn-lg" id="hero-login-btn">Sign In</button>
+            </div>
+        </div>
+
+        <!-- How It Works -->
+        <div class="how-it-works reveal">
+            <div class="section-heading">
+                <h2>How It Works</h2>
+                <p>Three simple steps to your CSS certification</p>
+            </div>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h3>Learn</h3>
+                    <p>Watch curated video lessons covering all essential CSS topics from basics to advanced.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h3>Practice</h3>
+                    <p>Test your understanding with interactive quizzes after each topic to reinforce your knowledge.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h3>Certify</h3>
+                    <p>Pass the final certification exam and earn your verified professional CSS credential.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-section reveal">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number" data-count="10">0</div>
+                    <div class="stat-label">Topics</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" data-count="15">0</div>
+                    <div class="stat-label">Video Lessons</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" data-count="25">0</div>
+                    <div class="stat-label">Quiz Questions</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" data-count="1">0</div>
+                    <div class="stat-label">Certification</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="features reveal">
+            <div class="feature-card">
+                <div class="feature-icon"><i data-lucide="video"></i></div>
+                <h3>Video Lessons</h3>
+                <p>Curated video content for each of the 10 CSS topics.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i data-lucide="graduation-cap"></i></div>
+                <h3>Topic Quizzes</h3>
+                <p>Test your knowledge after every lesson.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i data-lucide="medal"></i></div>
+                <h3>Certification Exam</h3>
+                <p>Pass the final exam with a verified voucher.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i data-lucide="history"></i></div>
+                <h3>Saved Progress</h3>
+                <p>Pick up right where you left off, anytime.</p>
+            </div>
+        </div>
+
+        <footer class="landing-footer">
+            <span>© 2026 LearnCSS — All rights reserved</span>
+            <span>Built with passion for learning</span>
+        </footer>
+    </section>
+
+    <!-- ─── Dashboard ───────────────────────────────── -->
+    <section id="dashboard-screen" class="screen">
+        <header class="app-header">
+            <div class="header-logo">LearnCSS</div>
+            <div class="header-right">
+                <span id="display-name">User</span>
+                <span class="progress-pill" id="progress-percent">0%</span>
+                <button id="buy-voucher-nav-btn" class="btn-primary">Buy Voucher</button>
+                <button id="logout-btn" class="btn-ghost">Log out</button>
+            </div>
+        </header>
+        <div class="dashboard-body">
+            <p class="section-label">Your Topics</p>
+            <div class="topics-grid" id="topics-container"></div>
+            <div class="final-card locked" id="final-exam-btn">
+                <div class="final-card-inner">
+                    <div>
+                        <h3>Final Certification Exam</h3>
+                        <p id="final-card-status">Unlock the exam by entering your voucher code.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── Lesson ───────────────────────────────────── -->
+    <section id="lesson-screen" class="screen">
+        <div class="lesson-wrapper">
+            <aside class="lesson-sidebar">
+                <button class="btn-ghost btn-sm" id="lesson-back-btn">← Back</button>
+                <p class="sidebar-topic-title" id="current-topic-title">Topic</p>
+                <nav id="lesson-list"></nav>
+                <button id="take-quiz-btn" class="btn-primary" style="margin-top:auto;">Take Quiz →</button>
+            </aside>
+            <main class="lesson-main">
+                <div class="video-wrap">
+                    <iframe id="video-player" src="" frameborder="0" allowfullscreen></iframe>
+                </div>
+                <div class="notes-card">
+                    <h4>Study Notes</h4>
+                    <div id="lesson-notes-content"></div>
+                </div>
+            </main>
+        </div>
+    </section>
+
+    <!-- ─── Quiz ─────────────────────────────────────── -->
+    <section id="quiz-screen" class="screen">
+        <div class="quiz-box">
+            <p class="quiz-meta">Question <span id="current-q">1</span> / <span id="total-q">2</span></p>
+            <div class="quiz-progress"><div class="quiz-progress-bar" id="quiz-progress-bar" style="width:0%"></div></div>
+            <h3 id="question-text">Question</h3>
+            <div class="options-list" id="options-container"></div>
+            <button id="next-q-btn" class="btn-primary" disabled>Next</button>
+        </div>
+    </section>
+
+    <!-- ─── Certificate ───────────────────────────────── -->
+    <section id="certificate-screen" class="screen">
+        <div class="cert-wrap">
+            <div id="certificate" class="certificate-paper">
+                <div class="cert-paper-logo">LearnCSS</div>
+                <div class="cert-accent"></div>
+                <p class="cert-eyebrow">Certificate of Completion</p>
+                <p class="cert-desc">This certifies that</p>
+                <h2 id="cert-user-name">Name</h2>
+                <p class="cert-desc">has successfully completed all 10 topics and passed the final exam in<br><strong>Advanced CSS Styling &amp; Web Design</strong></p>
+                <hr class="cert-divider">
+                <div class="cert-footer-row">
+                    <span>CSS Mastery Program</span>
+                    <span id="current-date"></span>
+                </div>
+            </div>
+            <div class="cert-actions">
+                <button onclick="window.print()" class="btn-primary">Print Certificate</button>
+                <button onclick="location.reload()" class="btn-ghost">Start Over</button>
+            </div>
+        </div>
+    </section>
+
+</div><!-- end #app -->
+
+<script src="script.js"></script>
+<script>
+    lucide.createIcons();
+</script>
+</body>
+</html>
