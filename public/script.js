@@ -793,3 +793,36 @@ const counterObserver = new IntersectionObserver((entries) => {
 
 const statsSection = document.querySelector('.stats-section');
 if (statsSection) counterObserver.observe(statsSection);
+
+// ─── Theme Toggle ─────────────────────────────────────────
+(function initTheme() {
+    const saved = localStorage.getItem('cssm_theme');
+    if (saved === 'light') applyTheme('light');
+})();
+
+function applyTheme(mode) {
+    const iconEl = $('theme-icon');
+    if (mode === 'light') {
+        document.body.classList.add('light-mode');
+        localStorage.setItem('cssm_theme', 'light');
+        if (iconEl) {
+            iconEl.setAttribute('data-lucide', 'sun');
+            if (window.lucide) lucide.createIcons();
+        }
+    } else {
+        document.body.classList.remove('light-mode');
+        localStorage.setItem('cssm_theme', 'dark');
+        if (iconEl) {
+            iconEl.setAttribute('data-lucide', 'moon');
+            if (window.lucide) lucide.createIcons();
+        }
+    }
+}
+
+const themeToggleBtn = $('theme-toggle-btn');
+if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+        const isLight = document.body.classList.contains('light-mode');
+        applyTheme(isLight ? 'dark' : 'light');
+    });
+}
