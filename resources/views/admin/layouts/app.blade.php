@@ -471,6 +471,148 @@
             color: #475569;
         }
 
+        /* Modal Popup System */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal.open {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--surface);
+            border-radius: var(--radius);
+            border: 1px solid var(--line);
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            display: flex;
+            flex-direction: column;
+            max-height: 90vh;
+            animation: modalFadeIn 0.25s ease-out;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--line);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-title {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 800;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--muted);
+            line-height: 1;
+            padding: 0;
+        }
+        .modal-close:hover {
+            color: var(--text);
+        }
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--line);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* Dropdown Actions Menu System */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-trigger {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--muted);
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            transition: background 0.2s, color 0.2s;
+            padding: 0;
+            line-height: 1;
+        }
+        .dropdown-trigger:hover {
+            background: var(--surface-soft);
+            color: var(--text);
+        }
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            z-index: 100;
+            min-width: 150px;
+            padding: 6px 0;
+            margin-top: 4px;
+        }
+        .dropdown-menu.open {
+            display: block;
+        }
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 8px 16px;
+            border: none;
+            background: none;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+            cursor: pointer;
+            transition: background 0.15s;
+            box-sizing: border-box;
+        }
+        .dropdown-item:hover {
+            background: var(--surface-soft);
+        }
+        .dropdown-item.danger {
+            color: var(--danger);
+        }
+        .dropdown-item.danger:hover {
+            background: #fef2f2;
+        }
+        .dropdown-divider {
+            height: 1px;
+            background: var(--line);
+            margin: 4px 0;
+            border: none;
+        }
+
         .tabs {
             display: flex;
             gap: 8px;
@@ -615,21 +757,64 @@
                 </div>
                 <div class="topbar-actions">
                     @yield('header_actions')
-                    <div class="admin-user-chip">
-                        <span class="avatar">AD</span>
-                        <span>Admin placeholder</span>
+                    <div class="admin-user-chip" style="gap: 15px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span class="avatar">{{ strtoupper(substr(Auth::user()->first_name ?? 'A', 0, 1) . substr(Auth::user()->last_name ?? 'D', 0, 1)) }}</span>
+                            <span>{{ Auth::user()->name }}</span>
+                        </div>
+                        <form action="{{ route('admin.logout') }}" method="POST" style="margin: 0; display: inline;">
+                            @csrf
+                            <button type="submit" class="btn btn-muted" style="min-height: 30px; padding: 4px 8px; font-size: 11px;">Log out</button>
+                        </form>
                     </div>
                 </div>
             </header>
 
             <section class="content">
+                @if (session('success'))
+                    <div class="notice" style="border-color: #bbf7d0; background: #f0fdf4; color: #166534;">
+                        {{ session('success') }}
+                    </div>
+                @endif
+                @if (session('error'))
+                    <div class="notice" style="border-color: #fecaca; background: #fef2f2; color: #991b1b;">
+                        {{ session('error') }}
+                    </div>
+                @endif
+                @if ($errors->any())
+                    <div class="notice" style="border-color: #fecaca; background: #fef2f2; color: #991b1b;">
+                        <ul style="margin: 0; padding-left: 20px;">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 @yield('content')
 
                 <p class="admin-footer-note">
-                    UI preview only. Real admin access should use Laravel authentication, admin middleware, roles, policies, hashed passwords, and audit logging.
+                    Securely connected. Protected by Laravel Session Auth, custom Admin middleware, and real-time database audit logging.
                 </p>
             </section>
         </main>
     </div>
+    <script>
+        // Global Dropdown Toggling Actions
+        function toggleDropdown(btn, event) {
+            event.stopPropagation();
+            const menu = btn.nextElementSibling;
+            const isOpen = menu.classList.contains('open');
+            document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('open'));
+            if (!isOpen) {
+                menu.classList.add('open');
+            }
+        }
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('open'));
+            }
+        });
+    </script>
 </body>
 </html>

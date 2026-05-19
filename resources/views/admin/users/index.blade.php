@@ -31,20 +31,22 @@
             <p class="panel-label">Directory</p>
             <h2 class="panel-title">Learner Accounts</h2>
         </div>
-        <div class="toolbar-group">
-            <input type="search" placeholder="Search by name or email" style="width: 240px;">
-            <select style="width: 160px;">
-                <option>All statuses</option>
-                <option>Active</option>
-                <option>Pending</option>
-                <option>Inactive</option>
+        <form action="{{ route('admin.users.index') }}" method="GET" class="toolbar-group">
+            <input type="search" name="search" placeholder="Search name, email, school..." style="width: 240px;" value="{{ request('search') }}">
+            <select name="status" style="width: 160px;" onchange="this.form.submit()">
+                <option value="">All statuses</option>
+                <option value="Active" {{ request('status') === 'Active' ? 'selected' : '' }}>Active</option>
+                <option value="Inactive" {{ request('status') === 'Inactive' ? 'selected' : '' }}>Inactive</option>
             </select>
-            <select style="width: 180px;">
-                <option>All affiliations</option>
-                <option>University / School</option>
-                <option>Company / Organization</option>
+            <select name="affiliation" style="width: 180px;" onchange="this.form.submit()">
+                <option value="">All affiliations</option>
+                <option value="school" {{ request('affiliation') === 'school' ? 'selected' : '' }}>University / School</option>
+                <option value="company" {{ request('affiliation') === 'company' ? 'selected' : '' }}>Company / Organization</option>
             </select>
-        </div>
+            @if(request()->anyFilled(['search', 'status', 'affiliation']))
+                <a href="{{ route('admin.users.index') }}" class="btn btn-muted" style="min-height: 38px;">Clear</a>
+            @endif
+        </form>
     </div>
 
     <div class="table-wrap">
@@ -82,8 +84,12 @@
                         <td>
                             <div class="actions">
                                 <a class="btn btn-primary" href="{{ route('admin.users.show', $user['id']) }}">View</a>
-                                <button class="btn btn-muted" type="button">Edit</button>
-                                <button class="btn {{ $user['status'] === 'Inactive' ? 'btn-primary' : 'btn-warning' }}" type="button">{{ $user['status'] === 'Inactive' ? 'Activate' : 'Deactivate' }}</button>
+                                <form action="{{ route('admin.users.toggle', $user['id']) }}" method="POST" style="margin: 0; display: inline;">
+                                    @csrf
+                                    <button class="btn {{ $user['status'] === 'Inactive' ? 'btn-primary' : 'btn-warning' }}" type="submit">
+                                        {{ $user['status'] === 'Inactive' ? 'Activate' : 'Deactivate' }}
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>

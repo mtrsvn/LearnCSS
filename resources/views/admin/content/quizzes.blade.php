@@ -5,79 +5,250 @@
 
 @section('header_actions')
     <a class="btn btn-muted" href="{{ route('admin.content.index') }}">Content overview</a>
-    <button class="btn btn-primary" type="button">Add question</button>
+    <button class="btn btn-primary" type="button" onclick="openAddQuestionModal()">Add question</button>
 @endsection
 
 @section('content')
-@php
-    $quizSets = [
-        ['name' => 'CSS Introduction Quiz', 'questions' => 2, 'pass_rule' => 'Completion marks topic done', 'status' => 'Published'],
-        ['name' => 'CSS Colors Quiz', 'questions' => 2, 'pass_rule' => 'Completion marks topic done', 'status' => 'Published'],
-        ['name' => 'Final Certification Exam', 'questions' => 5, 'pass_rule' => 'Perfect score required', 'status' => 'Published'],
-    ];
-    $questions = [
-        ['question' => 'What does CSS stand for?', 'answer' => 'Cascading Style Sheets', 'type' => 'Topic quiz'],
-        ['question' => 'Which property changes background color?', 'answer' => 'background-color', 'type' => 'Topic quiz'],
-        ['question' => 'What is the correct CSS syntax?', 'answer' => 'body {color: black;}', 'type' => 'Final exam'],
-    ];
-@endphp
-
 <div class="tabs">
     <a class="tab" href="{{ route('admin.content.index') }}">Overview</a>
     <a class="tab" href="{{ route('admin.content.topics') }}">Topics and lessons</a>
     <a class="tab active" href="{{ route('admin.content.quizzes') }}">Quizzes and final exam</a>
 </div>
 
-<div class="page-grid two">
+<div class="split-grid">
     <section class="panel">
-        <p class="panel-label">Quiz sets</p>
+        <p class="panel-label">Assessment sets</p>
         <h2 class="panel-title">Assessments</h2>
         <div class="table-wrap">
             <table class="data-table">
-                <thead><tr><th>Assessment</th><th>Questions</th><th>Pass rule</th><th>Status</th><th>Actions</th></tr></thead>
+                <thead><tr><th>Assessment Set</th><th>Questions count</th><th>Pass rule</th><th>Status</th></tr></thead>
                 <tbody>
-                    @foreach ($quizSets as $set)
+                    @foreach ($topics as $topic)
                         <tr>
-                            <td><strong>{{ $set['name'] }}</strong></td>
-                            <td>{{ $set['questions'] }}</td>
-                            <td>{{ $set['pass_rule'] }}</td>
-                            <td><span class="status success">{{ $set['status'] }}</span></td>
-                            <td><button class="btn btn-muted" type="button">Manage</button></td>
+                            <td><strong>{{ $topic->title }} Quiz</strong></td>
+                            <td>{{ $topic->quizQuestions()->count() }} questions</td>
+                            <td>Completion marks topic done</td>
+                            <td><span class="status success">Published</span></td>
                         </tr>
                     @endforeach
+                    <tr>
+                        <td><strong>Final Certification Exam</strong></td>
+                        <td>{{ \App\Models\QuizQuestion::whereNull('topic_id')->count() }} questions</td>
+                        <td>Perfect score required (100%)</td>
+                        <td><span class="status success">Published</span></td>
+                    </tr>
                 </tbody>
             </table>
         </div>
     </section>
 
-    <section class="panel">
-        <p class="panel-label">Question editor</p>
-        <h2 class="panel-title">Question Details</h2>
-        <div class="form-grid">
-            <div class="field full"><label>Question</label><textarea>What does CSS stand for?</textarea></div>
-            <div class="field"><label>Choice A</label><input value="Cascading Style Sheets"></div>
-            <div class="field"><label>Choice B</label><input value="Creative Style System"></div>
-            <div class="field"><label>Choice C</label><input value="Computer Style Sheets"></div>
-            <div class="field"><label>Choice D</label><input value="Colorful Style Sheets"></div>
-            <div class="field"><label>Correct answer</label><select><option>Choice A</option><option>Choice B</option><option>Choice C</option><option>Choice D</option></select></div>
-            <div class="field"><label>Assessment type</label><select><option>Topic quiz</option><option>Final exam</option></select></div>
+    <aside class="panel">
+        <p class="panel-label">Curriculum parameters</p>
+        <h2 class="panel-title">Assessment Scope</h2>
+        <p class="panel-subtitle">Current standards configured in database:</p>
+        <div class="list-stack">
+            <div class="list-item">
+                <strong>Topic Quiz Rules</strong>
+                <span class="muted">Learners must complete the quiz under each topic. Correct answers register the topic as completed in their dashboard.</span>
+            </div>
+            <div class="list-item">
+                <strong>Final Certification Exam</strong>
+                <span class="muted">Requires 100% correct answers (5/5). Success generates a cryptographically verifiable certification serial.</span>
+            </div>
         </div>
-        <div class="actions" style="margin-top: 14px;"><button class="btn btn-primary" type="button">Save question</button><button class="btn btn-muted" type="button">Duplicate</button></div>
-    </section>
+    </aside>
 </div>
 
 <section class="panel" style="margin-top: 18px;">
     <p class="panel-label">Question bank</p>
-    <h2 class="panel-title">Sample Questions</h2>
+    <h2 class="panel-title">Active Database Questions</h2>
     <div class="table-wrap">
         <table class="data-table">
-            <thead><tr><th>Question</th><th>Correct answer</th><th>Type</th><th>Actions</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>Question</th>
+                    <th>Correct Option Answer</th>
+                    <th>Scope</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
             <tbody>
-                @foreach ($questions as $question)
-                    <tr><td>{{ $question['question'] }}</td><td>{{ $question['answer'] }}</td><td>{{ $question['type'] }}</td><td><button class="btn btn-muted" type="button">Edit</button></td></tr>
-                @endforeach
+                @forelse ($quizzes as $question)
+                    <tr>
+                        <td style="vertical-align: middle;"><strong>{{ $question->question }}</strong></td>
+                        <td style="vertical-align: middle;">
+                            @php
+                                $opts = $question->options;
+                                $ansIdx = $question->answer;
+                                $ansText = isset($opts[$ansIdx]) ? $opts[$ansIdx] : 'Option ' . $ansIdx;
+                            @endphp
+                            <code>{{ $ansText }}</code>
+                        </td>
+                        <td style="vertical-align: middle;">
+                            @if ($question->topic)
+                                <span class="status info">{{ $question->topic->title }}</span>
+                            @else
+                                <span class="status warning">Final Exam</span>
+                            @endif
+                        </td>
+                        <td style="vertical-align: middle;">
+                            <div class="dropdown">
+                                <button class="dropdown-trigger" type="button" onclick="toggleDropdown(this, event)">&#8942;</button>
+                                <div class="dropdown-menu">
+                                    <button class="dropdown-item edit-question-btn" type="button"
+                                            data-id="{{ $question->id }}"
+                                            data-question="{{ $question->question }}"
+                                            data-topic-id="{{ $question->topic_id ?: '' }}"
+                                            data-options="{{ json_encode($question->options) }}"
+                                            data-answer="{{ $question->answer }}">
+                                        Edit Question
+                                    </button>
+                                    <hr class="dropdown-divider">
+                                    <form action="{{ route('admin.content.quizzes.destroy', $question->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this question?');" style="margin:0;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="dropdown-item danger" type="submit">Delete Question</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="4" class="muted">No assessment questions configured.</td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
     </div>
 </section>
+
+<!-- ================= ADD / EDIT QUESTION MODAL ================= -->
+<div id="questionModal" class="modal">
+    <div class="modal-content" style="max-width: 650px;">
+        <form id="questionForm" method="POST" action="{{ route('admin.content.quizzes.store') }}">
+            @csrf
+            <input type="hidden" id="question_method" name="_method" value="POST">
+            
+            <div class="modal-header">
+                <h3 id="modalTitle" class="modal-title">Add New Question</h3>
+                <button type="button" class="modal-close" onclick="closeModal('questionModal')">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="form-grid">
+                    <div class="field full">
+                        <label for="q_scope">Assessment Scope / Topic</label>
+                        <select id="q_scope" name="topic_id" required>
+                            <option value="">-- Final Certification Exam --</option>
+                            @foreach ($topics as $topic)
+                                <option value="{{ $topic->id }}">{{ $topic->title }} Quiz</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="field full">
+                        <label for="q_text">Question Text</label>
+                        <textarea id="q_text" name="question" required placeholder="e.g. Which CSS property is used to change the text color?"></textarea>
+                    </div>
+
+                    <div class="field">
+                        <label for="q_opt0">Option 1 (Index 0)</label>
+                        <input type="text" id="q_opt0" name="options[]" required placeholder="e.g. color">
+                    </div>
+                    <div class="field">
+                        <label for="q_opt1">Option 2 (Index 1)</label>
+                        <input type="text" id="q_opt1" name="options[]" required placeholder="e.g. text-color">
+                    </div>
+                    <div class="field">
+                        <label for="q_opt2">Option 3 (Index 2)</label>
+                        <input type="text" id="q_opt2" name="options[]" required placeholder="e.g. font-color">
+                    </div>
+                    <div class="field">
+                        <label for="q_opt3">Option 4 (Index 3)</label>
+                        <input type="text" id="q_opt3" name="options[]" required placeholder="e.g. background-color">
+                    </div>
+
+                    <div class="field full">
+                        <label for="q_answer">Correct Answer Option</label>
+                        <select id="q_answer" name="answer" required>
+                            <option value="0">Option 1 (Index 0)</option>
+                            <option value="1">Option 2 (Index 1)</option>
+                            <option value="2">Option 3 (Index 2)</option>
+                            <option value="3">Option 4 (Index 3)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-muted" onclick="closeModal('questionModal')">Cancel</button>
+                <button type="submit" id="saveQuestionBtn" class="btn btn-primary">Create Question</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openModal(id) {
+        document.getElementById(id).classList.add('open');
+    }
+    
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('open');
+    }
+
+    function openAddQuestionModal() {
+        document.getElementById('modalTitle').textContent = 'Add New Question';
+        document.getElementById('q_scope').value = '';
+        document.getElementById('q_text').value = '';
+        document.getElementById('q_opt0').value = '';
+        document.getElementById('q_opt1').value = '';
+        document.getElementById('q_opt2').value = '';
+        document.getElementById('q_opt3').value = '';
+        document.getElementById('q_answer').value = '0';
+        
+        document.getElementById('questionForm').action = "{{ route('admin.content.quizzes.store') }}";
+        document.getElementById('question_method').value = 'POST';
+        document.getElementById('saveQuestionBtn').textContent = 'Create Question';
+        
+        openModal('questionModal');
+    }
+
+    document.querySelectorAll('.edit-question-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.dataset.id;
+            const question = btn.dataset.question;
+            const topicId = btn.dataset.topicId;
+            const options = JSON.parse(btn.dataset.options);
+            const answer = btn.dataset.answer;
+
+            document.getElementById('modalTitle').textContent = 'Edit Question';
+            document.getElementById('q_scope').value = topicId;
+            document.getElementById('q_text').value = question;
+            
+            // Populate options
+            if (options && options.length >= 4) {
+                document.getElementById('q_opt0').value = options[0];
+                document.getElementById('q_opt1').value = options[1];
+                document.getElementById('q_opt2').value = options[2];
+                document.getElementById('q_opt3').value = options[3];
+            } else {
+                // Fallback in case of dynamic length or empty options
+                document.getElementById('q_opt0').value = options[0] || '';
+                document.getElementById('q_opt1').value = options[1] || '';
+                document.getElementById('q_opt2').value = options[2] || '';
+                document.getElementById('q_opt3').value = options[3] || '';
+            }
+            
+            document.getElementById('q_answer').value = answer;
+            
+            document.getElementById('questionForm').action = `/admin/content/quizzes/${id}`;
+            document.getElementById('question_method').value = 'POST'; // POST method with Route override
+            document.getElementById('saveQuestionBtn').textContent = 'Save Question Changes';
+            
+            openModal('questionModal');
+        });
+    });
+</script>
 @endsection

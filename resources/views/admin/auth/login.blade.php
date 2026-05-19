@@ -128,23 +128,39 @@
             </div>
         </div>
 
-        <form action="#" method="POST">
+        <form action="{{ route('admin.login.submit') }}" method="POST">
+            @csrf
+            
+            @if ($errors->any())
+                <div class="note" style="background: #fee2e2; border-color: #fca5a5; color: #991b1b; margin-bottom: 15px; margin-top: 0;">
+                    @foreach ($errors->all() as $error)
+                        <div>{{ $error }}</div>
+                    @endforeach
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="note" style="background: #fee2e2; border-color: #fca5a5; color: #991b1b; margin-bottom: 15px; margin-top: 0;">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             <div class="field">
                 <label for="email">Email address</label>
-                <input id="email" type="email" placeholder="admin@example.com" autocomplete="email">
+                <input id="email" name="email" type="email" placeholder="admin@learncss.com" autocomplete="email" required value="{{ old('email') }}">
             </div>
             <div class="field">
                 <label for="password">Password</label>
-                <input id="password" type="password" placeholder="Use Laravel auth later" autocomplete="current-password">
+                <input id="password" name="password" type="password" placeholder="••••••••" autocomplete="current-password" required>
             </div>
-            <button class="btn" type="button">Sign in placeholder</button>
+            <button class="btn" type="submit">Sign In</button>
         </form>
 
         <div class="note">
-            Real admin authentication should use Laravel auth, hashed passwords, CSRF protection, session middleware, role checks, and audit logs. This page does not authenticate yet.
+            Use <strong>admin@learncss.com</strong> / <strong>admin123</strong> to log in. This session will write activity logs to the database in real-time.
         </div>
 
-        <a class="back-link" href="{{ route('admin.dashboard') }}">Open admin dashboard UI</a>
+        <a class="back-link" href="/">← Back to LearnCSS App</a>
     </main>
 </body>
 </html>

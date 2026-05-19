@@ -20,8 +20,16 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'first_name',
+        'last_name',
         'email',
         'password',
+        'phone',
+        'birthdate',
+        'affiliation_type',
+        'affiliation_name',
+        'is_admin',
+        'is_active',
     ];
 
     /**
@@ -45,5 +53,30 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function progress()
+    {
+        return $this->hasMany(UserProgress::class);
+    }
+
+    public function quizAttempts()
+    {
+        return $this->hasMany(QuizAttempt::class);
+    }
+
+    public function vouchers()
+    {
+        return $this->hasMany(Voucher::class, 'used_by');
+    }
+
+    public function certificates()
+    {
+        return $this->hasMany(Certificate::class);
+    }
+
+    public function auditLogs()
+    {
+        return $this->hasMany(AuditLog::class);
     }
 }
