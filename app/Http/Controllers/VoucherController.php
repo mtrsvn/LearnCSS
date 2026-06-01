@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Voucher;
 use App\Models\AuditLog;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
 
 class VoucherController extends Controller
 {
@@ -21,31 +22,83 @@ class VoucherController extends Controller
     public function buy(Request $request)
     {
         $user = Auth::user();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Must be logged in'], 401);
+        }
 
         $code = $this->generateVoucherCode();
 
+        // Create the voucher as pending
         $voucher = Voucher::create([
             'code' => $code,
             'price' => 299.00,
+            'status' => 'pending_payment',
             'used' => false,
-            'used_by' => $user ? $user->id : null,
+            'used_by' => $user->id,
             'used_at' => null
         ]);
 
-        if ($user) {
-            AuditLog::create([
-                'user_id' => $user->id,
-                'action' => 'Voucher Purchase',
-                'description' => 'Purchased voucher code ' . $code . ' for ₱299.',
-                'ip_address' => $request->ip()
+        // Create Xendit Invoice
+        $secretKey = env('XENDIT_SECRET_KEY');
+        
+        $response = Http::withBasicAuth($secretKey, '')
+            ->post('https://api.xendit.co/v2/invoices', [
+                'external_id' => $code,
+                'amount' => 299,
+                'payer_email' => $user->email,
+                'description' => 'CertApp CSS Certification Voucher',
+                'success_redirect_url' => url('/api/voucher/xendit/success?code=' . $code),
+                'failure_redirect_url' => url('/')
+            ]);
+
+        if ($response->successful()) {
+            return response()->json([
+                'success' => true,
+                'checkout_url' => $response->json()['invoice_url']
             ]);
         }
 
         return response()->json([
-            'success' => true,
-            'code' => $code,
-            'message' => 'Simulated purchase successful!'
-        ]);
+            'success' => false,
+            'message' => 'Failed to generate checkout link.'
+        ], 500);
+    }
+
+    public function xenditSuccess(Request $request)
+    {
+        $code = $request->query('code');
+        if (!$code) {
+            return redirect('/');
+        }
+
+        $voucher = Voucher::where('code', $code)->first();
+        if (!$voucher || $voucher->status !== 'pending_payment') {
+            return redirect('/?voucher_success=' . $code); // Already processed
+        }
+
+        // Verify with Xendit
+        $secretKey = env('XENDIT_SECRET_KEY');
+        $response = Http::withBasicAuth($secretKey, '')
+            ->get('https://api.xendit.co/v2/invoices?external_id=' . $code);
+
+        if ($response->successful()) {
+            $invoices = $response->json();
+            if (count($invoices) > 0 && in_array($invoices[0]['status'], ['PAID', 'SETTLED'])) {
+                $voucher->status = 'active';
+                $voucher->save();
+
+                AuditLog::create([
+                    'user_id' => $voucher->used_by,
+                    'action' => 'Voucher Purchase',
+                    'description' => 'Purchased voucher code ' . $code . ' for ₱299 via Xendit.',
+                    'ip_address' => $request->ip()
+                ]);
+
+                return redirect('/?voucher_success=' . $code);
+            }
+        }
+
+        return redirect('/?error=payment_not_completed');
     }
 
     public function verify(Request $request)

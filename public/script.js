@@ -327,7 +327,7 @@ async function boot() {
         const sessionData = await apiRequest('/api/auth/session');
         if (sessionData && sessionData.success && sessionData.user) {
             await loadTopicsIfNeeded();
-            loginUser(sessionData.user);
+            await loginUser(sessionData.user);
         } else {
             showScreen('landing-screen');
         }
@@ -337,7 +337,9 @@ async function boot() {
 }
 
 // Start boot pipeline
-boot();
+boot().then(() => {
+    checkXenditReturn();
+});
 
 async function loginUser(user) {
     state.user = user;
@@ -391,21 +393,15 @@ if (buyConfirmBtn) {
     buyConfirmBtn.addEventListener('click', async () => {
         try {
             const data = await apiRequest('/api/voucher/buy', 'POST');
-            if (data && data.success) {
-                const codeEl = $('generated-code');
-                if (codeEl) codeEl.textContent = data.code;
-                const s1 = $('buy-step-1');
-                const s2 = $('buy-step-2');
-                if (s1) s1.classList.add('hidden');
-                if (s2) s2.classList.remove('hidden');
-                
-                state.hasBoughtVoucher = true;
-                localStorage.setItem('cssm_bought_voucher', 'true');
-                updateVoucherButtons();
-                
-                showToast('Purchase successful!', 'success');
+            if (data && data.success && data.checkout_url) {
+                buyConfirmBtn.textContent = 'Redirecting to Xendit...';
+                window.location.href = data.checkout_url;
+            } else {
+                showToast(data.message || 'Failed to initiate purchase', 'error');
             }
-        } catch (e) {}
+        } catch (e) {
+            showToast('Network error', 'error');
+        }
     });
 }
 
@@ -833,4 +829,30 @@ if (dashboardMenuBtn && dashboardNavActions) {
     dashboardMenuBtn.addEventListener('click', () => {
         dashboardNavActions.classList.toggle('show');
     });
+}
+
+// Check for successful Xendit return
+function checkXenditReturn() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('voucher_success')) {
+        const code = params.get('voucher_success');
+        
+        // Show success modal
+        const codeEl = $('generated-code');
+        if (codeEl) codeEl.textContent = code;
+        const s1 = $('buy-step-1');
+        const s2 = $('buy-step-2');
+        if (s1) s1.classList.add('hidden');
+        if (s2) s2.classList.remove('hidden');
+        
+        state.hasBoughtVoucher = true;
+        localStorage.setItem('cssm_bought_voucher', 'true');
+        updateVoucherButtons();
+        
+        openModal('modal-buy-voucher');
+        showToast('Payment successful!', 'success');
+        
+        // Clean URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
 }

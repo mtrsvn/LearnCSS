@@ -34,6 +34,7 @@ Route::prefix('api')->group(function () {
         Route::post('/voucher/buy', [VoucherController::class, 'buy']);
         Route::post('/voucher/verify', [VoucherController::class, 'verify']);
         Route::post('/voucher/redeem', [VoucherController::class, 'redeem']);
+        Route::get('/voucher/xendit/success', [VoucherController::class, 'xenditSuccess'])->name('voucher.xendit.success');
 
         // Exam & Certificate
         Route::get('/exam/questions', [ExamController::class, 'getQuestions']);
