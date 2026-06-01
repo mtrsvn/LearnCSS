@@ -8,6 +8,8 @@ use App\Models\Voucher;
 use App\Models\AuditLog;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\VoucherPurchased;
 
 class VoucherController extends Controller
 {
@@ -83,9 +85,23 @@ class VoucherController extends Controller
 
         if ($response->successful()) {
             $invoices = $response->json();
+            \Illuminate\Support\Facades\Log::info('Xendit Invoices:', $invoices);
             if (count($invoices) > 0 && in_array($invoices[0]['status'], ['PAID', 'SETTLED'])) {
                 $voucher->status = 'active';
                 $voucher->save();
+
+                $user = \App\Models\User::find($voucher->used_by);
+                if ($user) {
+                    \Illuminate\Support\Facades\Log::info('Sending email to: ' . $user->email);
+                    try {
+                        Mail::to($user->email)->send(new VoucherPurchased($voucher, $user));
+                        \Illuminate\Support\Facades\Log::info('Email sent.');
+                    } catch (\Exception $e) {
+                        \Illuminate\Support\Facades\Log::error('Mail Error: ' . $e->getMessage());
+                    }
+                } else {
+                    \Illuminate\Support\Facades\Log::error('User not found for voucher.');
+                }
 
                 AuditLog::create([
                     'user_id' => $voucher->used_by,
@@ -95,7 +111,11 @@ class VoucherController extends Controller
                 ]);
 
                 return redirect('/?voucher_success=' . $code);
+            } else {
+                \Illuminate\Support\Facades\Log::info('Status not PAID. Redirecting to error.');
             }
+        } else {
+             \Illuminate\Support\Facades\Log::error('Xendit verification failed.');
         }
 
         return redirect('/?error=payment_not_completed');
