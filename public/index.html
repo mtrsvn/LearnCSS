@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LearnCSS — Master CSS & Get Certified</title>
+    <title>LearnCSS Master CSS & Get Certified</title>
     <meta name="description" content="Learn CSS through interactive lessons, quizzes, and earn your professional certification. 10 comprehensive topics, video tutorials, and a final exam.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body>
+<body class="light-mode">
 
 <div id="toast-container" class="toast-container"></div>
 
@@ -22,7 +22,7 @@
 
     <!-- ─── Sign Up Modal ─── -->
     <div id="modal-signup" class="modal modal-wide hidden">
-        <button class="modal-close" data-close>✕</button>
+        <button class="modal-close" data-close><i data-lucide="x"></i></button>
         <div class="auth-logo">LearnCSS</div>
         <h2>Create Account</h2>
         <p class="auth-sub">Fill in your details to get started.</p>
@@ -81,7 +81,7 @@
 
     <!-- ─── Login Modal ─── -->
     <div id="modal-login" class="modal hidden">
-        <button class="modal-close" data-close>✕</button>
+        <button class="modal-close" data-close><i data-lucide="x"></i></button>
         <div class="auth-logo">LearnCSS</div>
         <h2>Welcome back</h2>
         <p class="auth-sub">Sign in to continue your progress.</p>
@@ -105,7 +105,7 @@
 
     <!-- ─── Forgot Password Modal ─── -->
     <div id="modal-forgot" class="modal hidden">
-        <button class="modal-close" data-close>✕</button>
+        <button class="modal-close" data-close><i data-lucide="x"></i></button>
         <div class="auth-logo">LearnCSS</div>
         <h2>Reset Password</h2>
         <p class="auth-sub">We'll help you recover your account.</p>
@@ -114,12 +114,12 @@
             <input type="email" id="fp-email" placeholder="juan@email.com">
         </div>
         <button id="forgot-btn" class="btn-primary btn-full">Find Account</button>
-        <p class="auth-switch"><a href="#" id="go-login-2">← Back to Sign In</a></p>
+        <p class="auth-switch"><a href="#" id="go-login-2">Back to Sign In</a></p>
     </div>
 
     <!-- ─── Buy Voucher Modal ─── -->
     <div id="modal-buy-voucher" class="modal hidden">
-        <button class="modal-close" data-close>✕</button>
+        <button class="modal-close" data-close><i data-lucide="x"></i></button>
         <div class="auth-logo">LearnCSS</div>
         <h2>Purchase Voucher</h2>
         <p class="auth-sub">Get access to the Final Certification Exam.</p>
@@ -155,7 +155,7 @@
             <div class="voucher-success">
                 <div class="vs-icon"><i data-lucide="check-circle"></i></div>
                 <p>Payment successful! Here is your voucher code:</p>
-                <div class="voucher-code-display" id="generated-code">—</div>
+                <div class="voucher-code-display" id="generated-code"></div>
                 <p class="vs-note">Copy this code and enter it when starting the Final Exam.</p>
             </div>
             <button id="done-buying-btn" class="btn-primary btn-full">Done</button>
@@ -164,7 +164,7 @@
 
     <!-- ─── Voucher Code Entry Modal ─── -->
     <div id="modal-enter-voucher" class="modal hidden">
-        <button class="modal-close" data-close>✕</button>
+        <button class="modal-close" data-close><i data-lucide="x"></i></button>
         <div class="auth-logo">LearnCSS</div>
         <h2>Enter Voucher Code</h2>
         <p class="auth-sub">A valid voucher code is required to access the Final Certification Exam.</p>
@@ -173,7 +173,7 @@
             <input type="text" id="voucher-input" placeholder="e.g. CSSM-XXXX-XXXX" autocomplete="off" style="text-transform:uppercase; letter-spacing:0.08em;">
         </div>
         <div class="voucher-hint">
-            Don't have a voucher? <a href="#" id="go-buy-voucher">Purchase one →</a>
+            Don't have a voucher? <a href="#" id="go-buy-voucher">Purchase one</a>
         </div>
         <button id="redeem-voucher-btn" class="btn-primary btn-full" style="margin-top:1rem;">Start Final Exam</button>
     </div>
@@ -190,100 +190,194 @@
     <section id="landing-screen" class="screen active">
         <nav class="landing-nav">
             <div class="nav-logo">LearnCSS</div>
-            <div class="nav-actions">
+            <button id="landing-menu-btn" class="mobile-menu-btn" aria-label="Toggle menu">
+                <div class="burger-bars"><span></span><span></span><span></span></div>
+            </button>
+            <div class="nav-actions" id="landing-nav-actions">
                 <button class="btn-ghost" id="nav-login-btn">Sign In</button>
                 <button class="btn-primary" id="nav-signup-btn">Get Started</button>
+                <button id="landing-theme-toggle" class="btn-icon-round" title="Toggle light/dark mode" aria-label="Toggle theme">
+                    <i id="landing-theme-icon" data-lucide="moon"></i>
+                </button>
             </div>
         </nav>
 
         <div class="hero">
-            <!-- Floating code snippets -->
-            <div class="floating-code" style="top:15%;left:8%;animation-delay:0s;">color: #7c3aed;</div>
-            <div class="floating-code" style="top:25%;right:10%;animation-delay:4s;">display: flex;</div>
-            <div class="floating-code" style="top:60%;left:5%;animation-delay:8s;">border-radius: 16px;</div>
-            <div class="floating-code" style="top:70%;right:6%;animation-delay:12s;">background: gradient;</div>
-            <div class="floating-code" style="top:45%;left:15%;animation-delay:16s;">animation: ease;</div>
-
-            <h1>Learn CSS.<br><span class="gradient-text">Get Certified.</span></h1>
-            <p class="hero-desc">Master the core principles of modern web styling through interactive lessons, quizzes, and earn your professional CSS certification.</p>
+            <h1>Stop Googling<br>CSS Tricks.<br><span class="gradient-text">Actually Learn Them.</span></h1>
+            <p class="hero-desc">From selectors to the box model, from colors to typography, work through each topic, pass the quiz, and walk away with a real certification you can show off.</p>
             <div class="hero-cta">
-                <button class="btn-primary btn-lg" id="hero-signup-btn">Start for Free</button>
-                <button class="btn-ghost btn-lg" id="hero-login-btn">Sign In</button>
+                <button class="btn-primary btn-lg" id="hero-signup-btn">Start Learning</button>
+                <button class="btn-ghost btn-lg" id="hero-login-btn">I Have an Account</button>
             </div>
         </div>
 
-        <!-- How It Works -->
-        <div class="how-it-works reveal">
-            <div class="section-heading">
-                <h2>How It Works</h2>
-                <p>Three simple steps to your CSS certification</p>
+        <!-- What You'll Actually Learn -->
+        <div class="curriculum-section reveal">
+            <div class="curriculum-header">
+                <p class="section-eyebrow">The Curriculum</p>
+                <h2>Here's what you'll cover,<br>topic by topic.</h2>
+                <p class="curriculum-sub">Not random YouTube playlists. A structured path from the basics to the stuff that actually trips people up, margins collapsing, the box model, specificity. Each topic has video lessons and a quiz you need to pass before moving on.</p>
             </div>
-            <div class="steps-grid">
-                <div class="step-card">
-                    <div class="step-number">1</div>
-                    <h3>Learn</h3>
-                    <p>Watch curated video lessons covering all essential CSS topics from basics to advanced.</p>
+
+            <div class="topic-roadmap">
+                <div class="roadmap-item">
+                    <div class="roadmap-number">01</div>
+                    <div class="roadmap-content">
+                        <h3>CSS Introduction</h3>
+                        <p>What CSS actually is, how it connects to HTML, and writing your first stylesheet. No fluff.</p>
+
+                    </div>
                 </div>
-                <div class="step-card">
-                    <div class="step-number">2</div>
-                    <h3>Practice</h3>
-                    <p>Test your understanding with interactive quizzes after each topic to reinforce your knowledge.</p>
+                <div class="roadmap-item">
+                    <div class="roadmap-number">02</div>
+                    <div class="roadmap-content">
+                        <h3>Syntax Deep Dive</h3>
+                        <p>Selectors, combinators, pseudo-elements, the stuff you need to actually target what you want to style.</p>
+
+                    </div>
                 </div>
-                <div class="step-card">
-                    <div class="step-number">3</div>
-                    <h3>Certify</h3>
-                    <p>Pass the final certification exam and earn your verified professional CSS credential.</p>
+                <div class="roadmap-item">
+                    <div class="roadmap-number">03</div>
+                    <div class="roadmap-content">
+                        <h3>Colors</h3>
+                        <p>RGB, HEX, HSL, understand the difference and when to use each. Stop copy-pasting color codes blindly.</p>
+
+                    </div>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-number">04</div>
+                    <div class="roadmap-content">
+                        <h3>Backgrounds</h3>
+                        <p>Background images, gradients, positioning. The visual foundation of every page you'll ever build.</p>
+
+                    </div>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-number">05</div>
+                    <div class="roadmap-content">
+                        <h3>Borders</h3>
+                        <p>Border styles, widths, rounded corners. Turns out <code>border-radius: 50%</code> isn't the only thing you need.</p>
+
+                    </div>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-number">06</div>
+                    <div class="roadmap-content">
+                        <h3>Margins & the Box Model</h3>
+                        <p>This is where most beginners get stuck. Content, padding, border, margin, learn why your layout keeps breaking.</p>
+
+                    </div>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-number">07</div>
+                    <div class="roadmap-content">
+                        <h3>Padding & Outline</h3>
+                        <p>Inner spacing and outlines. The other half of the box model puzzle.</p>
+
+                    </div>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-number">08</div>
+                    <div class="roadmap-content">
+                        <h3>Text</h3>
+                        <p>Alignment, decoration, spacing, transforms. Making text look good is harder than people think.</p>
+
+                    </div>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-number">09</div>
+                    <div class="roadmap-content">
+                        <h3>Fonts</h3>
+                        <p>Font families, Google Fonts, font-size, weight, style. Typography sets the tone of your whole site.</p>
+
+                    </div>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-number">10</div>
+                    <div class="roadmap-content">
+                        <h3>Links, Lists & Tables</h3>
+                        <p>Styling navigation, ordered/unordered lists, and making tables not look like it's 2005.</p>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="curriculum-cta">
+                <p>After completing all topics, you unlock the <strong>Final Certification Exam</strong>, pass it and earn your verified credential.</p>
+                <button class="btn-primary btn-lg" id="curriculum-signup-btn">Start from Topic 1</button>
+            </div>
+        </div>
+
+        <!-- Why This Course -->
+        <div class="why-section reveal">
+            <p class="section-eyebrow">Why LearnCSS</p>
+            <h2>Built different from the usual<br>online course stuff.</h2>
+
+            <div class="why-grid">
+                <div class="why-card">
+                    <div class="why-icon"><i data-lucide="play-circle"></i></div>
+                    <h3>Video-first, not walls of text</h3>
+                    <p>Each topic starts with curated video lessons. Watch, rewatch, then prove you get it.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon"><i data-lucide="pencil-line"></i></div>
+                    <h3>Quizzes that actually check</h3>
+                    <p>Not just "click next." You need a perfect score to pass each topic quiz. It keeps you honest.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon"><i data-lucide="target"></i></div>
+                    <h3>Structured, not scattered</h3>
+                    <p>10 topics in a deliberate order, intro, syntax, visuals, layout, typography. No jumping around.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon"><i data-lucide="award"></i></div>
+                    <h3>A certificate you earned</h3>
+                    <p>Pass all topics + the final exam with a voucher. Print it, put it on LinkedIn, whatever, you earned it.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon"><i data-lucide="save"></i></div>
+                    <h3>Your progress is saved</h3>
+                    <p>Close the tab, come back tomorrow. Your completed topics stay completed. No starting over.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon"><i data-lucide="badge-check"></i></div>
+                    <h3>Free to learn, pay to certify</h3>
+                    <p>All 10 topics and quizzes are completely free. Only the final cert exam needs a ₱299 voucher.</p>
                 </div>
             </div>
         </div>
 
-        <!-- Stats -->
-        <div class="stats-section reveal">
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-number" data-count="10">0</div>
-                    <div class="stat-label">Topics</div>
+        <!-- Code Preview Strip -->
+        <div class="code-preview-section reveal">
+            <div class="code-preview-inner">
+                <div class="code-preview-text">
+                    <p class="section-eyebrow">By the end</p>
+                    <h2>You'll read this<br>and actually know<br>what it does.</h2>
+                    <p>Not just "I've seen this before." More like "I know exactly why this works and I can write it from scratch."</p>
+                    <button class="btn-primary" id="preview-signup-btn">Let's Go</button>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-number" data-count="15">0</div>
-                    <div class="stat-label">Video Lessons</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number" data-count="25">0</div>
-                    <div class="stat-label">Quiz Questions</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number" data-count="1">0</div>
-                    <div class="stat-label">Certification</div>
+                <div class="code-preview-block">
+                    <div class="code-window">
+                        <div class="code-dots"><span></span><span></span><span></span></div>
+                        <pre><code><span class="code-selector">.card</span> {
+  <span class="code-prop">background</span>: <span class="code-val">linear-gradient</span>(135deg, #7c3aed, #3b82f6);
+  <span class="code-prop">border-radius</span>: <span class="code-num">16px</span>;
+  <span class="code-prop">padding</span>: <span class="code-num">2rem</span>;
+  <span class="code-prop">margin</span>: <span class="code-num">1rem auto</span>;
+  <span class="code-prop">color</span>: <span class="code-val">#fff</span>;
+  <span class="code-prop">font-family</span>: <span class="code-str">'Outfit'</span>, sans-serif;
+  <span class="code-prop">font-size</span>: <span class="code-num">1.1rem</span>;
+  <span class="code-prop">border</span>: <span class="code-num">2px</span> solid <span class="code-val">rgba</span>(255,255,255,.15);
+  <span class="code-prop">box-shadow</span>: <span class="code-num">0 20px 40px</span> <span class="code-val">rgba</span>(0,0,0,.3);
+}</code></pre>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="features reveal">
-            <div class="feature-card">
-                <div class="feature-icon"><i data-lucide="video"></i></div>
-                <h3>Video Lessons</h3>
-                <p>Curated video content for each of the 10 CSS topics.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon"><i data-lucide="graduation-cap"></i></div>
-                <h3>Topic Quizzes</h3>
-                <p>Test your knowledge after every lesson.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon"><i data-lucide="medal"></i></div>
-                <h3>Certification Exam</h3>
-                <p>Pass the final exam with a verified voucher.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon"><i data-lucide="history"></i></div>
-                <h3>Saved Progress</h3>
-                <p>Pick up right where you left off, anytime.</p>
-            </div>
-        </div>
 
         <footer class="landing-footer">
-            <span>© 2026 LearnCSS — All rights reserved</span>
+            <span>© 2026 LearnCSS, All rights reserved</span>
             <span>Built with passion for learning</span>
         </footer>
     </section>
@@ -292,7 +386,10 @@
     <section id="dashboard-screen" class="screen">
         <header class="app-header">
             <div class="header-logo">LearnCSS</div>
-            <div class="header-right">
+            <button id="dashboard-menu-btn" class="mobile-menu-btn" aria-label="Toggle menu">
+                <div class="burger-bars"><span></span><span></span><span></span></div>
+            </button>
+            <div class="header-right" id="dashboard-nav-actions">
                 <span id="display-name">User</span>
                 <span class="progress-pill" id="progress-percent">0%</span>
                 <button id="buy-voucher-nav-btn" class="btn-primary">Buy Voucher</button>
@@ -321,10 +418,10 @@
     <section id="lesson-screen" class="screen">
         <div class="lesson-wrapper">
             <aside class="lesson-sidebar">
-                <button class="btn-ghost btn-sm" id="lesson-back-btn">← Back</button>
+                <button class="btn-ghost btn-sm" id="lesson-back-btn">Back</button>
                 <p class="sidebar-topic-title" id="current-topic-title">Topic</p>
                 <nav id="lesson-list"></nav>
-                <button id="take-quiz-btn" class="btn-primary" style="margin-top:auto;">Take Quiz →</button>
+                <button id="take-quiz-btn" class="btn-primary" style="margin-top:auto;">Take Quiz</button>
             </aside>
             <main class="lesson-main">
                 <div class="video-wrap">

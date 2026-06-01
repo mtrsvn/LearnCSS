@@ -167,6 +167,8 @@ const triggers = [
     { id: 'nav-signup-btn', modal: 'modal-signup' },
     { id: 'hero-signup-btn', modal: 'modal-signup' },
     { id: 'hero-login-btn', modal: 'modal-login' },
+    { id: 'curriculum-signup-btn', modal: 'modal-signup' },
+    { id: 'preview-signup-btn', modal: 'modal-signup' },
     { id: 'go-login', modal: 'modal-login', prevent: true },
     { id: 'go-signup-2', modal: 'modal-signup', prevent: true },
     { id: 'go-forgot', modal: 'modal-forgot', prevent: true },
@@ -290,8 +292,9 @@ if (logoutBtn) {
 }
 
 // ─── Dynamic Boot initialization ──────────────────────────
-async function boot() {
-    // 1. Fetch live syllabus topics
+async function loadTopicsIfNeeded() {
+    if (topics.length > 0) return;
+
     try {
         const topicData = await apiRequest('/api/topics');
         if (topicData && topicData.success) {
@@ -300,11 +303,14 @@ async function boot() {
     } catch (e) {
         console.error("Topics catalog loading failed.", e);
     }
+}
 
-    // 2. Fetch authenticated session
+async function boot() {
+    // 1. Fetch authenticated session first so guest visits do not trigger protected API errors
     try {
         const sessionData = await apiRequest('/api/auth/session');
         if (sessionData && sessionData.success && sessionData.user) {
+            await loadTopicsIfNeeded();
             loginUser(sessionData.user);
         } else {
             showScreen('landing-screen');
@@ -319,6 +325,8 @@ boot();
 
 async function loginUser(user) {
     state.user = user;
+
+    await loadTopicsIfNeeded();
     
     // Fetch live progress
     try {
@@ -415,7 +423,7 @@ function renderDashboard() {
         card.className = `topic-card ${done ? 'completed' : ''}`;
         card.innerHTML = `
             <p class="topic-num">Topic ${topic.id}</p>
-            <h3>${topic.title}${done ? '<span class="topic-done-badge">✓</span>' : ''}</h3>
+            <h3>${topic.title}${done ? '<span class="topic-done-badge"><i data-lucide="check"></i></span>' : ''}</h3>
             <span>${topic.lessons.length} lesson${topic.lessons.length > 1 ? 's' : ''}</span>
         `;
         card.addEventListener('click', () => openTopic(index));
@@ -658,32 +666,57 @@ if (statsSection) counterObserver.observe(statsSection);
 // ─── Theme Toggle ─────────────────────────────────────────
 (function initTheme() {
     const saved = localStorage.getItem('cssm_theme');
-    if (saved === 'light') applyTheme('light');
+    if (saved === 'dark') {
+        applyTheme('dark');
+    } else {
+        applyTheme('light');
+    }
 })();
 
 function applyTheme(mode) {
-    const iconEl = $('theme-icon');
+    const iconEls = [$('theme-icon'), $('landing-theme-icon')];
     if (mode === 'light') {
         document.body.classList.add('light-mode');
         localStorage.setItem('cssm_theme', 'light');
-        if (iconEl) {
-            iconEl.setAttribute('data-lucide', 'sun');
-            if (window.lucide) lucide.createIcons();
-        }
+        iconEls.forEach(iconEl => {
+            if (iconEl) iconEl.setAttribute('data-lucide', 'sun');
+        });
+        if (window.lucide) lucide.createIcons();
     } else {
         document.body.classList.remove('light-mode');
         localStorage.setItem('cssm_theme', 'dark');
-        if (iconEl) {
-            iconEl.setAttribute('data-lucide', 'moon');
-            if (window.lucide) lucide.createIcons();
-        }
+        iconEls.forEach(iconEl => {
+            if (iconEl) iconEl.setAttribute('data-lucide', 'moon');
+        });
+        if (window.lucide) lucide.createIcons();
     }
 }
 
-const themeToggleBtn = $('theme-toggle-btn');
-if (themeToggleBtn) {
-    themeToggleBtn.addEventListener('click', () => {
-        const isLight = document.body.classList.contains('light-mode');
-        applyTheme(isLight ? 'dark' : 'light');
+const themeToggleBtns = [$('theme-toggle-btn'), $('landing-theme-toggle')];
+themeToggleBtns.forEach(btn => {
+    if (btn) {
+        btn.addEventListener('click', () => {
+            const isLight = document.body.classList.contains('light-mode');
+            applyTheme(isLight ? 'dark' : 'light');
+        });
+    }
+});
+
+// ─── Mobile Menu Toggle ──────────────────────────────────
+const landingMenuBtn = $('landing-menu-btn');
+const landingNavActions = $('landing-nav-actions');
+if (landingMenuBtn && landingNavActions) {
+    landingMenuBtn.addEventListener('click', () => {
+        const isOpen = landingNavActions.classList.toggle('show');
+        landingMenuBtn.classList.toggle('active', isOpen);
+        landingMenuBtn.setAttribute('aria-expanded', String(isOpen));
+    });
+}
+
+const dashboardMenuBtn = $('dashboard-menu-btn');
+const dashboardNavActions = $('dashboard-nav-actions');
+if (dashboardMenuBtn && dashboardNavActions) {
+    dashboardMenuBtn.addEventListener('click', () => {
+        dashboardNavActions.classList.toggle('show');
     });
 }
