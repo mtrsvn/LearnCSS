@@ -153,11 +153,10 @@ if (bdateInput) {
 const affTypeSelect = $('su-afftype');
 if (affTypeSelect) {
     affTypeSelect.addEventListener('change', function () {
-        const isSchool = this.value === 'school';
         const label = $('aff-name-label');
         const input = $('su-affname');
-        if (label) label.textContent = isSchool ? 'University / School Name' : 'Company / Organization Name';
-        if (input) input.placeholder = isSchool ? 'e.g. University of the Philippines' : 'e.g. Acme Corporation';
+        if (label) label.textContent = 'Organization / School Name';
+        if (input) input.placeholder = 'e.g. University of the Philippines';
     });
 }
 
@@ -190,6 +189,8 @@ if (goBuyVoucher) goBuyVoucher.addEventListener('click', e => { e.preventDefault
 
 const navBuyVoucher = $('buy-voucher-nav-btn');
 if (navBuyVoucher) navBuyVoucher.addEventListener('click', () => openBuyVoucherModal());
+const heroBuyVoucher = $('buy-voucher-hero-btn');
+if (heroBuyVoucher) heroBuyVoucher.addEventListener('click', () => openBuyVoucherModal());
 
 // ─── Sign Up ─────────────────────────────────────────────
 const signupBtn = $('signup-btn');
@@ -340,6 +341,8 @@ async function loginUser(user) {
 
     const dispName = $('display-name');
     if (dispName) dispName.textContent = user.firstName || user.name;
+    const heroName = $('dashboard-hero-name');
+    if (heroName) heroName.textContent = user.firstName || user.name;
     const certName = $('cert-user-name');
     if (certName) certName.textContent = user.name;
     
@@ -417,24 +420,48 @@ function renderDashboard() {
     if (!container) return;
     container.innerHTML = '';
 
+    const topicCountEl = $('dashboard-topic-count');
+    if (topicCountEl) topicCountEl.textContent = String(topics.length);
+
     topics.forEach((topic, index) => {
         const done = state.completedTopics.includes(topic.id);
+        const prevTopicId = index > 0 ? topics[index - 1].id : null;
+        const unlocked = index === 0 || (prevTopicId && state.completedTopics.includes(prevTopicId));
         const card = document.createElement('div');
-        card.className = `topic-card ${done ? 'completed' : ''}`;
+        card.className = `topic-card ${done ? 'completed' : ''} ${unlocked ? '' : 'locked'}`.trim();
         card.innerHTML = `
             <p class="topic-num">Topic ${topic.id}</p>
             <h3>${topic.title}${done ? '<span class="topic-done-badge"><i data-lucide="check"></i></span>' : ''}</h3>
             <span>${topic.lessons.length} lesson${topic.lessons.length > 1 ? 's' : ''}</span>
+            ${unlocked ? '' : '<span class="topic-lock"><i data-lucide="lock"></i>Complete the previous topic to unlock</span>'}
         `;
-        card.addEventListener('click', () => openTopic(index));
+        if (unlocked) {
+            card.addEventListener('click', () => openTopic(index));
+        }
         container.appendChild(card);
     });
 
     const pct = topics.length > 0 ? Math.round((state.completedTopics.length / topics.length) * 100) : 0;
     const pctEl = $('progress-percent');
     if (pctEl) pctEl.textContent = `${pct}%`;
+    const summaryEl = $('dashboard-progress-summary');
+    if (summaryEl) summaryEl.textContent = `${pct}%`;
+    const completedEl = $('dashboard-modules-completed');
+    if (completedEl) completedEl.textContent = `${state.completedTopics.length} / ${topics.length}`;
 
     updateFinalCard();
+    if (window.lucide) lucide.createIcons();
+}
+
+const resumeCourseBtn = $('resume-course-btn');
+if (resumeCourseBtn) {
+    resumeCourseBtn.addEventListener('click', () => {
+        const nextIndex = topics.findIndex((topic, index) => {
+            const prevTopicId = index > 0 ? topics[index - 1].id : null;
+            return index === 0 || (prevTopicId && state.completedTopics.includes(prevTopicId));
+        });
+        if (nextIndex >= 0) openTopic(nextIndex);
+    });
 }
 
 function updateFinalCard() {
@@ -442,20 +469,20 @@ function updateFinalCard() {
     if (!btn) return;
     const allDone = state.completedTopics.length === topics.length;
 
-    btn.className = 'final-card needs-voucher';
-    btn.onclick = () => openModal('modal-enter-voucher');
-
     const statusEl = $('final-card-status');
-    const badgeEl = $('final-badge-icon');
+    const lockEl = $('final-card-lock');
 
     if (!allDone) {
-        if (statusEl) statusEl.textContent = 'Unlock the exam by entering your voucher code.';
-        if (badgeEl) badgeEl.innerHTML = '<i data-lucide="ticket"></i>';
+        btn.className = 'topic-card locked final-exam-card';
+        btn.onclick = null;
+        if (statusEl) statusEl.textContent = 'Complete all topics to unlock this exam.';
+        if (lockEl) lockEl.classList.remove('hidden');
     } else {
+        btn.className = 'topic-card final-exam-card';
+        btn.onclick = () => openModal('modal-enter-voucher');
         if (statusEl) statusEl.textContent = 'Enter your voucher code to begin the exam.';
-        if (badgeEl) badgeEl.innerHTML = '<i data-lucide="ticket"></i>';
+        if (lockEl) lockEl.classList.add('hidden');
     }
-    if (window.lucide) lucide.createIcons();
 }
 
 // ─── Lesson ──────────────────────────────────────────────

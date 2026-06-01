@@ -26,10 +26,13 @@ class User extends Authenticatable
         'password',
         'phone',
         'birthdate',
-        'affiliation_type',
+        'role',
         'affiliation_name',
         'is_admin',
         'is_active',
+        'progress_percentage',
+        'modules_completed_count',
+        'exam_status',
     ];
 
     /**

@@ -49,14 +49,15 @@
                 <input type="text" id="su-bdate" placeholder="MM/DD/YYYY" maxlength="10" autocomplete="bday" inputmode="numeric">
             </div>
             <div class="field">
-                <label for="su-afftype">Affiliation Type</label>
+                <label for="su-afftype">Role</label>
                 <select id="su-afftype">
-                <option value="school">University / School</option>
-                <option value="company">Company / Organization</option>
+                <option value="student">Student</option>
+                <option value="instructor">Instructor</option>
+                <option value="admin">Admin</option>
             </select>
             </div>
             <div class="field field-full">
-                <label for="su-affname" id="aff-name-label">School / Institution Name</label>
+                <label for="su-affname" id="aff-name-label">Organization / School Name</label>
                 <input type="text" id="su-affname" placeholder="e.g. University of the Philippines">
             </div>
             <div class="field">
@@ -400,16 +401,38 @@
             </div>
         </header>
         <div class="dashboard-body">
-            <p class="section-label">Your Topics</p>
-            <div class="topics-grid" id="topics-container"></div>
-            <div class="final-card locked" id="final-exam-btn">
-                <div class="final-card-inner">
-                    <div>
-                        <h3>Final Certification Exam</h3>
-                        <p id="final-card-status">Unlock the exam by entering your voucher code.</p>
+            <section class="dashboard-hero">
+                <div class="dashboard-hero-copy">
+                    <p class="section-eyebrow">Learning dashboard</p>
+                    <h1>Welcome back, <span id="dashboard-hero-name">User</span>.</h1>
+                    <p class="dashboard-hero-text">Track your progress through the CSS certification path, complete each topic, and unlock the final exam when you’re ready.</p>
+                    <div class="dashboard-hero-actions">
+                        <button id="resume-course-btn" class="btn-primary">Resume Course</button>
+                        <button id="buy-voucher-hero-btn" class="btn-ghost">Buy Voucher</button>
                     </div>
-                    <div class="final-badge-icon" id="final-badge-icon"></div>
                 </div>
+                <div class="dashboard-hero-panel">
+                    <div class="hero-metric">
+                        <span class="metric-label">Progress</span>
+                        <strong id="dashboard-progress-summary">0%</strong>
+                    </div>
+                    <div class="hero-metric">
+                        <span class="metric-label">Modules Completed</span>
+                        <strong id="dashboard-modules-completed">0</strong>
+                    </div>
+                </div>
+            </section>
+
+            <div class="dashboard-section-head">
+                <p class="section-label">Your Topics</p>
+                <p class="section-subtitle">Select a topic card to continue the lesson flow.</p>
+            </div>
+            <div class="topics-grid" id="topics-container"></div>
+            <div class="topic-card locked final-exam-card" id="final-exam-btn">
+                <p class="topic-num">Final Exam</p>
+                <h3>Final Certification Exam</h3>
+                <span id="final-card-status">Complete all topics to unlock this exam.</span>
+                <span class="topic-lock" id="final-card-lock">Finish all topics to unlock</span>
             </div>
         </div>
     </section>

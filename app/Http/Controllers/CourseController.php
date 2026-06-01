@@ -8,6 +8,7 @@ use App\Models\Topic;
 use App\Models\UserProgress;
 use App\Models\QuizAttempt;
 use App\Models\AuditLog;
+use App\Models\User;
 
 class CourseController extends Controller
 {
@@ -59,9 +60,14 @@ class CourseController extends Controller
             ->pluck('topic_id')
             ->toArray();
 
+        $snapshot = $this->updateUserProgressSnapshot($user->id, count($progress));
+
         return response()->json([
             'success' => true,
-            'completedTopics' => $progress
+            'completedTopics' => $progress,
+            'progressPercentage' => $snapshot['progressPercentage'],
+            'modulesCompletedCount' => $snapshot['modulesCompletedCount'],
+            'examStatus' => $snapshot['examStatus'],
         ]);
     }
 
@@ -118,10 +124,36 @@ class CourseController extends Controller
             ->pluck('topic_id')
             ->toArray();
 
+        $snapshot = $this->updateUserProgressSnapshot($user->id, count($progress));
+
         return response()->json([
             'success' => true,
             'message' => $passed ? 'Topic completed!' : 'Quiz completed.',
-            'completedTopics' => $progress
+            'completedTopics' => $progress,
+            'progressPercentage' => $snapshot['progressPercentage'],
+            'modulesCompletedCount' => $snapshot['modulesCompletedCount'],
+            'examStatus' => $snapshot['examStatus'],
         ]);
+    }
+
+    private function updateUserProgressSnapshot(int $userId, int $completedCount): array
+    {
+        $totalTopics = Topic::count();
+        $progressPercentage = $totalTopics > 0
+            ? (int) round(($completedCount / $totalTopics) * 100)
+            : 0;
+        $examStatus = $completedCount >= $totalTopics && $totalTopics > 0 ? 'eligible' : 'locked';
+
+        User::where('id', $userId)->update([
+            'modules_completed_count' => $completedCount,
+            'progress_percentage' => $progressPercentage,
+            'exam_status' => $examStatus,
+        ]);
+
+        return [
+            'modulesCompletedCount' => $completedCount,
+            'progressPercentage' => $progressPercentage,
+            'examStatus' => $examStatus,
+        ];
     }
 }

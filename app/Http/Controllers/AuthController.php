@@ -23,6 +23,11 @@ class AuthController extends Controller
             'su-password' => 'required|string|min:6',
         ]);
 
+        $role = strtolower($request->input('su-afftype'));
+        if (!in_array($role, ['student', 'instructor', 'admin'], true)) {
+            $role = 'student';
+        }
+
         $user = User::create([
             'name' => $request->input('su-fname') . ' ' . $request->input('su-lname'),
             'first_name' => $request->input('su-fname'),
@@ -31,9 +36,9 @@ class AuthController extends Controller
             'password' => Hash::make($request->input('su-password')),
             'phone' => $request->input('su-phone'),
             'birthdate' => $request->input('su-bdate'),
-            'affiliation_type' => $request->input('su-afftype'),
+            'role' => $role,
             'affiliation_name' => $request->input('su-affname'),
-            'is_admin' => false,
+            'is_admin' => $role === 'admin',
             'is_active' => true,
         ]);
 
@@ -55,9 +60,12 @@ class AuthController extends Controller
                 'lastName' => $user->last_name,
                 'email' => $user->email,
                 'bdate' => $user->birthdate,
-                'affType' => $user->affiliation_type,
+                'role' => $user->role,
                 'affName' => $user->affiliation_name,
-                'phone' => $user->phone
+                'phone' => $user->phone,
+                'progressPercentage' => (int) $user->progress_percentage,
+                'modulesCompletedCount' => (int) $user->modules_completed_count,
+                'examStatus' => $user->exam_status,
             ]
         ]);
     }
@@ -83,6 +91,7 @@ class AuthController extends Controller
                 'last_name' => '',
                 'email' => $email,
                 'password' => Hash::make($password),
+                'role' => 'student',
                 'is_admin' => false,
                 'is_active' => true,
             ]);
@@ -104,6 +113,10 @@ class AuthController extends Controller
                     'firstName' => $user->first_name,
                     'lastName' => $user->last_name,
                     'email' => $user->email,
+                    'role' => $user->role,
+                    'progressPercentage' => (int) $user->progress_percentage,
+                    'modulesCompletedCount' => (int) $user->modules_completed_count,
+                    'examStatus' => $user->exam_status,
                 ]
             ]);
         }
@@ -140,9 +153,12 @@ class AuthController extends Controller
                 'lastName' => $user->last_name,
                 'email' => $user->email,
                 'bdate' => $user->birthdate,
-                'affType' => $user->affiliation_type,
+                'role' => $user->role,
                 'affName' => $user->affiliation_name,
-                'phone' => $user->phone
+                'phone' => $user->phone,
+                'progressPercentage' => (int) $user->progress_percentage,
+                'modulesCompletedCount' => (int) $user->modules_completed_count,
+                'examStatus' => $user->exam_status,
             ]
         ]);
     }
@@ -190,9 +206,12 @@ class AuthController extends Controller
                     'lastName' => $user->last_name,
                     'email' => $user->email,
                     'bdate' => $user->birthdate,
-                    'affType' => $user->affiliation_type,
+                    'role' => $user->role,
                     'affName' => $user->affiliation_name,
-                    'phone' => $user->phone
+                    'phone' => $user->phone,
+                    'progressPercentage' => (int) $user->progress_percentage,
+                    'modulesCompletedCount' => (int) $user->modules_completed_count,
+                    'examStatus' => $user->exam_status,
                 ]
             ]);
         }
