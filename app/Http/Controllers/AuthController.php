@@ -66,6 +66,7 @@ class AuthController extends Controller
                 'progressPercentage' => (int) $user->progress_percentage,
                 'modulesCompletedCount' => (int) $user->modules_completed_count,
                 'examStatus' => $user->exam_status,
+                'isCourseUnlocked' => (bool) $user->is_course_unlocked,
             ]
         ]);
     }
@@ -117,6 +118,7 @@ class AuthController extends Controller
                     'progressPercentage' => (int) $user->progress_percentage,
                     'modulesCompletedCount' => (int) $user->modules_completed_count,
                     'examStatus' => $user->exam_status,
+                    'isCourseUnlocked' => (bool) $user->is_course_unlocked,
                 ]
             ]);
         }
@@ -159,6 +161,7 @@ class AuthController extends Controller
                 'progressPercentage' => (int) $user->progress_percentage,
                 'modulesCompletedCount' => (int) $user->modules_completed_count,
                 'examStatus' => $user->exam_status,
+                'isCourseUnlocked' => (bool) $user->is_course_unlocked,
             ]
         ]);
     }
@@ -212,6 +215,7 @@ class AuthController extends Controller
                     'progressPercentage' => (int) $user->progress_percentage,
                     'modulesCompletedCount' => (int) $user->modules_completed_count,
                     'examStatus' => $user->exam_status,
+                    'isCourseUnlocked' => (bool) $user->is_course_unlocked,
                 ]
             ]);
         }

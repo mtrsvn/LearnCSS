@@ -1,4 +1,3 @@
-// ─── App State ───────────────────────────────────────────
 let state = {
     user: null,
     currentTopicIndex: null,
@@ -6,8 +5,8 @@ let state = {
     completedTopics: [],
     isFinalExam: false,
     voucherCode: localStorage.getItem('cssm_voucher') || null,
-    courseUnlocked: localStorage.getItem('cssm_unlocked') === 'true',
-    hasBoughtVoucher: localStorage.getItem('cssm_bought_voucher') === 'true'
+    courseUnlocked: false,
+    hasBoughtVoucher: false
 };
 
 let topics = [];
@@ -352,6 +351,7 @@ boot();
 
 async function loginUser(user) {
     state.user = user;
+    state.courseUnlocked = user.isCourseUnlocked || false;
 
     await loadTopicsIfNeeded();
     
@@ -360,6 +360,9 @@ async function loginUser(user) {
         const pData = await apiRequest('/api/progress');
         if (pData && pData.success) {
             state.completedTopics = pData.completedTopics;
+            if (pData.lastTopicStarted) {
+                state.lastTopicStarted = pData.lastTopicStarted;
+            }
         }
     } catch (e) {
         state.completedTopics = [];
@@ -440,7 +443,6 @@ if (redeemBtn) {
                     
                     if (!state.courseUnlocked) {
                         state.courseUnlocked = true;
-                        localStorage.setItem('cssm_unlocked', 'true');
                         updateVoucherButtons();
                         renderDashboard();
                         showToast('Voucher accepted! You can now access the courses.', 'success');
@@ -576,6 +578,16 @@ function updateFinalCard() {
 function openTopic(index) {
     state.currentTopicIndex = index;
     state.currentLessonIndex = 0;
+    
+    if (topics[index]) {
+        apiRequest('/api/progress/start', 'POST', { topic_id: topics[index].id })
+            .then(res => {
+                if (res && res.success && res.lastTopicStarted) {
+                    state.lastTopicStarted = res.lastTopicStarted;
+                }
+            }).catch(() => {});
+    }
+
     renderLesson();
     showScreen('lesson-screen');
 }

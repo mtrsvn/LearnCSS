@@ -115,6 +115,9 @@ class VoucherController extends Controller
             'used_at' => Carbon::now()
         ]);
 
+        $user->is_course_unlocked = true;
+        $user->save();
+
         AuditLog::create([
             'user_id' => $user->id,
             'action' => 'Voucher Redemption',
