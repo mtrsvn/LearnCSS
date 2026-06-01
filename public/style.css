@@ -94,7 +94,8 @@ body { background:var(--bg); color:var(--text); font-family:'Plus Jakarta Sans',
 /* Voucher */
 .voucher-product-card { background:rgba(255,255,255,.04); border:1.5px solid var(--border); border-radius:12px; padding:1rem 1.25rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-top:.5rem; }
 .vpc-info { display:flex; align-items:center; gap:.85rem; }
-.vpc-icon { font-size:1.5rem; color:var(--accent); }
+.vpc-icon { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:var(--gradient); color:#fff; }
+.vpc-icon svg { width:24px; height:24px; }
 .vpc-name { font-weight:700; font-size:.9rem; margin-bottom:.15rem; }
 .vpc-desc { font-size:.75rem; color:var(--text-muted); }
 .vpc-price { font-family:'Outfit',sans-serif; font-size:1.5rem; font-weight:700; white-space:nowrap; background:var(--gradient); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
@@ -105,7 +106,8 @@ body { background:var(--bg); color:var(--text); font-family:'Plus Jakarta Sans',
 .promo-features li::before { content:''; position:absolute; left:0; top:.45em; width:6px; height:6px; background:var(--accent); border-radius:1px; transform:rotate(45deg); }
 .promo-price { font-size:1.1rem; font-weight:800; border-top:1px solid var(--border); padding-top:.75rem; background:var(--gradient); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
 .voucher-success { text-align:center; padding:1.5rem 0; }
-.vs-icon { font-size:2.5rem; margin-bottom:.75rem; color:var(--correct); }
+.vs-icon { width:64px; height:64px; border-radius:16px; display:flex; align-items:center; justify-content:center; margin:0 auto .75rem; background:var(--gradient); color:#fff; }
+.vs-icon svg { width:32px; height:32px; }
 .voucher-success p { font-size:.875rem; color:var(--text-muted); margin-bottom:1.25rem; }
 .voucher-code-display { font-family:'Outfit',monospace; font-size:1.5rem; font-weight:700; background:rgba(124,58,237,.08); border:2px dashed var(--accent); border-radius:12px; padding:.85rem 1.5rem; letter-spacing:.15em; margin-bottom:1rem; color:var(--accent); user-select:all; }
 .vs-note { font-size:.78rem; color:var(--text-muted); }
@@ -165,7 +167,7 @@ body { background:var(--bg); color:var(--text); font-family:'Plus Jakarta Sans',
 .why-section h2 { font-family:'Outfit',sans-serif; font-size:clamp(1.5rem,4vw,2rem); font-weight:800; line-height:1.2; letter-spacing:-.02em; margin-bottom:2.5rem; }
 .why-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.25rem; }
 .why-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.5rem; }
-.why-icon { width:42px; height:42px; border-radius:10px; background:rgba(124,58,237,.1); display:flex; align-items:center; justify-content:center; margin-bottom:.75rem; color:var(--accent); }
+.why-icon { width:42px; height:42px; border-radius:10px; background:var(--gradient); display:flex; align-items:center; justify-content:center; margin-bottom:.75rem; color:#fff; }
 .why-icon svg { width:20px; height:20px; }
 .why-card h3 { font-size:.88rem; font-weight:700; margin-bottom:.35rem; line-height:1.35; }
 .why-card p { font-size:.8rem; color:var(--text-muted); line-height:1.6; }
@@ -214,7 +216,7 @@ body { background:var(--bg); color:var(--text); font-family:'Plus Jakarta Sans',
 .dashboard-hero-panel { padding:1.2rem; display:flex; flex-direction:column; background:var(--surface); }
 .dashboard-user-info { display:flex; flex-direction:column; gap:0.85rem; padding:0.25rem 0.25rem 1rem; margin-bottom:0.75rem; border-bottom:1px solid var(--border); }
 .user-info-row { display:flex; align-items:center; gap:0.75rem; }
-.info-icon { width:34px; height:34px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:rgba(124,58,237,.1); color:var(--accent); border-radius:10px; border:1px solid rgba(124,58,237,.15); }
+.info-icon { width:34px; height:34px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:var(--gradient); color:#fff; border-radius:10px; border:none; }
 .info-icon svg { width:16px; height:16px; }
 .info-content { display:flex; flex-direction:column; gap:0.2rem; overflow:hidden; }
 .info-label { font-size:.6rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.12em; line-height:1; }
@@ -242,8 +244,8 @@ body { background:var(--bg); color:var(--text); font-family:'Plus Jakarta Sans',
 .topic-num { font-size:.7rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--text-muted); margin-bottom:.35rem; }
 .topic-card h3 { font-family:'Outfit',sans-serif; font-size:1rem; font-weight:700; line-height:1.35; margin-bottom:.45rem; }
 .topic-card span { font-size:.78rem; color:var(--text-muted); }
-.topic-done-badge { display:inline-flex; align-items:center; margin-left:.4rem; color:var(--correct); vertical-align:middle; }
-.topic-done-badge svg { width:16px; height:16px; }
+.topic-done-badge { display:inline-flex; align-items:center; justify-content:center; margin-left:.5rem; background:var(--gradient); color:#fff; vertical-align:middle; width:20px; height:20px; border-radius:50%; }
+.topic-done-badge svg { width:12px; height:12px; }
 
 .dashboard-exam-card { margin-top:.25rem; }
 .final-card { background:linear-gradient(135deg, rgba(124,58,237,.08), rgba(59,130,246,.06)); border:1.5px solid var(--border); border-radius:22px; padding:1.75rem 2rem; transition:none; cursor:not-allowed; position:relative; overflow:hidden; }
@@ -253,7 +255,7 @@ body { background:var(--bg); color:var(--text); font-family:'Plus Jakarta Sans',
 .final-card-inner { display:flex; align-items:center; justify-content:space-between; gap:1rem; position:relative; z-index:1; }
 .final-card h3 { font-size:1.05rem; font-weight:700; margin-bottom:.35rem; background:var(--gradient); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
 .final-card p { color:var(--text-muted); font-size:.82rem; }
-.final-badge-icon { width:54px; height:54px; border-radius:12px; background:rgba(255,255,255,.05); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--accent); transition:none; }
+.final-badge-icon { width:54px; height:54px; border-radius:12px; background:var(--gradient); border:none; display:flex; align-items:center; justify-content:center; color:#fff; transition:none; }
 .final-badge-icon svg { width:26px; height:26px; }
 
 /* Lesson */

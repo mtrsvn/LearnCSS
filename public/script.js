@@ -188,33 +188,23 @@ triggers.forEach(t => {
 const goBuyVoucher = $('go-buy-voucher');
 if (goBuyVoucher) goBuyVoucher.addEventListener('click', e => { e.preventDefault(); openBuyVoucherModal(); });
 
-const navBuyVoucher = $('buy-voucher-nav-btn');
-if (navBuyVoucher) navBuyVoucher.addEventListener('click', handleVoucherBtnClick);
 const heroBuyVoucher = $('buy-voucher-hero-btn');
-if (heroBuyVoucher) heroBuyVoucher.addEventListener('click', handleVoucherBtnClick);
+if (heroBuyVoucher) heroBuyVoucher.addEventListener('click', () => openBuyVoucherModal());
 
-function handleVoucherBtnClick() {
-    if (state.hasBoughtVoucher) {
-        openModal('modal-enter-voucher');
-    } else {
-        openBuyVoucherModal();
-    }
-}
+const heroRedeemVoucher = $('redeem-voucher-hero-btn');
+if (heroRedeemVoucher) heroRedeemVoucher.addEventListener('click', () => openModal('modal-enter-voucher'));
 
 function updateVoucherButtons() {
-    const btns = [$('buy-voucher-nav-btn'), $('buy-voucher-hero-btn')];
-    btns.forEach(btn => {
-        if (!btn) return;
-        if (state.courseUnlocked) {
-            btn.classList.add('hidden');
-        } else if (state.hasBoughtVoucher) {
-            btn.classList.remove('hidden');
-            btn.textContent = 'Enter Voucher';
-        } else {
-            btn.classList.remove('hidden');
-            btn.textContent = 'Buy Voucher';
-        }
-    });
+    const buyBtn = $('buy-voucher-hero-btn');
+    const redeemBtn = $('redeem-voucher-hero-btn');
+    
+    if (state.courseUnlocked) {
+        if (buyBtn) buyBtn.classList.add('hidden');
+        if (redeemBtn) redeemBtn.classList.add('hidden');
+    } else {
+        if (buyBtn) buyBtn.classList.remove('hidden');
+        if (redeemBtn) redeemBtn.classList.remove('hidden');
+    }
 }
 
 // ─── Sign Up ─────────────────────────────────────────────
@@ -368,8 +358,7 @@ async function loginUser(user) {
         state.completedTopics = [];
     }
 
-    const dispName = $('display-name');
-    if (dispName) dispName.textContent = user.firstName || user.name;
+
     const heroName = $('dashboard-hero-name');
     if (heroName) heroName.textContent = user.firstName || user.name;
     const certName = $('cert-user-name');
@@ -499,8 +488,7 @@ function renderDashboard() {
     });
 
     const pct = topics.length > 0 ? Math.round((state.completedTopics.length / topics.length) * 100) : 0;
-    const pctEl = $('progress-percent');
-    if (pctEl) pctEl.textContent = `${pct}%`;
+
     const summaryEl = $('dashboard-progress-summary');
     if (summaryEl) summaryEl.textContent = `${pct}%`;
     const completedEl = $('dashboard-modules-completed');
