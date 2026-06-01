@@ -68,6 +68,30 @@ class CourseController extends Controller
             'progressPercentage' => $snapshot['progressPercentage'],
             'modulesCompletedCount' => $snapshot['modulesCompletedCount'],
             'examStatus' => $snapshot['examStatus'],
+            'lastTopicStarted' => $user->last_topic_id,
+        ]);
+    }
+
+    public function startTopic(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $request->validate([
+            'topic_id' => 'required|integer|exists:topics,id',
+        ]);
+
+        $topicId = $request->input('topic_id');
+
+        $user->last_topic_id = $topicId;
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Topic started.',
+            'lastTopicStarted' => $topicId,
         ]);
     }
 

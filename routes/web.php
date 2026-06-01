@@ -27,6 +27,7 @@ Route::prefix('api')->group(function () {
         // Course & Progress
         Route::get('/topics', [CourseController::class, 'getTopics']);
         Route::get('/progress', [CourseController::class, 'getProgress']);
+        Route::post('/progress/start', [CourseController::class, 'startTopic']);
         Route::post('/quiz/attempt', [CourseController::class, 'submitQuiz']);
 
         // Vouchers

@@ -5,7 +5,9 @@ let state = {
     currentLessonIndex: 0,
     completedTopics: [],
     isFinalExam: false,
-    voucherCode: null
+    voucherCode: localStorage.getItem('cssm_voucher') || null,
+    courseUnlocked: localStorage.getItem('cssm_unlocked') === 'true',
+    hasBoughtVoucher: localStorage.getItem('cssm_bought_voucher') === 'true'
 };
 
 let topics = [];
@@ -188,9 +190,33 @@ const goBuyVoucher = $('go-buy-voucher');
 if (goBuyVoucher) goBuyVoucher.addEventListener('click', e => { e.preventDefault(); openBuyVoucherModal(); });
 
 const navBuyVoucher = $('buy-voucher-nav-btn');
-if (navBuyVoucher) navBuyVoucher.addEventListener('click', () => openBuyVoucherModal());
+if (navBuyVoucher) navBuyVoucher.addEventListener('click', handleVoucherBtnClick);
 const heroBuyVoucher = $('buy-voucher-hero-btn');
-if (heroBuyVoucher) heroBuyVoucher.addEventListener('click', () => openBuyVoucherModal());
+if (heroBuyVoucher) heroBuyVoucher.addEventListener('click', handleVoucherBtnClick);
+
+function handleVoucherBtnClick() {
+    if (state.hasBoughtVoucher) {
+        openModal('modal-enter-voucher');
+    } else {
+        openBuyVoucherModal();
+    }
+}
+
+function updateVoucherButtons() {
+    const btns = [$('buy-voucher-nav-btn'), $('buy-voucher-hero-btn')];
+    btns.forEach(btn => {
+        if (!btn) return;
+        if (state.courseUnlocked) {
+            btn.classList.add('hidden');
+        } else if (state.hasBoughtVoucher) {
+            btn.classList.remove('hidden');
+            btn.textContent = 'Enter Voucher';
+        } else {
+            btn.classList.remove('hidden');
+            btn.textContent = 'Buy Voucher';
+        }
+    });
+}
 
 // ─── Sign Up ─────────────────────────────────────────────
 const signupBtn = $('signup-btn');
@@ -345,7 +371,15 @@ async function loginUser(user) {
     if (heroName) heroName.textContent = user.firstName || user.name;
     const certName = $('cert-user-name');
     if (certName) certName.textContent = user.name;
+
+    const panelName = $('panel-name');
+    if (panelName) panelName.textContent = user.name || ((user.firstName || '') + ' ' + (user.lastName || '')).trim() || 'Student';
+    const panelEmail = $('panel-email');
+    if (panelEmail) panelEmail.textContent = user.email || 'N/A';
+    const panelOrg = $('panel-org');
+    if (panelOrg) panelOrg.textContent = user.affiliationName || user.affName || user.organization || 'Not specified';
     
+    updateVoucherButtons();
     closeModal();
     renderDashboard();
     showScreen('dashboard-screen');
@@ -372,6 +406,11 @@ if (buyConfirmBtn) {
                 const s2 = $('buy-step-2');
                 if (s1) s1.classList.add('hidden');
                 if (s2) s2.classList.remove('hidden');
+                
+                state.hasBoughtVoucher = true;
+                localStorage.setItem('cssm_bought_voucher', 'true');
+                updateVoucherButtons();
+                
                 showToast('Purchase successful!', 'success');
             }
         } catch (e) {}
@@ -391,22 +430,28 @@ if (redeemBtn) {
         if (!code) return showToast('Please enter a voucher code.');
 
         try {
-            // 1. Verify code
             const verify = await apiRequest('/api/voucher/verify', 'POST', { 'code': code });
             if (verify && verify.success) {
-                // 2. Redeem code
                 const redeem = await apiRequest('/api/voucher/redeem', 'POST', { 'code': code });
                 if (redeem && redeem.success) {
                     closeModal();
                     state.voucherCode = code;
-                    state.isFinalExam = true;
-
-                    // 3. Securely fetch exam questions
-                    const exam = await apiRequest('/api/exam/questions');
-                    if (exam && exam.success) {
-                        finalExam = exam.questions;
-                        startQuiz(finalExam);
-                        showToast('Voucher accepted! Starting exam...', 'success');
+                    localStorage.setItem('cssm_voucher', code);
+                    
+                    if (!state.courseUnlocked) {
+                        state.courseUnlocked = true;
+                        localStorage.setItem('cssm_unlocked', 'true');
+                        updateVoucherButtons();
+                        renderDashboard();
+                        showToast('Voucher accepted! You can now access the courses.', 'success');
+                    } else {
+                        state.isFinalExam = true;
+                        const exam = await apiRequest('/api/exam/questions');
+                        if (exam && exam.success) {
+                            finalExam = exam.questions;
+                            startQuiz(finalExam);
+                            showToast('Voucher accepted! Starting exam...', 'success');
+                        }
                     }
                 }
             }
@@ -426,14 +471,24 @@ function renderDashboard() {
     topics.forEach((topic, index) => {
         const done = state.completedTopics.includes(topic.id);
         const prevTopicId = index > 0 ? topics[index - 1].id : null;
-        const unlocked = index === 0 || (prevTopicId && state.completedTopics.includes(prevTopicId));
+        let unlocked = false;
+        let lockMsg = '';
+
+        if (!state.courseUnlocked) {
+            unlocked = false;
+            lockMsg = '<span class="topic-lock"><i data-lucide="lock"></i>Unlock courses with a voucher</span>';
+        } else {
+            unlocked = index === 0 || (prevTopicId && state.completedTopics.includes(prevTopicId));
+            lockMsg = unlocked ? '' : '<span class="topic-lock"><i data-lucide="lock"></i>Complete the previous topic to unlock</span>';
+        }
+
         const card = document.createElement('div');
         card.className = `topic-card ${done ? 'completed' : ''} ${unlocked ? '' : 'locked'}`.trim();
         card.innerHTML = `
             <p class="topic-num">Topic ${topic.id}</p>
             <h3>${topic.title}${done ? '<span class="topic-done-badge"><i data-lucide="check"></i></span>' : ''}</h3>
             <span>${topic.lessons.length} lesson${topic.lessons.length > 1 ? 's' : ''}</span>
-            ${unlocked ? '' : '<span class="topic-lock"><i data-lucide="lock"></i>Complete the previous topic to unlock</span>'}
+            ${lockMsg}
         `;
         if (unlocked) {
             card.addEventListener('click', () => openTopic(index));
@@ -449,17 +504,36 @@ function renderDashboard() {
     const completedEl = $('dashboard-modules-completed');
     if (completedEl) completedEl.textContent = `${state.completedTopics.length} / ${topics.length}`;
 
+    const resumeBtn = $('resume-module-btn');
+    if (resumeBtn) {
+        if (!state.courseUnlocked) {
+            resumeBtn.classList.add('hidden');
+        } else if (state.completedTopics.length === 0 && !state.lastTopicStarted) {
+            resumeBtn.textContent = 'Start Your First Lesson';
+            resumeBtn.classList.remove('hidden');
+        } else {
+            resumeBtn.textContent = 'Resume Module';
+            resumeBtn.classList.remove('hidden');
+        }
+    }
+
     updateFinalCard();
     if (window.lucide) lucide.createIcons();
 }
 
-const resumeCourseBtn = $('resume-course-btn');
+const resumeCourseBtn = $('resume-module-btn');
 if (resumeCourseBtn) {
     resumeCourseBtn.addEventListener('click', () => {
-        const nextIndex = topics.findIndex((topic, index) => {
-            const prevTopicId = index > 0 ? topics[index - 1].id : null;
-            return index === 0 || (prevTopicId && state.completedTopics.includes(prevTopicId));
-        });
+        let nextIndex = 0;
+        if (state.lastTopicStarted) {
+            nextIndex = topics.findIndex(t => t.id == state.lastTopicStarted);
+            if (nextIndex < 0) nextIndex = 0;
+        } else {
+            nextIndex = topics.findIndex((topic, index) => {
+                const prevTopicId = index > 0 ? topics[index - 1].id : null;
+                return index === 0 || (prevTopicId && state.completedTopics.includes(prevTopicId));
+            });
+        }
         if (nextIndex >= 0) openTopic(nextIndex);
     });
 }
@@ -479,8 +553,21 @@ function updateFinalCard() {
         if (lockEl) lockEl.classList.remove('hidden');
     } else {
         btn.className = 'topic-card final-exam-card';
-        btn.onclick = () => openModal('modal-enter-voucher');
-        if (statusEl) statusEl.textContent = 'Enter your voucher code to begin the exam.';
+        btn.onclick = async () => {
+            if (state.voucherCode) {
+                state.isFinalExam = true;
+                try {
+                    const exam = await apiRequest('/api/exam/questions');
+                    if (exam && exam.success) {
+                        finalExam = exam.questions;
+                        startQuiz(finalExam);
+                    }
+                } catch(e) {}
+            } else {
+                openModal('modal-enter-voucher');
+            }
+        };
+        if (statusEl) statusEl.textContent = 'Ready to take the final exam.';
         if (lockEl) lockEl.classList.add('hidden');
     }
 }
