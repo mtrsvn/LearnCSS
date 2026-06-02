@@ -835,7 +835,11 @@ async function finishQuiz() {
 function showCertificate(certInfo) {
     const dateEl = $('current-date');
     if (dateEl) {
-        dateEl.innerHTML = `${certInfo.issuedAt}<br><small style="opacity: 0.8; font-size: 0.85em; font-family: monospace; display: block; margin-top: 4px;">VERIFIABLE CODE: ${certInfo.code}</small>`;
+        dateEl.textContent = certInfo.issuedAt;
+    }
+    const credEl = $('cert-credential-id');
+    if (credEl) {
+        credEl.textContent = certInfo.code;
     }
     const userCertName = $('cert-user-name');
     if (userCertName) userCertName.textContent = certInfo.userName;

@@ -196,11 +196,34 @@
         </nav>
 
         <div class="hero">
-            <h1>Stop Googling<br>CSS Tricks.<br><span class="gradient-text">Actually Learn Them.</span></h1>
-            <p class="hero-desc">From selectors to the box model, from colors to typography, work through each topic, pass the quiz, and walk away with a real certification you can show off.</p>
-            <div class="hero-cta">
-                <button class="btn-primary btn-lg" id="hero-signup-btn">Start Learning</button>
-                <button class="btn-ghost btn-lg" id="hero-login-btn">I Have an Account</button>
+            <div class="hero-content">
+                <h1>Stop Googling<br>CSS Tricks.<br><span class="gradient-text">Actually Learn Them.</span></h1>
+                <p class="hero-desc">From selectors to the box model, from colors to typography, work through each topic, pass the quiz, and walk away with a real certification you can show off.</p>
+                <div class="hero-cta">
+                    <button class="btn-primary btn-lg" id="hero-signup-btn">Start Learning</button>
+                    <button class="btn-ghost btn-lg" id="hero-login-btn">I Have an Account</button>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="hero-certificate cert-light">
+                    <div class="cert-paper-logo">LearnCSS</div>
+                    <div class="cert-accent"></div>
+                    <p class="cert-eyebrow">Certificate of Completion</p>
+                    <p class="cert-desc" style="font-size: 0.75rem;">This certifies that</p>
+                    <h2 style="font-size: 1.6rem; margin: 0.3rem 0 0.8rem; color: #1e293b; font-family: 'Outfit', sans-serif; font-weight: 700;">Juan Dela Cruz</h2>
+                    <p class="cert-desc" style="font-size: 0.75rem; line-height: 1.5;">has successfully completed all courses and passed the final exam in<br><strong style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.1em;">Advanced CSS Styling &amp; Web Design</strong></p>
+                    <hr class="cert-divider" style="margin: 1.2rem 0;">
+                    <div class="cert-meta-grid">
+                        <div class="cert-meta-item">
+                            <span class="meta-label">Credential ID</span>
+                            <span class="meta-val">CSSM-8B9X-4K2P</span>
+                        </div>
+                        <div class="cert-meta-item">
+                            <span class="meta-label">Issued Date</span>
+                            <span class="meta-val">June 2, 2026</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -450,17 +473,23 @@
     <!-- ─── Certificate ───────────────────────────────── -->
     <section id="certificate-screen" class="screen">
         <div class="cert-wrap">
-            <div id="certificate" class="certificate-paper">
+            <div id="certificate" class="certificate-paper cert-light">
                 <div class="cert-paper-logo">LearnCSS</div>
                 <div class="cert-accent"></div>
                 <p class="cert-eyebrow">Certificate of Completion</p>
                 <p class="cert-desc">This certifies that</p>
-                <h2 id="cert-user-name">Name</h2>
-                <p class="cert-desc">has successfully completed all 10 topics and passed the final exam in<br><strong>Advanced CSS Styling &amp; Web Design</strong></p>
+                <h2 id="cert-user-name">Juan Dela Cruz</h2>
+                <p class="cert-desc">has successfully completed all courses and passed the final exam in<br><strong style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.15em;">Advanced CSS Styling &amp; Web Design</strong></p>
                 <hr class="cert-divider">
-                <div class="cert-footer-row">
-                    <span>CSS Mastery Program</span>
-                    <span id="current-date"></span>
+                <div class="cert-meta-grid">
+                    <div class="cert-meta-item">
+                        <span class="meta-label">Credential ID</span>
+                        <span class="meta-val" id="cert-credential-id">CSSM-XXXX-XXXX</span>
+                    </div>
+                    <div class="cert-meta-item">
+                        <span class="meta-label">Issued Date</span>
+                        <span class="meta-val" id="current-date"></span>
+                    </div>
                 </div>
             </div>
             <div class="cert-actions">
