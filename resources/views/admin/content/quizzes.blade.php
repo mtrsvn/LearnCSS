@@ -8,6 +8,10 @@
 @endsection
 
 @section('content')
+@php
+    $isAdmin = Auth::user()->is_admin || trim(strtolower(Auth::user()->role)) === 'admin';
+    $isInstructor = trim(strtolower(Auth::user()->role)) === 'instructor' && !Auth::user()->is_admin;
+@endphp
 <div class="tabs">
     <a class="tab" href="{{ route('admin.content.index') }}">Overview</a>
     <a class="tab" href="{{ route('admin.content.topics') }}">Topics and lessons</a>
@@ -102,21 +106,26 @@
                             <div class="dropdown">
                                 <button class="dropdown-trigger" type="button" onclick="toggleDropdown(this, event)">&#8942;</button>
                                 <div class="dropdown-menu">
-                                    @if($question->status === 'pending' && (Auth::user()->is_admin || trim(strtolower(Auth::user()->role)) === 'admin'))
+                                    @if($question->status === 'pending' && $isAdmin)
                                     <form action="{{ route('admin.content.quizzes.approve', $question->id) }}" method="POST" style="margin:0;">
                                         @csrf
                                         <button class="dropdown-item" type="submit" style="color: var(--correct);">Approve</button>
                                     </form>
                                     @endif
-                                    <button class="dropdown-item edit-question-btn" type="button"
-                                            data-id="{{ $question->id }}"
-                                            data-question="{{ $question->question }}"
-                                            data-topic-id="{{ $question->topic_id ?: '' }}"
-                                            data-options="{{ json_encode($question->options) }}"
-                                            data-answer="{{ $question->answer }}">
-                                        Edit Question
-                                    </button>
-                                    <hr class="dropdown-divider">
+                                    
+                                    @if(!($isAdmin && $question->status === 'pending'))
+                                        <button class="dropdown-item edit-question-btn" type="button"
+                                                data-id="{{ $question->id }}"
+                                                data-question="{{ $question->question }}"
+                                                data-topic-id="{{ $question->topic_id ?: '' }}"
+                                                data-options="{{ json_encode($question->options) }}"
+                                                data-answer="{{ $question->answer }}"
+                                                {{ ($isInstructor && $question->status === 'pending') ? 'disabled' : '' }}
+                                                style="{{ ($isInstructor && $question->status === 'pending') ? 'opacity: 0.5; cursor: not-allowed;' : '' }}">
+                                            Edit Question
+                                        </button>
+                                        <hr class="dropdown-divider">
+                                    @endif
                                     <form action="{{ route('admin.content.quizzes.destroy', $question->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this question?');" style="margin:0;">
                                         @csrf
                                         @method('DELETE')

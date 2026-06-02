@@ -8,6 +8,10 @@
 @endsection
 
 @section('content')
+@php
+    $isAdmin = Auth::user()->is_admin || trim(strtolower(Auth::user()->role)) === 'admin';
+    $isInstructor = trim(strtolower(Auth::user()->role)) === 'instructor' && !Auth::user()->is_admin;
+@endphp
 <style>
     input[type="file"] {
         display: flex;
@@ -76,24 +80,30 @@
                             </td>
                             <td style="vertical-align: middle;">
                                 <div class="actions" style="display: flex; gap: 0.5rem; justify-content: flex-start;">
-                                    @if($topic->status === 'pending' && (Auth::user()->is_admin || trim(strtolower(Auth::user()->role)) === 'admin'))
+                                    @if($topic->status === 'pending' && $isAdmin)
                                     <form action="{{ route('admin.content.topics.approve', $topic->id) }}" method="POST" style="margin:0;">
                                         @csrf
                                         <button class="btn-primary" type="submit" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; background: var(--correct); border-color: var(--correct);">Approve</button>
                                     </form>
                                     @endif
-                                    <button class="btn-ghost edit-topic-btn" type="button" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;"
-                                            data-id="{{ $topic->id }}" 
-                                            data-title="{{ $topic->title }}" 
-                                            data-order="{{ $topic->sort_order }}">
-                                        Edit Topic
-                                    </button>
-                                    <button class="btn-primary edit-lessons-btn" type="button" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;"
-                                            data-id="{{ $topic->id }}"
-                                            data-title="{{ $topic->title }}"
-                                            data-lessons="{{ json_encode($topic->lessons) }}">
-                                        Manage Lessons
-                                    </button>
+                                    
+                                    @if(!($isAdmin && $topic->status === 'pending'))
+                                        <button class="btn-ghost edit-topic-btn" type="button" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; {{ ($isInstructor && $topic->status === 'pending') ? 'opacity: 0.5; cursor: not-allowed;' : '' }}"
+                                                data-id="{{ $topic->id }}" 
+                                                data-title="{{ $topic->title }}" 
+                                                data-order="{{ $topic->sort_order }}"
+                                                {{ ($isInstructor && $topic->status === 'pending') ? 'disabled' : '' }}>
+                                            Edit Topic
+                                        </button>
+                                        <button class="btn-primary edit-lessons-btn" type="button" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; {{ ($isInstructor && $topic->status === 'pending') ? 'opacity: 0.5; cursor: not-allowed;' : '' }}"
+                                                data-id="{{ $topic->id }}"
+                                                data-title="{{ $topic->title }}"
+                                                data-lessons="{{ json_encode($topic->lessons) }}"
+                                                {{ ($isInstructor && $topic->status === 'pending') ? 'disabled' : '' }}>
+                                            Manage Lessons
+                                        </button>
+                                    @endif
+
                                     <form action="{{ route('admin.content.topics.destroy', $topic->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this topic and all its lessons/quizzes?');" style="margin:0;">
                                         @csrf
                                         @method('DELETE')
@@ -345,7 +355,9 @@
                     cellActions.style.gap = '0.4rem';
                     cellActions.style.alignItems = 'center';
                     
-                    const isAdmin = {{ (Auth::user()->is_admin || trim(strtolower(Auth::user()->role)) === 'admin') ? 'true' : 'false' }};
+                    const isAdmin = {{ $isAdmin ? 'true' : 'false' }};
+                    const isInstructor = {{ $isInstructor ? 'true' : 'false' }};
+                    
                     if (l.status === 'pending' && isAdmin) {
                         const approveForm = document.createElement('form');
                         approveForm.action = `/admin/content/lessons/${l.id}/approve`;
@@ -358,37 +370,45 @@
                         cellActions.appendChild(approveForm);
                     }
                     
-                    const editBtn = document.createElement('button');
-                    editBtn.className = 'btn-ghost';
-                    editBtn.type = 'button';
-                    editBtn.style.padding = '0.3rem 0.7rem';
-                    editBtn.style.fontSize = '0.8rem';
-                    editBtn.style.fontWeight = '500';
-                    editBtn.style.border = '1px solid var(--border)';
-                    editBtn.style.background = 'var(--surface-solid)';
-                    editBtn.style.borderRadius = '6px';
-                    editBtn.textContent = 'Edit';
-                    editBtn.addEventListener('click', () => {
-                        // Enter Edit Lesson Mode
-                        document.getElementById('lessonFormTitle').textContent = `Edit Lesson: ${l.title}`;
-                        document.getElementById('lesson_title').value = l.title;
-                        document.getElementById('lesson_sort_order').value = l.sort_order;
-                        document.getElementById('lesson_video_url').value = l.video_url;
-                        document.getElementById('lesson_notes').value = l.notes || '';
-                        
-                        if (l.documentation_filename) {
-                            document.getElementById('current_documentation_info').style.display = 'flex';
-                            document.getElementById('current_doc_filename').textContent = l.documentation_filename;
+                    if (!(isAdmin && l.status === 'pending')) {
+                        const editBtn = document.createElement('button');
+                        editBtn.className = 'btn-ghost';
+                        editBtn.type = 'button';
+                        editBtn.style.padding = '0.3rem 0.7rem';
+                        editBtn.style.fontSize = '0.8rem';
+                        editBtn.style.fontWeight = '500';
+                        editBtn.style.border = '1px solid var(--border)';
+                        editBtn.style.background = 'var(--surface-solid)';
+                        editBtn.style.borderRadius = '6px';
+                        editBtn.textContent = 'Edit';
+                        if (isInstructor && l.status === 'pending') {
+                            editBtn.disabled = true;
+                            editBtn.style.opacity = '0.5';
+                            editBtn.style.cursor = 'not-allowed';
                         } else {
-                            document.getElementById('current_documentation_info').style.display = 'none';
+                            editBtn.addEventListener('click', () => {
+                                document.getElementById('lessonFormTitle').textContent = `Edit Lesson: ${l.title}`;
+                                document.getElementById('lesson_title').value = l.title;
+                                document.getElementById('lesson_sort_order').value = l.sort_order;
+                                document.getElementById('lesson_video_url').value = l.video_url;
+                                document.getElementById('lesson_notes').value = l.notes || '';
+                                
+                                if (l.documentation_filename) {
+                                    document.getElementById('current_documentation_info').style.display = 'flex';
+                                    document.getElementById('current_doc_filename').textContent = l.documentation_filename;
+                                } else {
+                                    document.getElementById('current_documentation_info').style.display = 'none';
+                                }
+                                
+                                document.getElementById('lessonForm').action = `/admin/content/lessons/${l.id}`;
+                                document.getElementById('lesson_method').value = 'POST';
+                                
+                                document.getElementById('saveLessonBtn').textContent = 'Save Lesson Changes';
+                                document.getElementById('cancelLessonEditBtn').style.display = 'inline-flex';
+                            });
                         }
-                        
-                        document.getElementById('lessonForm').action = `/admin/content/lessons/${l.id}`;
-                        document.getElementById('lesson_method').value = 'POST'; // We can post to Laravel route
-                        
-                        document.getElementById('saveLessonBtn').textContent = 'Save Lesson Changes';
-                        document.getElementById('cancelLessonEditBtn').style.display = 'inline-flex';
-                    });
+                        cellActions.appendChild(editBtn);
+                    }
 
                     const deleteForm = document.createElement('form');
                     deleteForm.action = `/admin/content/lessons/${l.id}`;
@@ -402,7 +422,6 @@
                         <button class="btn btn-danger" type="submit" style="padding: 0.3rem 0.7rem; font-size: 0.8rem; font-weight: 500; min-height: auto; border-radius: 6px; background: var(--wrong); color: #fff; border: 1px solid var(--wrong); cursor: pointer; transition: all 0.2s;">Delete</button>
                     `;
                     
-                    cellActions.appendChild(editBtn);
                     cellActions.appendChild(deleteForm);
                     
                     row.appendChild(cellDrag);

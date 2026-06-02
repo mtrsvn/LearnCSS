@@ -1,12 +1,21 @@
 @php
     $pageTitle = trim($__env->yieldContent('title')) ?: 'Admin';
+    $isAdmin = Auth::user()->is_admin || trim(strtolower(Auth::user()->role)) === 'admin';
+    
+    $pendingContentCount = 0;
+    if ($isAdmin) {
+        $pendingContentCount = \App\Models\Topic::where('status', 'pending')->count() 
+                             + \App\Models\Lesson::where('status', 'pending')->count() 
+                             + \App\Models\QuizQuestion::where('status', 'pending')->count();
+    }
+
     $navItems = [
         ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'active' => 'admin.dashboard', 'icon' => 'layout-dashboard'],
         ['label' => 'Users', 'route' => 'admin.users.index', 'active' => 'admin.users.*', 'icon' => 'users'],
-        ['label' => 'Content', 'route' => 'admin.content.index', 'active' => 'admin.content.*', 'icon' => 'book-open'],
+        ['label' => 'Content', 'route' => 'admin.content.index', 'active' => 'admin.content.*', 'icon' => 'book-open', 'badge' => $pendingContentCount > 0 ? $pendingContentCount : null],
     ];
     
-    if (Auth::user()->is_admin || Auth::user()->role === 'admin') {
+    if ($isAdmin) {
         $navItems[] = ['label' => 'Vouchers', 'route' => 'admin.vouchers.index', 'active' => 'admin.vouchers.*', 'icon' => 'ticket'];
         $navItems[] = ['label' => 'Certificates', 'route' => 'admin.certificates.index', 'active' => 'admin.certificates.*', 'icon' => 'award'];
     }
@@ -150,7 +159,10 @@
                 @foreach ($navItems as $item)
                     <a class="nav-link {{ request()->routeIs($item['active']) ? 'active' : '' }}" href="{{ route($item['route']) }}">
                         <i data-lucide="{{ $item['icon'] }}" style="width: 18px; height: 18px; opacity: 0.9;"></i>
-                        <span>{{ $item['label'] }}</span>
+                        <span style="flex-grow: 1;">{{ $item['label'] }}</span>
+                        @if(isset($item['badge']) && $item['badge'])
+                            <span style="background: var(--wrong); color: #fff; font-size: 0.65rem; padding: 0.15rem 0.45rem; border-radius: 99px; font-weight: 700; box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);">{{ $item['badge'] }}</span>
+                        @endif
                     </a>
                 @endforeach
             </nav>
