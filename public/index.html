@@ -509,13 +509,18 @@
                     <button onclick="shareOnLinkedIn()" class="btn-ghost">Share on LinkedIn</button>
                     <button onclick="downloadCertificate()" class="btn-ghost">Download Image</button>
                 </div>
-                
-                <div class="linkedin-instructions" style="cursor: pointer; display: inline-block;" onclick="document.getElementById('linkedin-modal').classList.remove('hidden')">
-                    <h3>How to add the certification to a LinkedIn profile</h3>
-                </div>
-                
-                <div class="cert-nav-back" style="text-align: left; margin-top: 1rem;">
-                    <button onclick="showScreen('dashboard-screen')" class="btn-ghost" style="border:none; padding: 0;">Back to Dashboard</button>
+                <div style="margin-top: auto; display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div class="linkedin-instructions" style="cursor: pointer; display: inline-block;" onclick="document.getElementById('linkedin-modal').classList.remove('hidden')">
+                        <h3 style="margin: 0;">How to add the certification to a LinkedIn profile</h3>
+                    </div>
+                    
+                    <div class="cert-extra-info" style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.6;">
+                        This official credential verifies your CSS mastery. Add it to your resume to showcase your newly acquired skills to potential employers.
+                    </div>
+                    
+                    <div class="cert-nav-back" style="text-align: left; margin-top: 0;">
+                        <button onclick="showScreen('dashboard-screen')" class="btn-ghost" style="border:none; padding: 0;">Back to Dashboard</button>
+                    </div>
                 </div>
             </div>
         </div>
