@@ -582,7 +582,18 @@ function updateFinalCard() {
 
     if (state.hasCertificate) {
         btn.className = 'topic-card completed final-exam-card';
-        btn.onclick = async () => {
+        btn.innerHTML = `
+            <p class="topic-num">Final Exam</p>
+            <h3>Final Certification Exam <span class="topic-done-badge"><i data-lucide="check"></i></span></h3>
+            <span id="final-card-status" style="display: block; margin-bottom: 1rem;">You have successfully passed the final exam.</span>
+            <div style="display: flex; gap: 0.5rem;">
+                <button id="view-cert-btn" class="btn-primary" style="flex: 1; font-size: 0.85rem; padding: 0.6rem;">View Certificate</button>
+                <button id="retake-exam-btn" class="btn-ghost" style="flex: 1; font-size: 0.85rem; padding: 0.6rem; border: 1px solid var(--border);">Retake</button>
+            </div>
+        `;
+        
+        $('view-cert-btn').onclick = async (e) => {
+            e.stopPropagation();
             try {
                 const res = await apiRequest('/api/certificate');
                 if (res && res.success && res.certificate) {
@@ -590,11 +601,21 @@ function updateFinalCard() {
                 }
             } catch(e) {}
         };
-        if (statusEl) statusEl.textContent = 'You have successfully passed the final exam.';
-        if (lockEl) lockEl.classList.add('hidden');
-        if (h3El && !h3El.innerHTML.includes('topic-done-badge')) {
-            h3El.innerHTML += '<span class="topic-done-badge"><i data-lucide="check"></i></span>';
-        }
+        
+        $('retake-exam-btn').onclick = async (e) => {
+            e.stopPropagation();
+            state.isFinalExam = true;
+            try {
+                const exam = await apiRequest('/api/exam/questions');
+                if (exam && exam.success) {
+                    finalExam = exam.questions;
+                    startQuiz(finalExam);
+                }
+            } catch(e) {}
+        };
+        
+        btn.onclick = null;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     } else if (!allDone) {
         btn.className = 'topic-card locked final-exam-card';
         btn.onclick = null;
@@ -749,11 +770,44 @@ if (takeQuizBtn) {
 
 // ─── Quiz ─────────────────────────────────────────────────
 let quizData = [], qIndex = 0, score = 0, selected = null, answersList = [];
+let quizTimerInterval = null;
+let quizTimerSeconds = 1200;
+
+function formatTime(sec) {
+    const m = Math.floor(sec / 60).toString().padStart(2, '0');
+    const s = (sec % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+}
 
 function startQuiz(data) {
     quizData = data; qIndex = 0; score = 0; answersList = [];
     const totalQEl = $('total-q');
     if (totalQEl) totalQEl.textContent = data.length;
+    
+    clearInterval(quizTimerInterval);
+    const timerEl = $('quiz-timer');
+    if (state.isFinalExam) {
+        quizTimerSeconds = 1200;
+        timerEl.textContent = formatTime(quizTimerSeconds);
+        timerEl.classList.remove('hidden');
+        
+        quizTimerInterval = setInterval(() => {
+            quizTimerSeconds--;
+            timerEl.textContent = formatTime(quizTimerSeconds);
+            if (quizTimerSeconds <= 0) {
+                clearInterval(quizTimerInterval);
+                showToast('Time is up! Submitting exam...', 'info');
+                // Auto submit with empty answers for remaining
+                while (answersList.length < quizData.length) {
+                    answersList.push(null);
+                }
+                finishQuiz();
+            }
+        }, 1000);
+    } else {
+        timerEl.classList.add('hidden');
+    }
+    
     renderQuestion();
     showScreen('quiz-screen');
 }
@@ -819,6 +873,8 @@ if (nextQBtn) {
 }
 
 async function finishQuiz() {
+    clearInterval(quizTimerInterval);
+    
     if (state.isFinalExam) {
         try {
             const data = await apiRequest('/api/exam/submit', 'POST', {
@@ -828,8 +884,13 @@ async function finishQuiz() {
 
             if (data && data.success) {
                 if (data.passed) {
+                    if (state.hasCertificate) {
+                        showToast('Congratulations! You passed the final exam again!', 'success');
+                    } else {
+                        showToast('Congratulations! You passed the final exam.', 'success');
+                        state.hasCertificate = true;
+                    }
                     showCertificate(data.certificate);
-                    showToast('Congratulations! You passed the final exam.', 'success');
                 } else {
                     showToast(`You scored ${data.score}/${data.total}. A perfect score is required.`, 'error');
                     renderDashboard();

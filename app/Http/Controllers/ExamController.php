@@ -15,7 +15,8 @@ class ExamController extends Controller
 {
     public function getQuestions()
     {
-        $questions = QuizQuestion::whereNull('topic_id')->where('status', 'approved')->get();
+        // Fetch all approved questions (from all topics) for the comprehensive final exam.
+        $questions = QuizQuestion::where('status', 'approved')->orderBy('id')->get();
 
         $formatted = $questions->map(function ($q) {
             return [
@@ -62,7 +63,7 @@ class ExamController extends Controller
             ], 400);
         }
 
-        $questions = QuizQuestion::whereNull('topic_id')->where('status', 'approved')->get();
+        $questions = QuizQuestion::where('status', 'approved')->orderBy('id')->get();
         $score = 0;
         $total = count($questions);
 
@@ -97,9 +98,7 @@ class ExamController extends Controller
 
         $certificate = null;
         if ($passed) {
-            // Generate verified certificate code
             $year = date('Y');
-            // count total certificates + 1 for serial
             $serial = str_pad(Certificate::count() + 1, 4, '0', STR_PAD_LEFT);
             $certCode = 'LC-CERT-' . $year . '-' . $serial;
 
@@ -110,12 +109,15 @@ class ExamController extends Controller
                 'issued_at' => Carbon::now()
             ]);
 
-            AuditLog::create([
-                'user_id' => $user->id,
-                'action' => 'Certificate Issued',
-                'description' => 'Issued certificate ' . $certCode . ' for completing the CSS Certification Program.',
-                'ip_address' => $request->ip()
-            ]);
+            // Only log if it was recently created
+            if ($certificate->wasRecentlyCreated) {
+                AuditLog::create([
+                    'user_id' => $user->id,
+                    'action' => 'Certificate Issued',
+                    'description' => 'Issued certificate ' . $certCode . ' for completing the CSS Certification Program.',
+                    'ip_address' => $request->ip()
+                ]);
+            }
         }
 
         return response()->json([

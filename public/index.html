@@ -463,7 +463,10 @@
     <!-- ─── Quiz ─────────────────────────────────────── -->
     <section id="quiz-screen" class="screen">
         <div class="quiz-box">
-            <p class="quiz-meta">Question <span id="current-q">1</span> / <span id="total-q">2</span></p>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <p class="quiz-meta" style="margin-bottom: 0;">Question <span id="current-q">1</span> / <span id="total-q">2</span></p>
+                <div id="quiz-timer" class="hidden" style="font-size: 1rem; font-family: monospace; font-weight: bold; color: var(--danger); background: #fee2e2; padding: 0.2rem 0.6rem; border-radius: 4px;">20:00</div>
+            </div>
             <div class="quiz-progress"><div class="quiz-progress-bar" id="quiz-progress-bar" style="width:0%"></div></div>
             <h3 id="question-text">Question</h3>
             <div class="options-list" id="options-container"></div>
