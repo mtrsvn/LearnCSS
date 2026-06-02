@@ -4,7 +4,6 @@
 @section('kicker', 'Content Management')
 
 @section('header_actions')
-    <a class="btn btn-muted" href="{{ route('admin.content.index') }}">Content overview</a>
     <button class="btn btn-primary" type="button" onclick="openAddTopicModal()">Add topic</button>
 @endsection
 
@@ -53,12 +52,20 @@
         </div>
         <div class="table-wrap">
             <table class="data-table">
-                <thead><tr><th>Order</th><th>Topic</th><th>Lessons</th><th>Primary video</th><th>Actions</th></tr></thead>
-                <tbody>
+                <thead><tr><th style="width: 30px;"></th><th>Order</th><th>Topic</th><th>Status</th><th>Lessons</th><th>Primary video</th><th>Actions</th></tr></thead>
+                <tbody id="topicsTableBody">
                     @forelse ($topics as $topic)
-                        <tr>
-                            <td style="vertical-align: middle;">{{ $topic->sort_order }}</td>
+                        <tr data-id="{{ $topic->id }}">
+                            <td style="vertical-align: middle;"><i data-lucide="grip-vertical" class="drag-handle" style="cursor: grab; color: var(--text-muted); width: 18px; opacity: 0.5;"></i></td>
+                            <td class="sort-order-cell" style="vertical-align: middle;">{{ $topic->sort_order }}</td>
                             <td style="vertical-align: middle;"><strong>{{ $topic->title }}</strong></td>
+                            <td style="vertical-align: middle;">
+                                @if($topic->status === 'approved')
+                                    <span class="status success">Approved</span>
+                                @else
+                                    <span class="status warning">Pending</span>
+                                @endif
+                            </td>
                             <td style="vertical-align: middle;">{{ $topic->lessons->count() }} lessons</td>
                             <td style="vertical-align: middle;">
                                 @if ($topic->lessons->first())
@@ -69,6 +76,12 @@
                             </td>
                             <td style="vertical-align: middle;">
                                 <div class="actions" style="display: flex; gap: 0.5rem; justify-content: flex-start;">
+                                    @if($topic->status === 'pending' && (Auth::user()->is_admin || trim(strtolower(Auth::user()->role)) === 'admin'))
+                                    <form action="{{ route('admin.content.topics.approve', $topic->id) }}" method="POST" style="margin:0;">
+                                        @csrf
+                                        <button class="btn-primary" type="submit" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; background: var(--correct); border-color: var(--correct);">Approve</button>
+                                    </form>
+                                    @endif
                                     <button class="btn-ghost edit-topic-btn" type="button" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;"
                                             data-id="{{ $topic->id }}" 
                                             data-title="{{ $topic->title }}" 
@@ -190,8 +203,10 @@
                 <table class="data-table" style="min-width: 100%;">
                     <thead>
                         <tr>
+                            <th style="width: 30px;"></th>
                             <th>Order</th>
                             <th>Lesson Title</th>
+                            <th>Status</th>
                             <th>Video URL</th>
                             <th>Actions</th>
                         </tr>
@@ -302,12 +317,24 @@
             } else {
                 lessons.forEach(l => {
                     const row = document.createElement('tr');
+                    row.dataset.id = l.id;
+                    
+                    const cellDrag = document.createElement('td');
+                    cellDrag.innerHTML = '<i data-lucide="grip-vertical" class="drag-handle" style="cursor: grab; color: var(--text-muted); width: 18px; opacity: 0.5;"></i>';
                     
                     const cellOrder = document.createElement('td');
+                    cellOrder.className = 'sort-order-cell';
                     cellOrder.textContent = l.sort_order;
                     
                     const cellTitle = document.createElement('td');
                     cellTitle.innerHTML = `<strong>${l.title}</strong>`;
+                    
+                    const cellStatus = document.createElement('td');
+                    if (l.status === 'approved') {
+                        cellStatus.innerHTML = '<span class="status success">Approved</span>';
+                    } else {
+                        cellStatus.innerHTML = '<span class="status warning">Pending</span>';
+                    }
                     
                     const cellVideo = document.createElement('td');
                     cellVideo.innerHTML = `<code style="font-size: 11px;">${l.video_url}</code>`;
@@ -317,6 +344,19 @@
                     cellActions.style.display = 'flex';
                     cellActions.style.gap = '0.4rem';
                     cellActions.style.alignItems = 'center';
+                    
+                    const isAdmin = {{ (Auth::user()->is_admin || trim(strtolower(Auth::user()->role)) === 'admin') ? 'true' : 'false' }};
+                    if (l.status === 'pending' && isAdmin) {
+                        const approveForm = document.createElement('form');
+                        approveForm.action = `/admin/content/lessons/${l.id}/approve`;
+                        approveForm.method = 'POST';
+                        approveForm.style.margin = '0';
+                        approveForm.innerHTML = `
+                            <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}'}">
+                            <button class="btn-primary" type="submit" style="padding: 0.3rem 0.7rem; font-size: 0.8rem; background: var(--correct); border-color: var(--correct);">Approve</button>
+                        `;
+                        cellActions.appendChild(approveForm);
+                    }
                     
                     const editBtn = document.createElement('button');
                     editBtn.className = 'btn-ghost';
@@ -365,13 +405,19 @@
                     cellActions.appendChild(editBtn);
                     cellActions.appendChild(deleteForm);
                     
+                    row.appendChild(cellDrag);
                     row.appendChild(cellOrder);
                     row.appendChild(cellTitle);
+                    row.appendChild(cellStatus);
                     row.appendChild(cellVideo);
                     row.appendChild(cellActions);
                     
                     tbody.appendChild(row);
                 });
+            }
+
+            if (window.lucide) {
+                lucide.createIcons();
             }
 
             openModal('manageLessonsModal');
@@ -393,5 +439,75 @@
         document.getElementById('saveLessonBtn').textContent = 'Add Lesson';
         document.getElementById('cancelLessonEditBtn').style.display = 'none';
     }
+
+    // SortableJS initialization
+    document.addEventListener('DOMContentLoaded', function() {
+        const csrfToken = '{{ csrf_token() }}';
+
+        // Topics Sortable
+        const topicsTbody = document.getElementById('topicsTableBody');
+        if (topicsTbody) {
+            new Sortable(topicsTbody, {
+                handle: '.drag-handle',
+                animation: 150,
+                onEnd: function (evt) {
+                    const orderedIds = Array.from(topicsTbody.children).map(tr => tr.dataset.id);
+                    
+                    // Update UI order text immediately
+                    Array.from(topicsTbody.children).forEach((tr, index) => {
+                        tr.querySelector('.sort-order-cell').textContent = index + 1;
+                    });
+
+                    fetch('{{ route("admin.content.topics.reorder") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken
+                        },
+                        body: JSON.stringify({ ordered_ids: orderedIds })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if(data.success) {
+                            console.log('Topics reordered successfully');
+                        }
+                    });
+                }
+            });
+        }
+
+        // Lessons Sortable
+        const lessonsTbody = document.getElementById('lessonsTableBody');
+        if (lessonsTbody) {
+            new Sortable(lessonsTbody, {
+                handle: '.drag-handle',
+                animation: 150,
+                onEnd: function (evt) {
+                    const orderedIds = Array.from(lessonsTbody.children).map(tr => tr.dataset.id);
+                    
+                    // Update UI order text immediately
+                    Array.from(lessonsTbody.children).forEach((tr, index) => {
+                        tr.querySelector('.sort-order-cell').textContent = index + 1;
+                    });
+
+                    fetch('{{ route("admin.content.lessons.reorder") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken
+                        },
+                        body: JSON.stringify({ ordered_ids: orderedIds })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if(data.success) {
+                            console.log('Lessons reordered successfully');
+                        }
+                    });
+                }
+            });
+        }
+    });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 @endsection

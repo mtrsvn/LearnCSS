@@ -9,7 +9,7 @@ class QuizQuestion extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['topic_id', 'question', 'options', 'answer'];
+    protected $fillable = ['topic_id', 'question', 'options', 'answer', 'status'];
 
     protected function casts(): array
     {

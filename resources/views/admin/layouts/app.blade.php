@@ -4,9 +4,12 @@
         ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'active' => 'admin.dashboard', 'icon' => 'layout-dashboard'],
         ['label' => 'Users', 'route' => 'admin.users.index', 'active' => 'admin.users.*', 'icon' => 'users'],
         ['label' => 'Content', 'route' => 'admin.content.index', 'active' => 'admin.content.*', 'icon' => 'book-open'],
-        ['label' => 'Vouchers', 'route' => 'admin.vouchers.index', 'active' => 'admin.vouchers.*', 'icon' => 'ticket'],
-        ['label' => 'Certificates', 'route' => 'admin.certificates.index', 'active' => 'admin.certificates.*', 'icon' => 'award'],
     ];
+    
+    if (Auth::user()->is_admin || Auth::user()->role === 'admin') {
+        $navItems[] = ['label' => 'Vouchers', 'route' => 'admin.vouchers.index', 'active' => 'admin.vouchers.*', 'icon' => 'ticket'];
+        $navItems[] = ['label' => 'Certificates', 'route' => 'admin.certificates.index', 'active' => 'admin.certificates.*', 'icon' => 'award'];
+    }
 @endphp
 <!DOCTYPE html>
 <html lang="en">

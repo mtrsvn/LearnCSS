@@ -15,7 +15,7 @@ class ExamController extends Controller
 {
     public function getQuestions()
     {
-        $questions = QuizQuestion::whereNull('topic_id')->get();
+        $questions = QuizQuestion::whereNull('topic_id')->where('status', 'approved')->get();
 
         $formatted = $questions->map(function ($q) {
             return [
@@ -62,7 +62,7 @@ class ExamController extends Controller
             ], 400);
         }
 
-        $questions = QuizQuestion::whereNull('topic_id')->get();
+        $questions = QuizQuestion::whereNull('topic_id')->where('status', 'approved')->get();
         $score = 0;
         $total = count($questions);
 

@@ -67,14 +67,18 @@
                         <td style="color: var(--text-muted);">{{ $user['email'] }}</td>
                         <td>{{ $user['affiliation'] }}</td>
                         <td>
-                            <form action="{{ route('admin.users.role', $user['id']) }}" method="POST" class="role-form ajax-role-form">
-                                @csrf
-                                <select name="role" class="role-select" data-original="{{ strtolower($user['role']) }}">
-                                    <option value="student" {{ strtolower($user['role']) === 'student' ? 'selected' : '' }} style="color: #000;">Student</option>
-                                    <option value="instructor" {{ strtolower($user['role']) === 'instructor' ? 'selected' : '' }} style="color: #000;">Instructor</option>
-                                    <option value="admin" {{ strtolower($user['role']) === 'admin' ? 'selected' : '' }} style="color: #000;">Admin</option>
-                                </select>
-                            </form>
+                            @if(Auth::user()->is_admin || trim(strtolower(Auth::user()->role)) === 'admin')
+                                <form action="{{ route('admin.users.role', $user['id']) }}" method="POST" class="role-form ajax-role-form">
+                                    @csrf
+                                    <select name="role" class="role-select" data-original="{{ strtolower($user['role']) }}">
+                                        <option value="student" {{ strtolower($user['role']) === 'student' ? 'selected' : '' }} style="color: #000;">Student</option>
+                                        <option value="instructor" {{ strtolower($user['role']) === 'instructor' ? 'selected' : '' }} style="color: #000;">Instructor</option>
+                                        <option value="admin" {{ strtolower($user['role']) === 'admin' ? 'selected' : '' }} style="color: #000;">Admin</option>
+                                    </select>
+                                </form>
+                            @else
+                                {{ ucfirst($user['role']) }}
+                            @endif
                         </td>
                         <td style="text-align: right;">
                             <div class="actions">

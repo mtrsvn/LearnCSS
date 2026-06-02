@@ -14,7 +14,9 @@ class CourseController extends Controller
 {
     public function getTopics()
     {
-        $topics = Topic::with(['lessons'])->orderBy('sort_order')->get();
+        $topics = Topic::with(['lessons' => function($q) {
+            $q->where('status', 'approved');
+        }])->where('status', 'approved')->orderBy('sort_order')->get();
 
         // Map database format to matches what frontend expects:
         $formattedTopics = $topics->map(function ($topic) {
@@ -32,7 +34,7 @@ class CourseController extends Controller
                 }),
                 // We'll lazy-load quizzes on demand or keep them embedded.
                 // Keeping them embedded matches index.html/script.js expectation!
-                'quiz' => $topic->quizQuestions()->get()->map(function ($q) {
+                'quiz' => $topic->quizQuestions()->where('status', 'approved')->get()->map(function ($q) {
                     return [
                         'question' => $q->question,
                         'options' => $q->options,
@@ -164,7 +166,7 @@ class CourseController extends Controller
 
     private function updateUserProgressSnapshot(int $userId, int $completedCount): array
     {
-        $totalTopics = Topic::count();
+        $totalTopics = Topic::where('status', 'approved')->count();
         $progressPercentage = $totalTopics > 0
             ? (int) round(($completedCount / $totalTopics) * 100)
             : 0;

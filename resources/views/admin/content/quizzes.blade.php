@@ -4,7 +4,6 @@
 @section('kicker', 'Assessment Management')
 
 @section('header_actions')
-    <a class="btn btn-muted" href="{{ route('admin.content.index') }}">Content overview</a>
     <button class="btn btn-primary" type="button" onclick="openAddQuestionModal()">Add question</button>
 @endsection
 
@@ -69,6 +68,7 @@
                     <th>Question</th>
                     <th>Correct Option Answer</th>
                     <th>Scope</th>
+                    <th>Status</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -92,9 +92,22 @@
                             @endif
                         </td>
                         <td style="vertical-align: middle;">
+                            @if($question->status === 'approved')
+                                <span class="status success">Approved</span>
+                            @else
+                                <span class="status warning">Pending</span>
+                            @endif
+                        </td>
+                        <td style="vertical-align: middle;">
                             <div class="dropdown">
                                 <button class="dropdown-trigger" type="button" onclick="toggleDropdown(this, event)">&#8942;</button>
                                 <div class="dropdown-menu">
+                                    @if($question->status === 'pending' && (Auth::user()->is_admin || trim(strtolower(Auth::user()->role)) === 'admin'))
+                                    <form action="{{ route('admin.content.quizzes.approve', $question->id) }}" method="POST" style="margin:0;">
+                                        @csrf
+                                        <button class="dropdown-item" type="submit" style="color: var(--correct);">Approve</button>
+                                    </form>
+                                    @endif
                                     <button class="dropdown-item edit-question-btn" type="button"
                                             data-id="{{ $question->id }}"
                                             data-question="{{ $question->question }}"

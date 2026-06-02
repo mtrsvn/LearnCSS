@@ -22,7 +22,7 @@ class AdminController extends Controller
     // ─── AUTHENTICATION ──────────────────────────────────────────
     public function showLogin()
     {
-        if (Auth::check() && (Auth::user()->is_admin || Auth::user()->role === 'admin')) {
+        if (Auth::check() && (Auth::user()->is_admin || in_array(trim(strtolower(Auth::user()->role)), ['admin', 'instructor']))) {
             return redirect()->route('admin.dashboard');
         }
         return view('admin.auth.login');
@@ -39,17 +39,17 @@ class AdminController extends Controller
 
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
-            if ($user->is_admin || $user->role === 'admin') {
+            if ($user->is_admin || in_array(trim(strtolower($user->role)), ['admin', 'instructor'])) {
                 AuditLog::create([
                     'user_id' => $user->id,
                     'action' => 'Admin Login',
-                    'description' => 'Administrator logged into the dashboard.',
+                    'description' => ucfirst($user->role ?: 'Administrator') . ' logged into the dashboard.',
                     'ip_address' => $request->ip()
                 ]);
                 return redirect()->intended(route('admin.dashboard'));
             } else {
                 Auth::logout();
-                return back()->withErrors(['email' => 'Unauthorized access. You are not an administrator.']);
+                return back()->withErrors(['email' => 'Unauthorized access. You are not an administrator or instructor.']);
             }
         }
 
@@ -97,13 +97,22 @@ class AdminController extends Controller
             ['label' => 'Completed topics', 'value' => number_format($completedTopics), 'note' => 'Across all learners'],
             ['label' => 'Quiz attempts', 'value' => number_format($quizAttempts), 'note' => 'Topic quiz submissions'],
             ['label' => 'Final exam attempts', 'value' => number_format($finalExamAttempts), 'note' => QuizAttempt::whereNull('topic_id')->where('passed', false)->count() . ' pending retakes'],
-            ['label' => 'Certificates issued', 'value' => number_format($certificatesIssued), 'note' => 'Verified completions'],
-            ['label' => 'Vouchers sold', 'value' => number_format($vouchersSold), 'note' => Voucher::where('used', true)->count() . ' already used'],
-            ['label' => 'Voucher revenue', 'value' => 'PHP ' . number_format($revenue, 2), 'note' => 'Lifetime earnings'],
+            ['label' => 'Certificates issued', 'value' => number_format($certificatesIssued), 'note' => 'Verified completions']
         ];
 
+        if (Auth::user()->is_admin || trim(strtolower(Auth::user()->role)) === 'admin') {
+            $stats[] = ['label' => 'Vouchers sold', 'value' => number_format($vouchersSold), 'note' => Voucher::where('used', true)->count() . ' already used'];
+            $stats[] = ['label' => 'Voucher revenue', 'value' => 'PHP ' . number_format($revenue, 2), 'note' => 'Lifetime earnings'];
+        }
+
         // Recent Users for Dashboard
-        $recentUsers = User::orderBy('created_at', 'desc')->paginate(10, ['*'], 'dashboard_page');
+        $recentUsersQuery = User::query();
+        if (trim(strtolower(Auth::user()->role)) === 'instructor' && !Auth::user()->is_admin) {
+            $recentUsersQuery->where(function($q) {
+                $q->where('role', 'student')->orWhereNull('role');
+            });
+        }
+        $recentUsers = $recentUsersQuery->orderBy('created_at', 'desc')->paginate(10, ['*'], 'dashboard_page');
 
         return view('admin.dashboard', compact('stats', 'recentUsers'));
     }
@@ -112,6 +121,12 @@ class AdminController extends Controller
     public function users(Request $request)
     {
         $query = User::query();
+
+        if (trim(strtolower(Auth::user()->role)) === 'instructor' && !Auth::user()->is_admin) {
+            $query->where(function($q) {
+                $q->where('role', 'student')->orWhereNull('role');
+            });
+        }
 
         if ($request->filled('search')) {
             $search = $request->input('search');
@@ -260,6 +275,10 @@ class AdminController extends Controller
 
     public function updateUserRole($id, Request $request)
     {
+        if (!Auth::user()->is_admin && Auth::user()->role !== 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
+
         $request->validate([
             'role' => 'required|in:admin,instructor,student'
         ]);
@@ -302,6 +321,34 @@ class AdminController extends Controller
     }
 
     // ─── TOPIC CRUD ──────────────────────────────────────────────
+    public function reorderTopics(Request $request)
+    {
+        $request->validate([
+            'ordered_ids' => 'required|array',
+            'ordered_ids.*' => 'integer|exists:topics,id'
+        ]);
+
+        foreach ($request->ordered_ids as $index => $id) {
+            Topic::where('id', $id)->update(['sort_order' => $index + 1]);
+        }
+
+        return response()->json(['success' => true]);
+    }
+
+    public function reorderLessons(Request $request)
+    {
+        $request->validate([
+            'ordered_ids' => 'required|array',
+            'ordered_ids.*' => 'integer|exists:lessons,id'
+        ]);
+
+        foreach ($request->ordered_ids as $index => $id) {
+            Lesson::where('id', $id)->update(['sort_order' => $index + 1]);
+        }
+
+        return response()->json(['success' => true]);
+    }
+
     public function storeTopic(Request $request)
     {
         $request->validate([
@@ -309,9 +356,12 @@ class AdminController extends Controller
             'sort_order' => 'required|integer',
         ]);
 
+        $status = (Auth::user()->is_admin || Auth::user()->role === 'admin') ? 'approved' : 'pending';
+
         $topic = Topic::create([
             'title' => $request->input('title'),
             'sort_order' => $request->input('sort_order'),
+            'status' => $status
         ]);
 
         AuditLog::create([
@@ -375,12 +425,15 @@ class AdminController extends Controller
             'documentation' => 'nullable|file|mimes:pdf,doc,docx,txt,zip,png,jpg,jpeg,gif,webp|max:10240', // max 10MB
         ]);
 
+        $status = (Auth::user()->is_admin || Auth::user()->role === 'admin') ? 'approved' : 'pending';
+
         $data = [
             'topic_id' => $request->input('topic_id'),
             'title' => $request->input('title'),
             'video_url' => $request->input('video_url'),
             'notes' => $request->input('notes'),
             'sort_order' => $request->input('sort_order'),
+            'status' => $status
         ];
 
         if ($request->hasFile('documentation')) {
@@ -473,11 +526,14 @@ class AdminController extends Controller
             'answer' => 'required|integer|min:0',
         ]);
 
+        $status = (Auth::user()->is_admin || Auth::user()->role === 'admin') ? 'approved' : 'pending';
+
         $quiz = QuizQuestion::create([
             'topic_id' => $request->input('topic_id'),
             'question' => $request->input('question'),
             'options' => $request->input('options'),
             'answer' => $request->input('answer'),
+            'status' => $status
         ]);
 
         AuditLog::create([
@@ -532,6 +588,37 @@ class AdminController extends Controller
         ]);
 
         return back()->with('success', 'Question deleted successfully.');
+    }
+
+    // ─── APPROVAL METHODS ────────────────────────────────────────
+    public function approveTopic($id)
+    {
+        if (!Auth::user()->is_admin && Auth::user()->role !== 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
+        $topic = Topic::findOrFail($id);
+        $topic->update(['status' => 'approved']);
+        return back()->with('success', 'Topic approved successfully.');
+    }
+
+    public function approveLesson($id)
+    {
+        if (!Auth::user()->is_admin && Auth::user()->role !== 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
+        $lesson = Lesson::findOrFail($id);
+        $lesson->update(['status' => 'approved']);
+        return back()->with('success', 'Lesson approved successfully.');
+    }
+
+    public function approveQuiz($id)
+    {
+        if (!Auth::user()->is_admin && Auth::user()->role !== 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
+        $quiz = QuizQuestion::findOrFail($id);
+        $quiz->update(['status' => 'approved']);
+        return back()->with('success', 'Question approved successfully.');
     }
 
     // ─── PROGRESS OVERVIEW ───────────────────────────────────────
