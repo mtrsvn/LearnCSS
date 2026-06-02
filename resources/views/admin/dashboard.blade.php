@@ -39,8 +39,10 @@
                             <td>
                                 @if($user->role === 'admin' || $user->is_admin)
                                     <span class="status warning">Admin</span>
+                                @elseif(strtolower($user->role) === 'instructor')
+                                    <span class="status info">Instructor</span>
                                 @else
-                                    <span class="status success">Student</span>
+                                    <span class="status success">{{ ucfirst($user->role ?? 'student') }}</span>
                                 @endif
                             </td>
                             <td style="color: var(--text-muted);">{{ $user->created_at->format('M d, Y') }}</td>

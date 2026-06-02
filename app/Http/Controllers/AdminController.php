@@ -78,8 +78,11 @@ class AdminController extends Controller
     // ─── DASHBOARD OVERVIEW ──────────────────────────────────────
     public function dashboard()
     {
-        $totalUsers = User::where('is_admin', false)->count();
-        $activeUsers = User::where('is_admin', false)->where('is_active', true)->count();
+        // Include everyone in the user counts as requested
+        $totalUsers = User::count();
+        $activeUsers = User::where('is_active', true)->count();
+        $newThisMonth = User::where('created_at', '>=', Carbon::now()->startOfMonth())->count();
+        
         $completedTopics = UserProgress::count();
         $quizAttempts = QuizAttempt::whereNotNull('topic_id')->count();
         $finalExamAttempts = QuizAttempt::whereNull('topic_id')->count();
@@ -89,7 +92,7 @@ class AdminController extends Controller
 
         // Snapshot stats
         $stats = [
-            ['label' => 'Total users', 'value' => number_format($totalUsers), 'note' => '+' . User::where('created_at', '>=', Carbon::now()->startOfMonth())->count() . ' this month'],
+            ['label' => 'Total users', 'value' => number_format($totalUsers), 'note' => '+' . number_format($newThisMonth) . ' this month'],
             ['label' => 'Active users', 'value' => number_format($activeUsers), 'note' => ($totalUsers > 0 ? round(($activeUsers / $totalUsers) * 100) : 0) . '% active rate'],
             ['label' => 'Completed topics', 'value' => number_format($completedTopics), 'note' => 'Across all learners'],
             ['label' => 'Quiz attempts', 'value' => number_format($quizAttempts), 'note' => 'Topic quiz submissions'],
