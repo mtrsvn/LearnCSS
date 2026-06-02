@@ -47,7 +47,11 @@
                         </tr>
                     @endforeach
                 </tbody>
-            </table>
+        </table>
+        </div>
+        
+        <div style="padding: 1.5rem; border-top: 1px solid var(--border);">
+            {{ $recentUsers->links('pagination::bootstrap-4') }}
         </div>
     </section>
 </div>

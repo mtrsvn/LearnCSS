@@ -6,9 +6,15 @@
 @section('content')
 <style>
     .role-form { display: flex; align-items: center; gap: 0.5rem; margin: 0; }
-    .role-select { background: rgba(255,255,255,0.05); border: 1.5px solid var(--border); color: var(--text); padding: 0.3rem 0.5rem; border-radius: 8px; font-size: 0.8rem; outline: none; }
+    .role-select { background: rgba(255,255,255,0.05); border: 1.5px solid var(--border); color: var(--text); padding: 0.3rem 0.5rem; border-radius: 8px; font-size: 0.8rem; outline: none; cursor: pointer; transition: border-color 0.2s; }
+    .role-select.changed { border-color: var(--accent); }
     body.light-mode .role-select { background: rgba(0,0,0,0.05); }
     .actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
+    
+    .floating-save-toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.5rem; display: flex; align-items: center; gap: 1.5rem; box-shadow: 0 20px 40px rgba(0,0,0,0.4); z-index: 100; transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .floating-save-toast.visible { bottom: 2rem; }
+    .toast-message { font-size: 0.9rem; font-weight: 500; color: var(--text); }
+    body.light-mode .floating-save-toast { box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
 </style>
 
 <div class="stat-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 2rem;">
@@ -61,19 +67,17 @@
                         <td style="color: var(--text-muted);">{{ $user['email'] }}</td>
                         <td>{{ $user['affiliation'] }}</td>
                         <td>
-                            <form action="{{ route('admin.users.role', $user['id']) }}" method="POST" class="role-form">
+                            <form action="{{ route('admin.users.role', $user['id']) }}" method="POST" class="role-form ajax-role-form">
                                 @csrf
-                                <select name="role" class="role-select">
+                                <select name="role" class="role-select" data-original="{{ strtolower($user['role']) }}">
                                     <option value="student" {{ strtolower($user['role']) === 'student' ? 'selected' : '' }} style="color: #000;">Student</option>
                                     <option value="instructor" {{ strtolower($user['role']) === 'instructor' ? 'selected' : '' }} style="color: #000;">Instructor</option>
                                     <option value="admin" {{ strtolower($user['role']) === 'admin' ? 'selected' : '' }} style="color: #000;">Admin</option>
                                 </select>
-                                <button type="submit" class="btn-ghost" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;">Save</button>
                             </form>
                         </td>
                         <td style="text-align: right;">
                             <div class="actions">
-                                <a class="btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" href="{{ route('admin.users.show', $user['id']) }}">View</a>
                                 <form action="{{ route('admin.users.toggle', $user['id']) }}" method="POST" style="margin: 0;">
                                     @csrf
                                     <button class="btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; {{ $user['status'] === 'Active' ? 'background: rgba(239,68,68,0.1); color: var(--wrong); border: 1px solid rgba(239,68,68,0.2);' : 'background: rgba(16,185,129,0.1); color: var(--correct); border: 1px solid rgba(16,185,129,0.2);' }}" type="submit">
@@ -93,5 +97,82 @@
             </tbody>
         </table>
     </div>
+    
+    <div style="padding: 1.5rem; border-top: 1px solid var(--border);">
+        {{ $users->appends(request()->query())->links('pagination::bootstrap-4') }}
+    </div>
 </section>
+
+<!-- Floating Save Toast -->
+<div class="floating-save-toast" id="saveToast">
+    <div class="toast-message">You have unsaved role changes.</div>
+    <div style="display: flex; gap: 0.5rem;">
+        <button class="btn-ghost" onclick="cancelChanges()" style="padding: 0.5rem 1rem;">Discard</button>
+        <button class="btn-primary" onclick="saveChanges()" id="toastSaveBtn" style="padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            Save Changes
+        </button>
+    </div>
+</div>
+
+<script>
+    let changedForms = new Set();
+    const saveToast = document.getElementById('saveToast');
+    const toastSaveBtn = document.getElementById('toastSaveBtn');
+    const roleSelects = document.querySelectorAll('.role-select');
+
+    roleSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            const form = this.closest('form');
+            if (this.value !== this.dataset.original) {
+                this.classList.add('changed');
+                changedForms.add(form);
+            } else {
+                this.classList.remove('changed');
+                changedForms.delete(form);
+            }
+            
+            if (changedForms.size > 0) {
+                saveToast.classList.add('visible');
+            } else {
+                saveToast.classList.remove('visible');
+            }
+        });
+    });
+
+    function cancelChanges() {
+        roleSelects.forEach(select => {
+            select.value = select.dataset.original;
+            select.classList.remove('changed');
+        });
+        changedForms.clear();
+        saveToast.classList.remove('visible');
+    }
+
+    async function saveChanges() {
+        if (changedForms.size === 0) return;
+        
+        toastSaveBtn.innerHTML = 'Saving...';
+        toastSaveBtn.disabled = true;
+
+        const promises = [];
+        changedForms.forEach(form => {
+            promises.push(
+                fetch(form.action, {
+                    method: 'POST',
+                    body: new FormData(form),
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+            );
+        });
+
+        try {
+            await Promise.all(promises);
+            window.location.reload();
+        } catch (error) {
+            alert('Error saving changes. Please try again.');
+            toastSaveBtn.innerHTML = 'Save Changes';
+            toastSaveBtn.disabled = false;
+        }
+    }
+</script>
 @endsection

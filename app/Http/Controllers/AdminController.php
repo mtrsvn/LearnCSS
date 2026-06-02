@@ -100,7 +100,7 @@ class AdminController extends Controller
         ];
 
         // Recent Users for Dashboard
-        $recentUsers = User::orderBy('created_at', 'desc')->take(10)->get();
+        $recentUsers = User::orderBy('created_at', 'desc')->paginate(10, ['*'], 'dashboard_page');
 
         return view('admin.dashboard', compact('stats', 'recentUsers'));
     }
@@ -132,11 +132,11 @@ class AdminController extends Controller
             $query->where('affiliation_type', $request->input('affiliation'));
         }
 
-        $users = $query->orderBy('created_at', 'desc')->get();
+        $users = $query->orderBy('created_at', 'desc')->paginate(10);
         
         $totalTopicsCount = Topic::count() ?: 1;
 
-        $formattedUsers = $users->map(function ($u) use ($totalTopicsCount) {
+        $users->getCollection()->transform(function ($u) use ($totalTopicsCount) {
             $completed = UserProgress::where('user_id', $u->id)->count();
             $progressPct = round(($completed / $totalTopicsCount) * 100);
             
@@ -166,7 +166,7 @@ class AdminController extends Controller
             'inactive' => User::where('is_active', false)->count()
         ];
 
-        return view('admin.users.index', ['users' => $formattedUsers, 'stats' => $stats]);
+        return view('admin.users.index', ['users' => $users, 'stats' => $stats]);
     }
 
     public function showUser($id)
