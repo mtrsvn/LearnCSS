@@ -25,7 +25,9 @@ class CourseController extends Controller
                     return [
                         'title' => $lesson->title,
                         'videoUrl' => $lesson->video_url,
-                        'notes' => $lesson->notes
+                        'notes' => $lesson->notes,
+                        'documentationPath' => $lesson->documentation_path,
+                        'documentationFilename' => $lesson->documentation_filename
                     ];
                 }),
                 // We'll lazy-load quizzes on demand or keep them embedded.

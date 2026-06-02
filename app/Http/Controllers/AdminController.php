@@ -369,15 +369,27 @@ class AdminController extends Controller
             'video_url' => 'required|string|max:255',
             'notes' => 'nullable|string',
             'sort_order' => 'required|integer',
+            'documentation' => 'nullable|file|mimes:pdf,doc,docx,txt,zip|max:10240', // max 10MB
         ]);
 
-        $lesson = Lesson::create([
+        $data = [
             'topic_id' => $request->input('topic_id'),
             'title' => $request->input('title'),
             'video_url' => $request->input('video_url'),
             'notes' => $request->input('notes'),
             'sort_order' => $request->input('sort_order'),
-        ]);
+        ];
+
+        if ($request->hasFile('documentation')) {
+            $file = $request->file('documentation');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $path = $file->storeAs('documentation', $filename, 'public');
+            
+            $data['documentation_path'] = '/storage/' . $path;
+            $data['documentation_filename'] = $file->getClientOriginalName();
+        }
+
+        $lesson = Lesson::create($data);
 
         AuditLog::create([
             'user_id' => Auth::id(),
@@ -397,14 +409,29 @@ class AdminController extends Controller
             'video_url' => 'required|string|max:255',
             'notes' => 'nullable|string',
             'sort_order' => 'required|integer',
+            'documentation' => 'nullable|file|mimes:pdf,doc,docx,txt,zip|max:10240',
         ]);
 
-        $lesson->update([
+        $data = [
             'title' => $request->input('title'),
             'video_url' => $request->input('video_url'),
             'notes' => $request->input('notes'),
             'sort_order' => $request->input('sort_order'),
-        ]);
+        ];
+
+        if ($request->hasFile('documentation')) {
+            $file = $request->file('documentation');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $path = $file->storeAs('documentation', $filename, 'public');
+            
+            $data['documentation_path'] = '/storage/' . $path;
+            $data['documentation_filename'] = $file->getClientOriginalName();
+        } elseif ($request->input('remove_documentation') === '1') {
+            $data['documentation_path'] = null;
+            $data['documentation_filename'] = null;
+        }
+
+        $lesson->update($data);
 
         AuditLog::create([
             'user_id' => Auth::id(),

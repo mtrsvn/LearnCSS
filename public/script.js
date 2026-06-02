@@ -594,8 +594,53 @@ function renderLesson() {
     const player = $('video-player');
     if (player) player.src = lesson.videoUrl;
     
+    // Handle Documentation Tab visibility and link
+    const tabDocs = $('tab-docs');
+    const docsBtn = $('docs-download-btn');
+    if (lesson.documentationPath) {
+        if (tabDocs) tabDocs.style.display = 'block';
+        if (docsBtn) {
+            docsBtn.href = lesson.documentationPath;
+            docsBtn.innerHTML = `Download ${lesson.documentationFilename || 'Documentation'}`;
+        }
+    } else {
+        if (tabDocs) tabDocs.style.display = 'none';
+        switchMedia('video'); // Default back to video if no docs
+    }
+    
     const notesEl = $('lesson-notes-content');
     if (notesEl) notesEl.innerHTML = `<p>${lesson.notes}</p>`;
+}
+
+function switchMedia(type) {
+    const tabVideo = $('tab-video');
+    const tabDocs = $('tab-docs');
+    const videoContainer = $('video-container');
+    const docsContainer = $('docs-container');
+
+    if (type === 'video') {
+        if (tabVideo) {
+            tabVideo.style.color = 'var(--text)';
+            tabVideo.style.borderBottom = '2px solid var(--accent)';
+        }
+        if (tabDocs) {
+            tabDocs.style.color = 'var(--text-muted)';
+            tabDocs.style.borderBottom = 'none';
+        }
+        if (videoContainer) videoContainer.style.display = 'block';
+        if (docsContainer) docsContainer.style.display = 'none';
+    } else if (type === 'docs') {
+        if (tabDocs) {
+            tabDocs.style.color = 'var(--text)';
+            tabDocs.style.borderBottom = '2px solid var(--accent)';
+        }
+        if (tabVideo) {
+            tabVideo.style.color = 'var(--text-muted)';
+            tabVideo.style.borderBottom = 'none';
+        }
+        if (docsContainer) docsContainer.style.display = 'block';
+        if (videoContainer) videoContainer.style.display = 'none';
+    }
 }
 
 const backBtn = $('lesson-back-btn');

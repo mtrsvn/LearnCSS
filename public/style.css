@@ -364,3 +364,113 @@ body.light-mode .dashboard-hero-copy::before { background:radial-gradient(circle
 }
 @media print { body{background:#fff;color:#000} .cert-actions,.landing-nav{display:none} .certificate-paper{box-shadow:none;border:2px solid #ccc} }
 
+
+/* ─── TABS ──────────────────────────────────────────────── */
+.tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    background: var(--surface-soft);
+    padding: 0.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    width: fit-content;
+}
+.tabs .tab {
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+.tabs .tab:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.05);
+}
+.tabs .tab.active {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+body.light-mode .tabs .tab:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+/* ─── MODALS ────────────────────────────────────────────── */
+.admin-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+.admin-modal.open {
+    display: flex;
+    opacity: 1;
+}
+.admin-modal-content {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 800px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    transform: scale(0.95);
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+}
+.admin-modal.open .admin-modal-content {
+    transform: scale(1);
+}
+.admin-modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.admin-modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text);
+}
+.admin-modal-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    transition: color 0.2s;
+}
+.admin-modal-close:hover {
+    color: var(--text);
+}
+.admin-modal-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+.admin-modal-footer {
+    padding: 1.25rem 1.5rem;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    background: var(--surface-soft);
+    border-radius: 0 0 16px 16px;
+}

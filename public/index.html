@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=5">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="light-mode">
@@ -462,10 +462,24 @@
                 <button id="take-quiz-btn" class="btn-primary" style="margin-top:auto;">Take Quiz</button>
             </aside>
             <main class="lesson-main">
-                <div class="video-wrap">
+                <div class="media-tabs" style="display: flex; gap: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 1.5rem;">
+                    <button class="media-tab active" id="tab-video" onclick="switchMedia('video')" style="background: none; border: none; color: var(--text); font-weight: 600; cursor: pointer; padding: 0.5rem; border-bottom: 2px solid var(--accent);">Video</button>
+                    <button class="media-tab" id="tab-docs" onclick="switchMedia('docs')" style="background: none; border: none; color: var(--text-muted); font-weight: 600; cursor: pointer; padding: 0.5rem; display: none;">Documentation</button>
+                </div>
+                
+                <div class="video-wrap" id="video-container">
                     <iframe id="video-player" src="" frameborder="0" allowfullscreen></iframe>
                 </div>
-                <div class="notes-card">
+                
+                <div class="docs-wrap" id="docs-container" style="display: none; background: var(--surface-soft); border-radius: 12px; padding: 3rem; text-align: center; border: 1px dashed var(--border);">
+                    <h3 style="margin-bottom: 0.5rem;">Lesson Documentation</h3>
+                    <p class="muted" style="margin-bottom: 1.5rem;">This lesson includes supplementary documentation you can download and review.</p>
+                    <a href="#" id="docs-download-btn" target="_blank" class="btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none;">
+                        Download File
+                    </a>
+                </div>
+
+                <div class="notes-card" style="margin-top: 2rem;">
                     <h4>Study Notes</h4>
                     <div id="lesson-notes-content"></div>
                 </div>

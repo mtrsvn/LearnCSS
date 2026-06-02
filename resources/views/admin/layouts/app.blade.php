@@ -17,7 +17,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-            <link rel="stylesheet" href="{{ asset('style.css') }}?v=4">
+            <link rel="stylesheet" href="{{ asset('style.css') }}?v={{ time() }}">
     <style>
         body { margin: 0; overflow: hidden; }
         .admin-shell { display: grid; grid-template-columns: 270px 1fr; height: calc(100vh - 75px); background: var(--bg); overflow: hidden; }
