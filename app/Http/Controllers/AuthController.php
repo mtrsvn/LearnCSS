@@ -67,6 +67,7 @@ class AuthController extends Controller
                 'modulesCompletedCount' => (int) $user->modules_completed_count,
                 'examStatus' => $user->exam_status,
                 'isCourseUnlocked' => (bool) $user->is_course_unlocked,
+                'hasCertificate' => \App\Models\Certificate::where('user_id', $user->id)->exists(),
             ]
         ]);
     }
@@ -119,6 +120,7 @@ class AuthController extends Controller
                     'modulesCompletedCount' => (int) $user->modules_completed_count,
                     'examStatus' => $user->exam_status,
                     'isCourseUnlocked' => (bool) $user->is_course_unlocked,
+                    'hasCertificate' => \App\Models\Certificate::where('user_id', $user->id)->exists(),
                 ]
             ]);
         }
@@ -162,6 +164,7 @@ class AuthController extends Controller
                 'modulesCompletedCount' => (int) $user->modules_completed_count,
                 'examStatus' => $user->exam_status,
                 'isCourseUnlocked' => (bool) $user->is_course_unlocked,
+                'hasCertificate' => \App\Models\Certificate::where('user_id', $user->id)->exists(),
             ]
         ]);
     }
@@ -216,6 +219,7 @@ class AuthController extends Controller
                     'modulesCompletedCount' => (int) $user->modules_completed_count,
                     'examStatus' => $user->exam_status,
                     'isCourseUnlocked' => (bool) $user->is_course_unlocked,
+                    'hasCertificate' => \App\Models\Certificate::where('user_id', $user->id)->exists(),
                 ]
             ]);
         }

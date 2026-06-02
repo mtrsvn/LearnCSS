@@ -376,6 +376,7 @@ async function loginUser(user) {
 
     state.user = user;
     state.courseUnlocked = user.isCourseUnlocked || false;
+    state.hasCertificate = user.hasCertificate || false;
 
     await loadTopicsIfNeeded();
     
@@ -384,6 +385,7 @@ async function loginUser(user) {
         const pData = await apiRequest('/api/progress');
         if (pData && pData.success) {
             state.completedTopics = pData.completedTopics;
+            state.hasCertificate = pData.hasCertificate || state.hasCertificate;
             if (pData.lastTopicStarted) {
                 state.lastTopicStarted = pData.lastTopicStarted;
             }
@@ -527,6 +529,9 @@ function renderDashboard() {
     if (resumeBtn) {
         if (!state.courseUnlocked) {
             resumeBtn.classList.add('hidden');
+        } else if (state.hasCertificate) {
+            resumeBtn.textContent = 'View Your Certificate';
+            resumeBtn.classList.remove('hidden');
         } else if (state.completedTopics.length === 0 && !state.lastTopicStarted) {
             resumeBtn.textContent = 'Start Your First Lesson';
             resumeBtn.classList.remove('hidden');
@@ -542,7 +547,16 @@ function renderDashboard() {
 
 const resumeCourseBtn = $('resume-module-btn');
 if (resumeCourseBtn) {
-    resumeCourseBtn.addEventListener('click', () => {
+    resumeCourseBtn.addEventListener('click', async () => {
+        if (state.hasCertificate) {
+            try {
+                const res = await apiRequest('/api/certificate');
+                if (res && res.success && res.certificate) {
+                    showCertificate(res.certificate);
+                }
+            } catch(e) {}
+            return;
+        }
         let nextIndex = 0;
         if (state.lastTopicStarted) {
             nextIndex = topics.findIndex(t => t.id == state.lastTopicStarted);
@@ -564,8 +578,24 @@ function updateFinalCard() {
 
     const statusEl = $('final-card-status');
     const lockEl = $('final-card-lock');
+    const h3El = btn.querySelector('h3');
 
-    if (!allDone) {
+    if (state.hasCertificate) {
+        btn.className = 'topic-card completed final-exam-card';
+        btn.onclick = async () => {
+            try {
+                const res = await apiRequest('/api/certificate');
+                if (res && res.success && res.certificate) {
+                    showCertificate(res.certificate);
+                }
+            } catch(e) {}
+        };
+        if (statusEl) statusEl.textContent = 'You have successfully passed the final exam.';
+        if (lockEl) lockEl.classList.add('hidden');
+        if (h3El && !h3El.innerHTML.includes('topic-done-badge')) {
+            h3El.innerHTML += '<span class="topic-done-badge"><i data-lucide="check"></i></span>';
+        }
+    } else if (!allDone) {
         btn.className = 'topic-card locked final-exam-card';
         btn.onclick = null;
         if (statusEl) statusEl.textContent = 'Complete all topics to unlock this exam.';
@@ -835,17 +865,22 @@ async function finishQuiz() {
 function showCertificate(certInfo) {
     const dateEl = $('current-date');
     if (dateEl) {
-        dateEl.textContent = certInfo.issuedAt;
+        const d = new Date(certInfo.issuedAt);
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        dateEl.textContent = d.toLocaleDateString('en-US', options);
     }
     const credEl = $('cert-credential-id');
+    const liCredEl = $('li-cred-id-modal');
     if (credEl) {
         credEl.textContent = certInfo.code;
+    }
+    if (liCredEl) {
+        liCredEl.textContent = certInfo.code;
     }
     const userCertName = $('cert-user-name');
     if (userCertName) userCertName.textContent = certInfo.userName;
     showScreen('certificate-screen');
 }
-
 // ─── Scroll Reveal Animations ─────────────────────────────
 const revealObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
@@ -1064,4 +1099,57 @@ if (notifClearAll) {
             fetchNotifications();
         } catch (e) {}
     });
+}
+
+// ─── Certificate Actions ──────────────────────────────────
+function copyCertId() {
+    const credEl = document.getElementById('cert-credential-id');
+    if (credEl && credEl.textContent) {
+        navigator.clipboard.writeText(credEl.textContent).then(() => {
+            showToast('Certificate ID copied to clipboard!', 'success');
+        }).catch(err => {
+            showToast('Failed to copy ID', 'error');
+        });
+    }
+}
+
+function downloadCertificate() {
+    const certNode = document.getElementById('certificate');
+    if (!certNode) return;
+    
+    const originalShadow = certNode.style.boxShadow;
+    const originalTransform = certNode.style.transform;
+    certNode.style.boxShadow = 'none';
+    certNode.style.transform = 'none';
+    
+    showToast('Generating image...', 'info');
+    
+    html2canvas(certNode, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: null
+    }).then(canvas => {
+        certNode.style.boxShadow = originalShadow;
+        certNode.style.transform = originalTransform;
+        
+        const link = document.createElement('a');
+        const userName = state.currentUser ? state.currentUser.name.replace(/\s+/g, '_') : 'Completion';
+        link.download = `LearnCSS_Certificate_${userName}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        
+        showToast('Certificate downloaded successfully!', 'success');
+    }).catch(err => {
+        certNode.style.boxShadow = originalShadow;
+        certNode.style.transform = originalTransform;
+        showToast('Failed to generate image.', 'error');
+        console.error(err);
+    });
+}
+
+function shareOnLinkedIn() {
+    const text = encodeURIComponent("I just successfully completed all courses and passed the final exam in the CSS Tutorial at LearnCSS! Check out my new certification. #CSS #WebDevelopment #LearnCSS");
+    const linkedInUrl = `https://www.linkedin.com/feed/?shareActive=true&text=${text}`;
+    
+    window.open(linkedInUrl, '_blank', 'noopener,noreferrer');
 }

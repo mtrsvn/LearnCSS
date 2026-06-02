@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css?v=5">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQmJb1ov22EwqA+6Q1g4v1B5x9+JkZ/q3f2v1q2Z7XG0Z6mP+mR8pE+Yw2jO+wzXhYt1t2B8yMv2Xh8vL9w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body class="light-mode">
 
@@ -208,12 +209,12 @@
                 <div class="hero-certificate cert-light">
                     <div class="cert-paper-logo">LearnCSS</div>
                     <div class="cert-accent"></div>
-                    <p class="cert-eyebrow">Certificate of Completion</p>
-                    <p class="cert-desc" style="font-size: 0.75rem;">This certifies that</p>
-                    <h2 style="font-size: 1.6rem; margin: 0.3rem 0 0.8rem; color: #1e293b; font-family: 'Outfit', sans-serif; font-weight: 700;">Juan Dela Cruz</h2>
-                    <p class="cert-desc" style="font-size: 0.75rem; line-height: 1.5;">has successfully completed all courses and passed the final exam in<br><strong style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.1em;">Advanced CSS Styling &amp; Web Design</strong></p>
-                    <hr class="cert-divider" style="margin: 1.2rem 0;">
-                    <div class="cert-meta-grid">
+                    <p class="cert-eyebrow" style="font-size: 0.65rem;">Certificate of Completion</p>
+                    <p class="cert-desc" style="font-size: 0.88rem; margin-bottom: 0.75rem;">This certifies that</p>
+                    <h2 style="font-size: 2.1rem; margin: 0.25rem 0 0.75rem; color: #1e293b; font-family: 'Outfit', sans-serif; font-weight: 700;">Juan Dela Cruz</h2>
+                    <p class="cert-desc" style="font-size: 0.88rem; line-height: 1.4; margin-bottom: 0.75rem;">has successfully completed all courses and passed the final exam in<br><strong style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.1em;">CSS Tutorial</strong></p>
+                    <hr class="cert-divider" style="margin: 1.1rem 0;">
+                    <div class="cert-meta-grid" style="font-size: 0.72rem;">
                         <div class="cert-meta-item">
                             <span class="meta-label">Credential ID</span>
                             <span class="meta-val">CSSM-8B9X-4K2P</span>
@@ -472,34 +473,78 @@
 
     <!-- ─── Certificate ───────────────────────────────── -->
     <section id="certificate-screen" class="screen">
-        <div class="cert-wrap">
-            <div id="certificate" class="certificate-paper cert-light">
-                <div class="cert-paper-logo">LearnCSS</div>
-                <div class="cert-accent"></div>
-                <p class="cert-eyebrow">Certificate of Completion</p>
-                <p class="cert-desc">This certifies that</p>
-                <h2 id="cert-user-name">Juan Dela Cruz</h2>
-                <p class="cert-desc">has successfully completed all courses and passed the final exam in<br><strong style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.15em;">Advanced CSS Styling &amp; Web Design</strong></p>
-                <hr class="cert-divider">
-                <div class="cert-meta-grid">
-                    <div class="cert-meta-item">
-                        <span class="meta-label">Credential ID</span>
-                        <span class="meta-val" id="cert-credential-id">CSSM-XXXX-XXXX</span>
-                    </div>
-                    <div class="cert-meta-item">
-                        <span class="meta-label">Issued Date</span>
-                        <span class="meta-val" id="current-date"></span>
+        <div class="cert-split-layout">
+            <!-- Left Side: Certificate Preview -->
+            <div class="cert-preview-col">
+                <div id="certificate" class="certificate-paper cert-light">
+                    <div class="cert-paper-logo">LearnCSS</div>
+                    <div class="cert-accent"></div>
+                    <p class="cert-eyebrow" style="font-size: 0.65rem;">Certificate of Completion</p>
+                    <p class="cert-desc" style="font-size: 0.88rem; margin-bottom: 0.75rem;">This certifies that</p>
+                    <h2 id="cert-user-name" style="font-size: 2.1rem; margin: 0.25rem 0 0.75rem; color: #1e293b; font-family: 'Outfit', sans-serif; font-weight: 700;">Juan Dela Cruz</h2>
+                    <p class="cert-desc" style="font-size: 0.88rem; line-height: 1.4; margin-bottom: 0.75rem;">has successfully completed all courses and passed the final exam in<br><strong style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.1em;">CSS Tutorial</strong></p>
+                    <hr class="cert-divider" style="margin: 1.1rem 0;">
+                    <div class="cert-meta-grid" style="font-size: 0.72rem;">
+                        <div class="cert-meta-item">
+                            <span class="meta-label">Credential ID</span>
+                            <span class="meta-val" id="cert-credential-id">CSSM-XXXX-XXXX</span>
+                        </div>
+                        <div class="cert-meta-item">
+                            <span class="meta-label">Issued Date</span>
+                            <span class="meta-val" id="current-date"></span>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="cert-actions">
-                <button onclick="window.print()" class="btn-primary">Print Certificate</button>
-                <button onclick="location.reload()" class="btn-ghost">Start Over</button>
+            
+            <!-- Right Side: Details & Actions -->
+            <div class="cert-details-col">
+                <div class="cert-screen-header">
+                    <h2>Your Certificate</h2>
+                    <p>You've successfully completed all required courses.</p>
+                </div>
+                
+                <div class="cert-actions">
+                    <button onclick="copyCertId()" class="btn-ghost">Copy Certificate ID</button>
+                    <button onclick="shareOnLinkedIn()" class="btn-ghost">Share on LinkedIn</button>
+                    <button onclick="downloadCertificate()" class="btn-ghost">Download Image</button>
+                </div>
+                
+                <div class="linkedin-instructions" style="cursor: pointer; display: inline-block;" onclick="document.getElementById('linkedin-modal').classList.remove('hidden')">
+                    <h3>How to add the certification to a LinkedIn profile</h3>
+                </div>
+                
+                <div class="cert-nav-back" style="text-align: left; margin-top: 1rem;">
+                    <button onclick="showScreen('dashboard-screen')" class="btn-ghost" style="border:none; padding: 0;">Back to Dashboard</button>
+                </div>
             </div>
         </div>
     </section>
 
 </div><!-- end #app -->
+
+<!-- LinkedIn Instructions Modal -->
+<div id="linkedin-modal" class="modal-overlay hidden" onclick="if(event.target===this) this.classList.add('hidden')">
+    <div class="modal">
+        <button class="modal-close" onclick="document.getElementById('linkedin-modal').classList.add('hidden')"><i data-lucide="x"></i></button>
+        <h2>LinkedIn Instructions</h2>
+        <div class="linkedin-instructions-modal" style="margin-top: 1.5rem; text-align: left;">
+            <div class="li-step">
+                <strong>Step 1: Navigate</strong>
+                <p>Me &gt; View Profile &gt; Licenses & Certifications &gt; click '+' and add your LearnCSS certificate.</p>
+            </div>
+            <div class="li-step">
+                <strong>Step 2: Enter details</strong>
+                <p>Fill in the form with the following details and click save:</p>
+            </div>
+            <div class="li-fields">
+                <div class="li-field"><span>Name:</span> <strong>CSS Tutorial</strong></div>
+                <div class="li-field"><span>Issuing Organization:</span> <strong>LearnCSS</strong></div>
+                <div class="li-field"><span>Credential ID:</span> <strong id="li-cred-id-modal">XXXX-XXXX</strong></div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="script.js?v=2"></script>
 <script>

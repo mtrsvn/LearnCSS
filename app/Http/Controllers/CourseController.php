@@ -83,6 +83,7 @@ class CourseController extends Controller
             'modulesCompletedCount' => $snapshot['modulesCompletedCount'],
             'examStatus' => $snapshot['examStatus'],
             'lastTopicStarted' => $user->last_topic_id,
+            'hasCertificate' => \App\Models\Certificate::where('user_id', $user->id)->exists(),
         ]);
     }
 
@@ -171,6 +172,7 @@ class CourseController extends Controller
             'progressPercentage' => $snapshot['progressPercentage'],
             'modulesCompletedCount' => $snapshot['modulesCompletedCount'],
             'examStatus' => $snapshot['examStatus'],
+            'hasCertificate' => \App\Models\Certificate::where('user_id', $user->id)->exists(),
         ]);
     }
 
