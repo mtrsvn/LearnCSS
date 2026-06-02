@@ -34,13 +34,15 @@ Route::prefix('api')->group(function () {
         Route::post('/voucher/buy', [VoucherController::class, 'buy']);
         Route::post('/voucher/verify', [VoucherController::class, 'verify']);
         Route::post('/voucher/redeem', [VoucherController::class, 'redeem']);
-        Route::get('/voucher/xendit/success', [VoucherController::class, 'xenditSuccess'])->name('voucher.xendit.success');
 
         // Exam & Certificate
         Route::get('/exam/questions', [ExamController::class, 'getQuestions']);
         Route::post('/exam/submit', [ExamController::class, 'submit']);
         Route::get('/certificate', [ExamController::class, 'getCertificate']);
     });
+
+    // Public / callback endpoints (no auth middleware required)
+    Route::get('/voucher/xendit/success', [VoucherController::class, 'xenditSuccess'])->name('voucher.xendit.success');
 });
 
 // ─── ADMIN DASHBOARD SYSTEM ──────────────────────────────────

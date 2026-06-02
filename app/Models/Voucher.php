@@ -9,7 +9,7 @@ class Voucher extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['code', 'price', 'used', 'used_by', 'used_at'];
+    protected $fillable = ['code', 'price', 'used', 'used_by', 'used_at', 'status'];
 
     public function user()
     {

@@ -376,6 +376,7 @@ async function loginUser(user) {
     updateVoucherButtons();
     closeModal();
     renderDashboard();
+    fetchNotifications();
     showScreen('dashboard-screen');
 }
 
@@ -851,8 +852,110 @@ function checkXenditReturn() {
         
         openModal('modal-buy-voucher');
         showToast('Payment successful!', 'success');
+        fetchNotifications();
         
         // Clean URL
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 }
+
+// ─── Notification UI & API Logic ─────────────────────────────
+async function fetchNotifications() {
+    if (!state.user) return;
+    try {
+        const data = await apiRequest('/api/notifications');
+        if (data && data.success) {
+            renderNotifications(data.notifications);
+        }
+    } catch (e) {
+        console.error("Failed to fetch notifications:", e);
+    }
+}
+
+function renderNotifications(notifs) {
+    const list = $('notif-list');
+    const badge = $('notif-badge');
+    if (!list) return;
+
+    list.innerHTML = '';
+    const unreadCount = notifs.filter(n => !n.is_read).length;
+
+    if (badge) {
+        if (unreadCount > 0) {
+            badge.textContent = unreadCount;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+    }
+
+    if (notifs.length === 0) {
+        list.innerHTML = '<p class="notif-empty">No notifications yet</p>';
+        return;
+    }
+
+    notifs.forEach(n => {
+        const item = document.createElement('div');
+        item.className = `notif-item ${n.is_read ? '' : 'unread'}`;
+        
+        const date = new Date(n.created_at);
+        const timeStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        item.innerHTML = `
+            <div class="notif-item-title">${n.title}</div>
+            <div class="notif-item-message">${n.message}</div>
+            <div class="notif-item-time">${timeStr}</div>
+        `;
+
+        if (!n.is_read) {
+            item.addEventListener('click', async () => {
+                try {
+                    await apiRequest(`/api/notifications/${n.id}/read`, 'POST');
+                    n.is_read = true;
+                    item.classList.remove('unread');
+                    const newUnread = notifs.filter(x => !x.is_read).length;
+                    if (badge) {
+                        if (newUnread > 0) {
+                            badge.textContent = newUnread;
+                        } else {
+                            badge.classList.add('hidden');
+                        }
+                    }
+                } catch (e) {}
+            });
+        }
+        list.appendChild(item);
+    });
+}
+
+// Attach Event Listeners for Notifications
+const notifBtn = $('notif-btn');
+const notifDropdown = $('notif-dropdown');
+const notifClearAll = $('notif-clear-all');
+
+if (notifBtn && notifDropdown) {
+    notifBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notifDropdown.classList.toggle('hidden');
+        if (!notifDropdown.classList.contains('hidden')) {
+            fetchNotifications();
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (notifDropdown && !notifDropdown.contains(e.target) && e.target !== notifBtn && !notifBtn.contains(e.target)) {
+            notifDropdown.classList.add('hidden');
+        }
+    });
+}
+
+if (notifClearAll) {
+    notifClearAll.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        try {
+            await apiRequest('/api/notifications/read-all', 'POST');
+            fetchNotifications();
+        } catch (e) {}
+    });
+}
+
