@@ -312,6 +312,9 @@ async function loadTopicsIfNeeded() {
 }
 
 async function boot() {
+    // Fetch public curriculum for the landing page right away
+    loadPublicCurriculum();
+
     // 1. Fetch authenticated session first so guest visits do not trigger protected API errors
     try {
         const sessionData = await apiRequest('/api/auth/session');
@@ -330,6 +333,40 @@ async function boot() {
 boot().then(() => {
     checkXenditReturn();
 });
+
+async function loadPublicCurriculum() {
+    const container = $('dynamic-topic-roadmap');
+    if (!container) return;
+
+    try {
+        const response = await fetch('/api/public/topics');
+        const data = await response.json();
+
+        if (data && data.success) {
+            container.innerHTML = '';
+            if (data.topics.length === 0) {
+                container.innerHTML = '<p style="text-align:center; padding: 2rem; color: var(--text-muted);">Curriculum coming soon.</p>';
+                return;
+            }
+
+            data.topics.forEach((topic, index) => {
+                const numStr = (index + 1).toString().padStart(2, '0');
+                const item = document.createElement('div');
+                item.className = 'roadmap-item';
+                item.innerHTML = `
+                    <div class="roadmap-number">${numStr}</div>
+                    <div class="roadmap-content">
+                        <h3>${topic.title}</h3>
+                        <p>${topic.description || 'No description available yet.'}</p>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+    } catch (e) {
+        container.innerHTML = '<p style="text-align:center; padding: 2rem; color: var(--wrong);">Failed to load curriculum. Please refresh.</p>';
+    }
+}
 
 async function loginUser(user) {
     if (user && user.role === 'admin') {

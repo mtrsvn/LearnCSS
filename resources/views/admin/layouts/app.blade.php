@@ -15,9 +15,18 @@
         ['label' => 'Content', 'route' => 'admin.content.index', 'active' => 'admin.content.*', 'icon' => 'book-open', 'badge' => $pendingContentCount > 0 ? $pendingContentCount : null],
     ];
     
+    $newVouchersCount = 0;
+    $newCertificatesCount = 0;
+    
     if ($isAdmin || trim(strtolower(Auth::user()->role)) === 'instructor') {
-        $navItems[] = ['label' => 'Vouchers', 'route' => 'admin.vouchers.index', 'active' => 'admin.vouchers.*', 'icon' => 'ticket'];
-        $navItems[] = ['label' => 'Certificates', 'route' => 'admin.certificates.index', 'active' => 'admin.certificates.*', 'icon' => 'award'];
+        $lastVouchersViewed = Auth::user()->last_vouchers_viewed_at ?? '1970-01-01 00:00:00';
+        $lastCertificatesViewed = Auth::user()->last_certificates_viewed_at ?? '1970-01-01 00:00:00';
+        
+        $newVouchersCount = \App\Models\Voucher::where('created_at', '>', $lastVouchersViewed)->count();
+        $newCertificatesCount = \App\Models\Certificate::where('created_at', '>', $lastCertificatesViewed)->count();
+        
+        $navItems[] = ['label' => 'Vouchers', 'route' => 'admin.vouchers.index', 'active' => 'admin.vouchers.*', 'icon' => 'ticket', 'badge' => $newVouchersCount > 0 ? $newVouchersCount : null];
+        $navItems[] = ['label' => 'Certificates', 'route' => 'admin.certificates.index', 'active' => 'admin.certificates.*', 'icon' => 'award', 'badge' => $newCertificatesCount > 0 ? $newCertificatesCount : null];
     }
 @endphp
 <!DOCTYPE html>
@@ -199,8 +208,47 @@
             </section>
         </main>
     </div>
+    
+    <!-- GLOBAL DELETE CONFIRMATION MODAL -->
+    <div id="deleteConfirmModal" class="admin-modal" style="z-index: 9999;">
+        <div class="admin-modal-content" style="max-width: 400px; text-align: center;">
+            <div class="admin-modal-header" style="justify-content: center; border-bottom: none; padding-bottom: 0;">
+                <h3 class="admin-modal-title" style="font-size: 1.25rem; text-align: center; width: 100%;">Confirm Deletion</h3>
+            </div>
+            <div class="admin-modal-body" style="padding-top: 10px;">
+                <p id="deleteConfirmMessage" style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 0;">Are you sure you want to delete this item?</p>
+            </div>
+            <div class="admin-modal-footer" style="border-top: none; padding-top: 15px; display: flex; gap: 10px; width: 100%;">
+                <button type="button" class="btn-ghost" onclick="closeDeleteModal()" style="flex: 1; padding: 0.75rem;">Cancel</button>
+                <button type="button" id="confirmDeleteBtn" class="btn-primary" style="flex: 1; padding: 0.75rem; background: var(--wrong); border-color: var(--wrong);">Delete</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
+        // Global Delete Modal Logic
+        let formToSubmit = null;
+        
+        function confirmDelete(event, message) {
+            event.preventDefault();
+            formToSubmit = event.target.closest('form');
+            document.getElementById('deleteConfirmMessage').textContent = message || 'Are you sure you want to delete this item?';
+            document.getElementById('deleteConfirmModal').classList.add('open');
+            return false;
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteConfirmModal').classList.remove('open');
+            formToSubmit = null;
+        }
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            if (formToSubmit) {
+                formToSubmit.submit();
+            }
+        });
+
         // Global Dropdown Toggling Actions
         function toggleDropdown(btn, event) {
             event.stopPropagation();

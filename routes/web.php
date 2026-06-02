@@ -13,6 +13,11 @@ Route::get('/', function () {
     return file_get_contents(public_path('index.html'));
 });
 
+// ─── PUBLIC API ROUTES ─────────────────────────────────────────
+Route::prefix('api')->group(function () {
+    Route::get('/public/topics', [CourseController::class, 'getPublicTopics']);
+});
+
 // ─── CUSTOMER BACKEND API ROUTES ─────────────────────────────
 Route::prefix('api')->group(function () {
     // Auth Actions

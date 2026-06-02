@@ -43,8 +43,8 @@
     </section>
 
 <section class="panel" style="margin-top: 18px;">
-    <p class="panel-label">Transactions</p>
-    <h2 class="panel-title">Payment Records</h2>
+    <p class="panel-label">Redeemed Vouchers</p>
+    <h2 class="panel-title">Redemption History</h2>
     <div class="table-wrap">
         <table class="data-table">
             <thead><tr><th>Receipt</th><th>Buyer</th><th>Payment Method</th><th>Amount</th><th>Status</th><th>Redeemed Date</th></tr></thead>

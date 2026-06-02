@@ -353,14 +353,16 @@ class AdminController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
-            'sort_order' => 'required|integer',
+            'description' => 'required|string',
         ]);
 
         $status = (Auth::user()->is_admin || Auth::user()->role === 'admin') ? 'approved' : 'pending';
+        $maxSortOrder = Topic::max('sort_order') ?? 0;
 
         $topic = Topic::create([
             'title' => $request->input('title'),
-            'sort_order' => $request->input('sort_order'),
+            'description' => $request->input('description'),
+            'sort_order' => $maxSortOrder + 1,
             'status' => $status
         ]);
 
@@ -379,12 +381,12 @@ class AdminController extends Controller
         $topic = Topic::findOrFail($id);
         $request->validate([
             'title' => 'required|string|max:255',
-            'sort_order' => 'required|integer',
+            'description' => 'required|string',
         ]);
 
         $topic->update([
             'title' => $request->input('title'),
-            'sort_order' => $request->input('sort_order'),
+            'description' => $request->input('description'),
         ]);
 
         AuditLog::create([
@@ -631,6 +633,12 @@ class AdminController extends Controller
     // ─── VOUCHER MANAGEMENT ──────────────────────────────────────
     public function vouchers()
     {
+        $user = Auth::user();
+        if ($user) {
+            $user->last_vouchers_viewed_at = now();
+            $user->save();
+        }
+        
         $vouchers = Voucher::with('user')->orderBy('created_at', 'desc')->get();
         return view('admin.vouchers.index', compact('vouchers'));
     }
@@ -669,6 +677,12 @@ class AdminController extends Controller
     // ─── CERTIFICATE RECORD ──────────────────────────────────────
     public function certificates()
     {
+        $user = Auth::user();
+        if ($user) {
+            $user->last_certificates_viewed_at = now();
+            $user->save();
+        }
+        
         $certificates = Certificate::with('user')->orderBy('issued_at', 'desc')->get();
         return view('admin.certificates.index', compact('certificates'));
     }

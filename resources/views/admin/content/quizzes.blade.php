@@ -126,7 +126,7 @@
                                         </button>
                                         <hr class="dropdown-divider">
                                     @endif
-                                    <form action="{{ route('admin.content.quizzes.destroy', $question->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this question?');" style="margin:0;">
+                                    <form action="{{ route('admin.content.quizzes.destroy', $question->id) }}" method="POST" onsubmit="return confirmDelete(event, 'Are you sure you want to delete this question?');" style="margin:0;">
                                         @csrf
                                         @method('DELETE')
                                         <button class="dropdown-item danger" type="submit">Delete Question</button>

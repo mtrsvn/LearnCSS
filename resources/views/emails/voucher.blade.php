@@ -86,7 +86,6 @@
         <p>Thank you for investing in your future with the LearnCSS Certification. Your payment has been confirmed.</p>
         
         <div class="success-box">
-            <span class="icon">✅</span>
             <p class="success-text">Here is your voucher code:</p>
             <p class="voucher-code">{{ $voucher->code }}</p>
             <p class="note">Copy this code and enter it on the dashboard to unlock all courses and the final exam.</p>

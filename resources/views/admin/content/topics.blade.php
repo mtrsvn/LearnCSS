@@ -91,7 +91,7 @@
                                         <button class="btn-ghost edit-topic-btn" type="button" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; {{ ($isInstructor && $topic->status === 'pending') ? 'opacity: 0.5; cursor: not-allowed;' : '' }}"
                                                 data-id="{{ $topic->id }}" 
                                                 data-title="{{ $topic->title }}" 
-                                                data-order="{{ $topic->sort_order }}"
+                                                data-description="{{ $topic->description }}"
                                                 {{ ($isInstructor && $topic->status === 'pending') ? 'disabled' : '' }}>
                                             Edit Topic
                                         </button>
@@ -104,7 +104,7 @@
                                         </button>
                                     @endif
 
-                                    <form action="{{ route('admin.content.topics.destroy', $topic->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this topic and all its lessons/quizzes?');" style="margin:0;">
+                                    <form action="{{ route('admin.content.topics.destroy', $topic->id) }}" method="POST" onsubmit="return confirmDelete(event, 'Are you sure you want to delete this topic and all its lessons/quizzes?');" style="margin:0;">
                                         @csrf
                                         @method('DELETE')
                                         <button class="btn-ghost" type="submit" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; color: var(--wrong);">Delete</button>
@@ -157,8 +157,8 @@
                         <input type="text" id="add_title" name="title" required placeholder="e.g. CSS Grid Layout">
                     </div>
                     <div class="field">
-                        <label for="add_sort_order">Sort Order</label>
-                        <input type="number" id="add_sort_order" name="sort_order" required value="{{ count($topics) + 1 }}">
+                        <label for="add_description">Topic Description</label>
+                        <textarea id="add_description" name="description" required placeholder="Brief description of the topic..." style="width: 100%; min-height: 80px; padding: 0.8rem; border-radius: 8px; border: 1.5px solid var(--border); background: rgba(255,255,255,0.02); color: var(--text); font-family: inherit; resize: vertical;"></textarea>
                     </div>
                 </div>
             </div>
@@ -186,8 +186,8 @@
                         <input type="text" id="edit_title" name="title" required placeholder="e.g. CSS Basics">
                     </div>
                     <div class="field">
-                        <label for="edit_sort_order">Sort Order</label>
-                        <input type="number" id="edit_sort_order" name="sort_order" required>
+                        <label for="edit_description">Topic Description</label>
+                        <textarea id="edit_description" name="description" required placeholder="Brief description of the topic..." style="width: 100%; min-height: 80px; padding: 0.8rem; border-radius: 8px; border: 1.5px solid var(--border); background: rgba(255,255,255,0.02); color: var(--text); font-family: inherit; resize: vertical;"></textarea>
                     </div>
                 </div>
             </div>
@@ -299,10 +299,10 @@
         btn.addEventListener('click', () => {
             const id = btn.dataset.id;
             const title = btn.dataset.title;
-            const order = btn.dataset.order;
+            const description = btn.dataset.description;
 
             document.getElementById('edit_title').value = title;
-            document.getElementById('edit_sort_order').value = order;
+            document.getElementById('edit_description').value = description || '';
             document.getElementById('editTopicForm').action = `/admin/content/topics/${id}`;
             
             openModal('editTopicModal');
@@ -415,7 +415,7 @@
                     deleteForm.method = 'POST';
                     deleteForm.style.display = 'inline-block';
                     deleteForm.style.margin = '0';
-                    deleteForm.onsubmit = () => confirm('Are you sure you want to delete this lesson?');
+                    deleteForm.onsubmit = (e) => confirmDelete(e, 'Are you sure you want to delete this lesson?');
                     deleteForm.innerHTML = `
                         <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}'}">
                         <input type="hidden" name="_method" value="DELETE">

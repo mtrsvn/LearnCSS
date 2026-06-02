@@ -50,6 +50,16 @@ class CourseController extends Controller
         ]);
     }
 
+    public function getPublicTopics()
+    {
+        $topics = Topic::where('status', 'approved')->orderBy('sort_order')->get(['id', 'title', 'description', 'sort_order']);
+        
+        return response()->json([
+            'success' => true,
+            'topics' => $topics
+        ]);
+    }
+
     public function getProgress()
     {
         $user = Auth::user();
