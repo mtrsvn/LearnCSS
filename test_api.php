@@ -4,12 +4,11 @@ $app = require_once 'bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
-try {
-    Illuminate\Support\Facades\Mail::raw('Test email from LearnCSS', function($message) {
-        $message->to('matersvenlive@gmail.com')->subject('Tinker Test');
-    });
-    echo "Mail sent successfully!\n";
-} catch (\Exception $e) {
-    echo "Error: " . $e->getMessage() . "\n";
-    echo $e->getTraceAsString() . "\n";
+$u = App\Models\User::find(7);
+if ($u) {
+    $u->is_admin = 1;
+    $u->save();
+    echo "Admin user updated!\n";
+} else {
+    echo "User 7 not found.\n";
 }

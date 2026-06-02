@@ -14,10 +14,10 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::check() && Auth::user()->is_admin) {
+        if (Auth::check() && (Auth::user()->is_admin || Auth::user()->role === 'admin')) {
             return $next($request);
         }
 
-        return redirect()->route('admin.login')->with('error', 'Unauthorized. Please sign in as an administrator.');
+        abort(404);
     }
 }

@@ -22,7 +22,7 @@ class AdminController extends Controller
     // ─── AUTHENTICATION ──────────────────────────────────────────
     public function showLogin()
     {
-        if (Auth::check() && Auth::user()->is_admin) {
+        if (Auth::check() && (Auth::user()->is_admin || Auth::user()->role === 'admin')) {
             return redirect()->route('admin.dashboard');
         }
         return view('admin.auth.login');
@@ -39,7 +39,7 @@ class AdminController extends Controller
 
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
-            if ($user->is_admin) {
+            if ($user->is_admin || $user->role === 'admin') {
                 AuditLog::create([
                     'user_id' => $user->id,
                     'action' => 'Admin Login',
@@ -99,48 +99,16 @@ class AdminController extends Controller
             ['label' => 'Voucher revenue', 'value' => 'PHP ' . number_format($revenue, 2), 'note' => 'Lifetime earnings'],
         ];
 
-        // Learning Health
-        $activeUsersList = User::where('is_admin', false)->where('is_active', true)->get();
-        $totalTopicsCount = Topic::count() ?: 1;
-        $avgProgress = 0;
-        if (count($activeUsersList) > 0) {
-            $totalProgressPct = 0;
-            foreach ($activeUsersList as $user) {
-                $completed = UserProgress::where('user_id', $user->id)->count();
-                $totalProgressPct += ($completed / $totalTopicsCount) * 100;
-            }
-            $avgProgress = round($totalProgressPct / count($activeUsersList));
-        }
+        // Recent Users for Dashboard
+        $recentUsers = User::orderBy('created_at', 'desc')->take(10)->get();
 
-        $totalFinalAttempts = QuizAttempt::whereNull('topic_id')->count();
-        $passedFinalAttempts = QuizAttempt::whereNull('topic_id')->where('passed', true)->count();
-        $finalPassRate = $totalFinalAttempts > 0 ? round(($passedFinalAttempts / $totalFinalAttempts) * 100) : 0;
-
-        $closeToCertCount = 0;
-        foreach ($activeUsersList as $user) {
-            $completed = UserProgress::where('user_id', $user->id)->count();
-            if ($completed >= 8 && !Certificate::where('user_id', $user->id)->exists()) {
-                $closeToCertCount++;
-            }
-        }
-        $closeToCertPct = count($activeUsersList) > 0 ? round(($closeToCertCount / count($activeUsersList)) * 100) : 0;
-
-        // Recent activity
-        $logs = AuditLog::with('user')->orderBy('created_at', 'desc')->take(10)->get();
-        $activities = $logs->map(function ($log) {
-            return [
-                'title' => $log->action . ' by ' . ($log->user ? $log->user->name : 'System'),
-                'meta' => $log->description . ' (' . $log->created_at->diffForHumans() . ')'
-            ];
-        })->toArray();
-
-        return view('admin.dashboard', compact('stats', 'activities', 'avgProgress', 'finalPassRate', 'closeToCertPct'));
+        return view('admin.dashboard', compact('stats', 'recentUsers'));
     }
 
     // ─── USER MANAGEMENT ─────────────────────────────────────────
     public function users(Request $request)
     {
-        $query = User::where('is_admin', false);
+        $query = User::query();
 
         if ($request->filled('search')) {
             $search = $request->input('search');
@@ -182,6 +150,7 @@ class AdminController extends Controller
                 'id' => $u->id,
                 'name' => $u->name,
                 'email' => $u->email,
+                'role' => $u->is_admin ? 'Admin' : ucfirst($u->role ?? 'Student'),
                 'affiliation' => $u->affiliation_name ?: 'N/A',
                 'progress' => $progressPct,
                 'quizzes' => $quizzesCount,
@@ -191,7 +160,13 @@ class AdminController extends Controller
             ];
         });
 
-        return view('admin.users.index', ['users' => $formattedUsers]);
+        $stats = [
+            'total' => User::count(),
+            'active' => User::where('is_active', true)->count(),
+            'inactive' => User::where('is_active', false)->count()
+        ];
+
+        return view('admin.users.index', ['users' => $formattedUsers, 'stats' => $stats]);
     }
 
     public function showUser($id)
@@ -278,6 +253,29 @@ class AdminController extends Controller
         ]);
 
         return back();
+    }
+
+    public function updateUserRole($id, Request $request)
+    {
+        $request->validate([
+            'role' => 'required|in:admin,instructor,student'
+        ]);
+
+        $user = User::findOrFail($id);
+        $newRole = $request->input('role');
+        
+        $user->is_admin = ($newRole === 'admin');
+        $user->role = $newRole;
+        $user->save();
+
+        AuditLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'Role Update',
+            'description' => "Changed role of {$user->email} to {$newRole}",
+            'ip_address' => $request->ip()
+        ]);
+
+        return back()->with('success', "User role successfully updated to " . ucfirst($newRole) . ".");
     }
 
     // ─── CONTENT MANAGEMENT ──────────────────────────────────────

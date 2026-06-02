@@ -151,15 +151,6 @@ if (bdateInput) {
 }
 
 // ─── Affiliation Label Toggle ────────────────────────────
-const affTypeSelect = $('su-afftype');
-if (affTypeSelect) {
-    affTypeSelect.addEventListener('change', function () {
-        const label = $('aff-name-label');
-        const input = $('su-affname');
-        if (label) label.textContent = 'Organization / School Name';
-        if (input) input.placeholder = 'e.g. University of the Philippines';
-    });
-}
 
 // ─── Modal Triggers ──────────────────────────────────────
 const triggers = [
@@ -215,7 +206,6 @@ if (signupBtn) {
         const lname   = $('su-lname').value.trim();
         const email   = $('su-email').value.trim().toLowerCase();
         const bdate   = $('su-bdate').value;
-        const affType = $('su-afftype').value;
         const affName = $('su-affname').value.trim();
         const phone   = $('su-phone').value.trim();
         const pw      = $('su-password').value;
@@ -224,7 +214,7 @@ if (signupBtn) {
         if (!fname || !lname)              return showToast('First and last name are required.');
         if (!email || !email.includes('@')) return showToast('Enter a valid email address.');
         if (!bdate)                        return showToast('Birthdate is required.');
-        if (!affName)                      return showToast(`${affType === 'school' ? 'School' : 'Company'} name is required.`);
+        if (!affName)                      return showToast('Organization / University name is required.');
         if (!phone)                        return showToast('Contact number is required.');
         if (pw.length < 6)                 return showToast('Password must be at least 6 characters.');
         if (pw !== conf)                   return showToast('Passwords do not match.');
@@ -235,7 +225,7 @@ if (signupBtn) {
                 'su-lname': lname,
                 'su-email': email,
                 'su-bdate': bdate,
-                'su-afftype': affType,
+                'su-afftype': 'student',
                 'su-affname': affName,
                 'su-phone': phone,
                 'su-password': pw
@@ -342,6 +332,11 @@ boot().then(() => {
 });
 
 async function loginUser(user) {
+    if (user && user.role === 'admin') {
+        window.location.href = '/admin/dashboard';
+        return;
+    }
+
     state.user = user;
     state.courseUnlocked = user.isCourseUnlocked || false;
 

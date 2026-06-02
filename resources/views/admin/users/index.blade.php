@@ -3,48 +3,42 @@
 @section('title', 'User Management')
 @section('kicker', 'Accounts')
 
-@section('header_actions')
-    <button class="btn btn-muted" type="button">Export users</button>
-    <button class="btn btn-primary" type="button">Add user placeholder</button>
-@endsection
-
 @section('content')
-@php
-    $users = [
-        ['id' => 1, 'name' => 'Maria Santos', 'email' => 'maria@example.com', 'status' => 'Active', 'affiliation' => 'University of Manila', 'progress' => 100, 'quizzes' => 12, 'exams' => 1, 'certificate' => 'Issued'],
-        ['id' => 2, 'name' => 'John Reyes', 'email' => 'john@example.com', 'status' => 'Active', 'affiliation' => 'Acme Corporation', 'progress' => 80, 'quizzes' => 9, 'exams' => 0, 'certificate' => 'Eligible soon'],
-        ['id' => 3, 'name' => 'Rina Cruz', 'email' => 'rina@example.com', 'status' => 'Pending', 'affiliation' => 'State College', 'progress' => 40, 'quizzes' => 4, 'exams' => 0, 'certificate' => 'Not eligible'],
-        ['id' => 4, 'name' => 'Alex Tan', 'email' => 'alex@example.com', 'status' => 'Inactive', 'affiliation' => 'Design Studio PH', 'progress' => 15, 'quizzes' => 2, 'exams' => 0, 'certificate' => 'Not eligible'],
-    ];
-@endphp
+<style>
+    .role-form { display: flex; align-items: center; gap: 0.5rem; margin: 0; }
+    .role-select { background: rgba(255,255,255,0.05); border: 1.5px solid var(--border); color: var(--text); padding: 0.3rem 0.5rem; border-radius: 8px; font-size: 0.8rem; outline: none; }
+    body.light-mode .role-select { background: rgba(0,0,0,0.05); }
+    .actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
+</style>
 
-<div class="stat-grid">
-    <article class="metric-card"><p class="metric-label">Registered users</p><p class="metric-value">1,248</p><p class="metric-note">All learner accounts</p></article>
-    <article class="metric-card"><p class="metric-label">Active</p><p class="metric-value">1,012</p><p class="metric-note">Can access lessons</p></article>
-    <article class="metric-card"><p class="metric-label">Pending review</p><p class="metric-value">36</p><p class="metric-note">Need verification UI</p></article>
-    <article class="metric-card"><p class="metric-label">Inactive</p><p class="metric-value">200</p><p class="metric-note">Dormant or disabled</p></article>
+<div class="stat-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 2rem;">
+    <article class="metric-card">
+        <p class="metric-label">All users</p>
+        <p class="metric-value">{{ number_format($stats['total']) }}</p>
+        <p class="metric-note">Total platform accounts</p>
+    </article>
+    <article class="metric-card">
+        <p class="metric-label">Active users</p>
+        <p class="metric-value" style="background: var(--correct); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">{{ number_format($stats['active']) }}</p>
+        <p class="metric-note">Currently active</p>
+    </article>
+    <article class="metric-card">
+        <p class="metric-label">Inactive users</p>
+        <p class="metric-value" style="background: var(--text-muted); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">{{ number_format($stats['inactive']) }}</p>
+        <p class="metric-note">Dormant or disabled</p>
+    </article>
 </div>
 
-<section class="panel" style="margin-top: 18px;">
-    <div class="toolbar">
+<section class="panel">
+    <div class="toolbar" style="margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 1rem;">
         <div>
             <p class="panel-label">Directory</p>
-            <h2 class="panel-title">Learner Accounts</h2>
+            <h2 class="panel-title">All Users</h2>
         </div>
-        <form action="{{ route('admin.users.index') }}" method="GET" class="toolbar-group">
-            <input type="search" name="search" placeholder="Search name, email, school..." style="width: 240px;" value="{{ request('search') }}">
-            <select name="status" style="width: 160px;" onchange="this.form.submit()">
-                <option value="">All statuses</option>
-                <option value="Active" {{ request('status') === 'Active' ? 'selected' : '' }}>Active</option>
-                <option value="Inactive" {{ request('status') === 'Inactive' ? 'selected' : '' }}>Inactive</option>
-            </select>
-            <select name="affiliation" style="width: 180px;" onchange="this.form.submit()">
-                <option value="">All affiliations</option>
-                <option value="school" {{ request('affiliation') === 'school' ? 'selected' : '' }}>University / School</option>
-                <option value="company" {{ request('affiliation') === 'company' ? 'selected' : '' }}>Company / Organization</option>
-            </select>
-            @if(request()->anyFilled(['search', 'status', 'affiliation']))
-                <a href="{{ route('admin.users.index') }}" class="btn btn-muted" style="min-height: 38px;">Clear</a>
+        <form action="{{ route('admin.users.index') }}" method="GET" class="toolbar-group" style="gap: 0.5rem; display: flex;">
+            <input type="search" name="search" placeholder="Search name, email..." value="{{ request('search') }}" style="background: rgba(255,255,255,0.02); border: 1.5px solid var(--border); color: var(--text); padding: 0.55rem 1rem; border-radius: 8px; font-family: inherit; font-size: 0.85rem; outline: none; width: 220px;">
+            @if(request()->anyFilled(['search']))
+                <a href="{{ route('admin.users.index') }}" class="btn-ghost" style="padding: 0.55rem 1rem; font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center;">Clear</a>
             @endif
         </form>
     </div>
@@ -53,47 +47,49 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>User</th>
+                    <th>Name</th>
+                    <th>Email</th>
                     <th>Affiliation</th>
-                    <th>Progress</th>
-                    <th>Quiz attempts</th>
-                    <th>Final exams</th>
-                    <th>Certificate</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <th>Role</th>
+                    <th style="text-align: right;">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach ($users as $user)
+                @forelse ($users as $user)
                     <tr>
-                        <td>
-                            <strong>{{ $user['name'] }}</strong><br>
-                            <span class="muted">{{ $user['email'] }}</span>
-                        </td>
+                        <td style="font-weight: 600;">{{ $user['name'] }}</td>
+                        <td style="color: var(--text-muted);">{{ $user['email'] }}</td>
                         <td>{{ $user['affiliation'] }}</td>
                         <td>
-                            <strong>{{ $user['progress'] }}%</strong>
-                            <div class="progress-track"><div class="progress-fill" style="width: {{ $user['progress'] }}%;"></div></div>
+                            <form action="{{ route('admin.users.role', $user['id']) }}" method="POST" class="role-form">
+                                @csrf
+                                <select name="role" class="role-select">
+                                    <option value="student" {{ strtolower($user['role']) === 'student' ? 'selected' : '' }} style="color: #000;">Student</option>
+                                    <option value="instructor" {{ strtolower($user['role']) === 'instructor' ? 'selected' : '' }} style="color: #000;">Instructor</option>
+                                    <option value="admin" {{ strtolower($user['role']) === 'admin' ? 'selected' : '' }} style="color: #000;">Admin</option>
+                                </select>
+                                <button type="submit" class="btn-ghost" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;">Save</button>
+                            </form>
                         </td>
-                        <td>{{ $user['quizzes'] }}</td>
-                        <td>{{ $user['exams'] }}</td>
-                        <td>{{ $user['certificate'] }}</td>
-                        <td>
-                            <span class="status {{ $user['status'] === 'Active' ? 'success' : ($user['status'] === 'Pending' ? 'warning' : 'neutral') }}">{{ $user['status'] }}</span>
-                        </td>
-                        <td>
+                        <td style="text-align: right;">
                             <div class="actions">
-                                <a class="btn btn-primary" href="{{ route('admin.users.show', $user['id']) }}">View</a>
-                                <form action="{{ route('admin.users.toggle', $user['id']) }}" method="POST" style="margin: 0; display: inline;">
+                                <a class="btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" href="{{ route('admin.users.show', $user['id']) }}">View</a>
+                                <form action="{{ route('admin.users.toggle', $user['id']) }}" method="POST" style="margin: 0;">
                                     @csrf
-                                    <button class="btn {{ $user['status'] === 'Inactive' ? 'btn-primary' : 'btn-warning' }}" type="submit">
-                                        {{ $user['status'] === 'Inactive' ? 'Activate' : 'Deactivate' }}
+                                    <button class="btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; {{ $user['status'] === 'Active' ? 'background: rgba(239,68,68,0.1); color: var(--wrong); border: 1px solid rgba(239,68,68,0.2);' : 'background: rgba(16,185,129,0.1); color: var(--correct); border: 1px solid rgba(16,185,129,0.2);' }}" type="submit">
+                                        {{ $user['status'] === 'Inactive' ? 'Activate' : 'Disable' }}
                                     </button>
                                 </form>
                             </div>
                         </td>
                     </tr>
-                @endforeach
+                @empty
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                            No users found matching your filters.
+                        </td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
     </div>

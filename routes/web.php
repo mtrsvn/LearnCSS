@@ -39,6 +39,54 @@ Route::prefix('api')->group(function () {
         Route::get('/exam/questions', [ExamController::class, 'getQuestions']);
         Route::post('/exam/submit', [ExamController::class, 'submit']);
         Route::get('/certificate', [ExamController::class, 'getCertificate']);
+
+        // Notifications / Announcements API
+        Route::get('/notifications', function () {
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+            }
+            $announcements = \App\Models\Announcement::orderBy('created_at', 'desc')->get();
+            $readIds = session()->get('read_announcements_' . $user->id, []);
+            
+            $notifications = $announcements->map(function ($a) use ($readIds) {
+                return [
+                    'id' => $a->id,
+                    'title' => $a->title,
+                    'message' => $a->content,
+                    'created_at' => $a->created_at->toIso8601String(),
+                    'is_read' => in_array($a->id, $readIds)
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'notifications' => $notifications
+            ]);
+        });
+
+        Route::post('/notifications/{id}/read', function ($id) {
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+            }
+            $readIds = session()->get('read_announcements_' . $user->id, []);
+            if (!in_array((int)$id, $readIds)) {
+                $readIds[] = (int)$id;
+                session()->put('read_announcements_' . $user->id, $readIds);
+            }
+            return response()->json(['success' => true]);
+        });
+
+        Route::post('/notifications/read-all', function () {
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+            }
+            $ids = \App\Models\Announcement::pluck('id')->toArray();
+            session()->put('read_announcements_' . $user->id, $ids);
+            return response()->json(['success' => true]);
+        });
     });
 
     // Public / callback endpoints (no auth middleware required)
@@ -62,6 +110,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/users', [AdminController::class, 'users'])->name('users.index');
         Route::get('/users/{user}', [AdminController::class, 'showUser'])->name('users.show');
         Route::post('/users/{user}/toggle', [AdminController::class, 'toggleUserStatus'])->name('users.toggle');
+        Route::post('/users/{user}/role', [AdminController::class, 'updateUserRole'])->name('users.role');
 
         // Content
         Route::get('/content', [AdminController::class, 'content'])->name('content.index');
