@@ -574,7 +574,7 @@ if (resumeCourseBtn) {
 function updateFinalCard() {
     const btn = $('final-exam-btn');
     if (!btn) return;
-    const allDone = state.completedTopics.length === topics.length;
+    const allDone = topics.length > 0 && state.completedTopics.length === topics.length;
 
     const statusEl = $('final-card-status');
     const lockEl = $('final-card-lock');
@@ -582,13 +582,18 @@ function updateFinalCard() {
 
     if (state.hasCertificate) {
         btn.className = 'topic-card completed final-exam-card';
+        btn.style.borderColor = 'var(--success, #10b981)';
+        btn.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.15)';
         btn.innerHTML = `
-            <p class="topic-num">Final Exam</p>
-            <h3>Final Certification Exam <span class="topic-done-badge"><i data-lucide="check"></i></span></h3>
-            <span id="final-card-status" style="display: block; margin-bottom: 1rem;">You have successfully passed the final exam.</span>
-            <div style="display: flex; gap: 0.5rem;">
-                <button id="view-cert-btn" class="btn-primary" style="flex: 1; font-size: 0.85rem; padding: 0.6rem;">View Certificate</button>
-                <button id="retake-exam-btn" class="btn-ghost" style="flex: 1; font-size: 0.85rem; padding: 0.6rem; border: 1px solid var(--border);">Retake</button>
+            <div class="exam-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <p class="topic-num" style="margin: 0; font-weight: 600; color: var(--success, #10b981);">Final Exam</p>
+                <span class="topic-done-badge" style="background: rgba(16, 185, 129, 0.1); color: var(--success, #10b981); padding: 0.25rem 0.6rem; border-radius: 9999px; font-size: 0.75rem; display: flex; align-items: center; gap: 0.35rem; font-weight: 600;"><i data-lucide="check-circle" style="width: 14px; height: 14px;"></i> Passed</span>
+            </div>
+            <h3 style="margin-bottom: 0.5rem; font-size: 1.25rem; color: var(--text);">Final Certification Exam</h3>
+            <span id="final-card-status" style="display: block; margin-bottom: 1.5rem; color: var(--text-muted); font-size: 0.9rem;">You have successfully passed the final exam. Congratulations!</span>
+            <div style="display: flex; gap: 0.75rem;">
+                <button id="view-cert-btn" class="btn-primary" style="flex: 1; font-size: 0.9rem; padding: 0.6rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;"><i data-lucide="award" style="width: 16px; height: 16px;"></i> View Certificate</button>
+                <button id="retake-exam-btn" class="btn-ghost" style="flex: 1; font-size: 0.9rem; padding: 0.6rem; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; gap: 0.5rem;"><i data-lucide="rotate-ccw" style="width: 16px; height: 16px;"></i> Retake</button>
             </div>
         `;
         
@@ -615,14 +620,37 @@ function updateFinalCard() {
         };
         
         btn.onclick = null;
-        if (typeof lucide !== 'undefined') lucide.createIcons();
     } else if (!allDone) {
         btn.className = 'topic-card locked final-exam-card';
+        btn.style.borderColor = 'var(--border)';
+        btn.style.boxShadow = 'none';
+        btn.innerHTML = `
+            <div class="exam-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <p class="topic-num" style="margin: 0; font-weight: 600; color: var(--text-muted);">Final Exam</p>
+                <span class="topic-lock" style="color: var(--wrong, #ef4444); font-size: 0.85rem; display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="lock" style="width: 14px; height: 14px;"></i> Locked</span>
+            </div>
+            <h3 style="margin-bottom: 0.5rem; font-size: 1.25rem; color: var(--text-muted);">Final Certification Exam</h3>
+            <span id="final-card-status" style="display: block; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">Complete all topics to unlock this exam.</span>
+            <div style="background: var(--bg-secondary); padding: 0.75rem; border-radius: 8px; border: 1px dashed var(--border); text-align: center;">
+                <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Progress: ${state.completedTopics.length} / ${topics.length} topics</span>
+            </div>
+        `;
         btn.onclick = null;
-        if (statusEl) statusEl.textContent = 'Complete all topics to unlock this exam.';
-        if (lockEl) lockEl.classList.remove('hidden');
     } else {
         btn.className = 'topic-card final-exam-card';
+        btn.style.borderColor = 'var(--accent)';
+        btn.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.15)';
+        btn.innerHTML = `
+            <div class="exam-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <p class="topic-num" style="margin: 0; font-weight: 600; color: var(--accent);">Final Exam</p>
+                <span class="topic-unlock" style="background: rgba(99, 102, 241, 0.1); color: var(--accent); padding: 0.25rem 0.6rem; border-radius: 9999px; font-size: 0.75rem; display: flex; align-items: center; gap: 0.35rem; font-weight: 600;"><i data-lucide="unlock" style="width: 14px; height: 14px;"></i> Unlocked</span>
+            </div>
+            <h3 style="margin-bottom: 0.5rem; font-size: 1.25rem; color: var(--text);">Final Certification Exam</h3>
+            <span id="final-card-status" style="display: block; margin-bottom: 1.5rem; color: var(--text-muted); font-size: 0.9rem;">Ready to take the final exam. Good luck!</span>
+            <button class="btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.95rem; padding: 0.75rem;">
+                <i data-lucide="play-circle" style="width: 18px; height: 18px;"></i> Start Exam
+            </button>
+        `;
         btn.onclick = async () => {
             if (state.voucherCode) {
                 state.isFinalExam = true;
@@ -637,9 +665,9 @@ function updateFinalCard() {
                 openModal('modal-enter-voucher');
             }
         };
-        if (statusEl) statusEl.textContent = 'Ready to take the final exam.';
-        if (lockEl) lockEl.classList.add('hidden');
     }
+
+    if (typeof lucide !== 'undefined') lucide.createIcons({ root: btn });
 }
 
 // ─── Lesson ──────────────────────────────────────────────
@@ -788,12 +816,20 @@ function startQuiz(data) {
     const timerEl = $('quiz-timer');
     if (state.isFinalExam) {
         quizTimerSeconds = 1200;
-        timerEl.textContent = formatTime(quizTimerSeconds);
+        timerEl.innerHTML = `<i data-lucide="timer" style="width: 16px; height: 16px; margin-right: 6px; vertical-align: text-bottom;"></i> <span id="quiz-timer-text" style="font-weight: bold; font-family: monospace; font-size: 1.1rem;">${formatTime(quizTimerSeconds)}</span>`;
+        timerEl.style.display = 'inline-block';
+        timerEl.style.padding = '0.4rem 0.8rem';
+        timerEl.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+        timerEl.style.color = 'var(--wrong, #ef4444)';
+        timerEl.style.borderRadius = '8px';
+        timerEl.style.border = '1px solid rgba(239, 68, 68, 0.2)';
         timerEl.classList.remove('hidden');
+        if (typeof lucide !== 'undefined') lucide.createIcons({ root: timerEl });
         
         quizTimerInterval = setInterval(() => {
             quizTimerSeconds--;
-            timerEl.textContent = formatTime(quizTimerSeconds);
+            const timerText = $('quiz-timer-text');
+            if (timerText) timerText.textContent = formatTime(quizTimerSeconds);
             if (quizTimerSeconds <= 0) {
                 clearInterval(quizTimerInterval);
                 showToast('Time is up! Submitting exam...', 'info');
@@ -805,7 +841,7 @@ function startQuiz(data) {
             }
         }, 1000);
     } else {
-        timerEl.classList.add('hidden');
+        if (timerEl) timerEl.classList.add('hidden');
     }
     
     renderQuestion();
@@ -817,7 +853,13 @@ function renderQuestion() {
     const currentQEl = $('current-q');
     if (currentQEl) currentQEl.textContent = qIndex + 1;
     const qTextEl = $('question-text');
-    if (qTextEl) qTextEl.textContent = q.question;
+    if (qTextEl) {
+        qTextEl.textContent = q.question;
+        qTextEl.style.fontSize = '1.25rem';
+        qTextEl.style.fontWeight = '600';
+        qTextEl.style.marginBottom = '1.5rem';
+        qTextEl.style.color = 'var(--text)';
+    }
     const progressBar = $('quiz-progress-bar');
     if (progressBar) progressBar.style.width = ((qIndex + 1) / quizData.length * 100) + '%';
 
@@ -826,17 +868,75 @@ function renderQuestion() {
         opts.innerHTML = '';
         selected = null;
         const nextBtn = $('next-q-btn');
-        if (nextBtn) nextBtn.disabled = true;
+        if (nextBtn) {
+            nextBtn.disabled = true;
+            nextBtn.style.opacity = '0.5';
+            nextBtn.style.cursor = 'not-allowed';
+        }
 
         q.options.forEach((opt, i) => {
             const btn = document.createElement('button');
             btn.className = 'option-btn';
-            btn.textContent = opt;
+            btn.style.display = 'flex';
+            btn.style.alignItems = 'center';
+            btn.style.textAlign = 'left';
+            btn.style.width = '100%';
+            btn.style.padding = '1rem';
+            btn.style.marginBottom = '0.75rem';
+            btn.style.border = '2px solid var(--border)';
+            btn.style.borderRadius = '12px';
+            btn.style.backgroundColor = 'var(--bg-secondary)';
+            btn.style.cursor = 'pointer';
+            btn.style.transition = 'all 0.2s ease';
+            btn.style.color = 'var(--text)';
+            btn.style.fontSize = '1rem';
+            
+            const letter = String.fromCharCode(65 + i);
+            btn.innerHTML = `
+                <span class="opt-letter" style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; margin-right: 16px; font-weight: bold; color: var(--text-muted); transition: all 0.2s ease; flex-shrink: 0;">${letter}</span>
+                <span class="opt-text" style="flex: 1; line-height: 1.4;">${opt}</span>
+            `;
+            
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+                document.querySelectorAll('.option-btn').forEach(b => {
+                    b.classList.remove('selected');
+                    b.style.borderColor = 'var(--border)';
+                    b.style.backgroundColor = 'var(--bg-secondary)';
+                    const letterEl = b.querySelector('.opt-letter');
+                    if (letterEl) {
+                        letterEl.style.background = 'var(--bg)';
+                        letterEl.style.color = 'var(--text-muted)';
+                        letterEl.style.borderColor = 'var(--border)';
+                    }
+                });
+                
                 btn.classList.add('selected');
+                btn.style.borderColor = 'var(--accent)';
+                btn.style.backgroundColor = 'rgba(99, 102, 241, 0.05)';
+                const selLetter = btn.querySelector('.opt-letter');
+                if (selLetter) {
+                    selLetter.style.background = 'var(--accent)';
+                    selLetter.style.color = '#fff';
+                    selLetter.style.borderColor = 'var(--accent)';
+                }
+                
                 selected = i;
-                if (nextBtn) nextBtn.disabled = false;
+                if (nextBtn) {
+                    nextBtn.disabled = false;
+                    nextBtn.style.opacity = '1';
+                    nextBtn.style.cursor = 'pointer';
+                }
+            });
+            
+            btn.addEventListener('mouseenter', () => {
+                if (!btn.disabled && !btn.classList.contains('selected')) {
+                    btn.style.borderColor = 'var(--text-muted)';
+                }
+            });
+            btn.addEventListener('mouseleave', () => {
+                if (!btn.disabled && !btn.classList.contains('selected')) {
+                    btn.style.borderColor = 'var(--border)';
+                }
             });
             opts.appendChild(btn);
         });
@@ -851,13 +951,41 @@ if (nextQBtn) {
 
         document.querySelectorAll('.option-btn').forEach((btn, i) => {
             btn.disabled = true;
+            btn.style.cursor = 'default';
+            const letterEl = btn.querySelector('.opt-letter');
+            
             // For regular quiz, we know answers index locally.
             // For final exam, options grading is performed securely at submit!
             if (!state.isFinalExam) {
-                if (i === q.answer) btn.classList.add('correct');
-                else if (i === selected) btn.classList.add('wrong');
+                if (i === q.answer) {
+                    btn.classList.add('correct');
+                    btn.style.borderColor = 'var(--success, #10b981)';
+                    btn.style.backgroundColor = 'rgba(16, 185, 129, 0.05)';
+                    if (letterEl) {
+                        letterEl.style.background = 'var(--success, #10b981)';
+                        letterEl.style.color = '#fff';
+                        letterEl.style.borderColor = 'var(--success, #10b981)';
+                        letterEl.innerHTML = `<i data-lucide="check" style="width: 16px; height: 16px;"></i>`;
+                        if (window.lucide) lucide.createIcons({ root: letterEl });
+                    }
+                }
+                else if (i === selected) {
+                    btn.classList.add('wrong');
+                    btn.style.borderColor = 'var(--wrong, #ef4444)';
+                    btn.style.backgroundColor = 'rgba(239, 68, 68, 0.05)';
+                    if (letterEl) {
+                        letterEl.style.background = 'var(--wrong, #ef4444)';
+                        letterEl.style.color = '#fff';
+                        letterEl.style.borderColor = 'var(--wrong, #ef4444)';
+                        letterEl.innerHTML = `<i data-lucide="x" style="width: 16px; height: 16px;"></i>`;
+                        if (window.lucide) lucide.createIcons({ root: letterEl });
+                    }
+                } else {
+                    btn.style.opacity = '0.5';
+                }
             } else {
                 if (i === selected) btn.classList.add('selected');
+                else btn.style.opacity = '0.5';
             }
         });
 
