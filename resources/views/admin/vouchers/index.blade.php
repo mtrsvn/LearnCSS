@@ -3,12 +3,9 @@
 @section('title', 'Voucher Management')
 @section('kicker', 'Payments and Access')
 
-@section('header_actions')
-    <button class="btn btn-primary" type="button">Generate voucher</button>
-@endsection
+
 
 @section('content')
-<div class="split-grid">
     <section class="panel">
         <p class="panel-label">Voucher list</p>
         <h2 class="panel-title">Exam Access Vouchers</h2>
@@ -45,37 +42,9 @@
         </div>
     </section>
 
-    <aside class="panel">
-        <p class="panel-label">Prepaid codes</p>
-        <h2 class="panel-title">Batch Generator</h2>
-        <p class="panel-subtitle">Instantly generate a batch of prepaid access keys.</p>
-        
-        <form action="{{ route('admin.vouchers.generate') }}" method="POST">
-            @csrf
-            <div class="form-grid">
-                <div class="field full">
-                    <label>Voucher prefix</label>
-                    <input value="CSSM" readonly style="background: var(--surface-soft); color: var(--muted);">
-                </div>
-                <div class="field full">
-                    <label>Quantity to generate</label>
-                    <input type="number" name="quantity" min="1" max="50" value="5" required>
-                </div>
-                <div class="field full">
-                    <label>Unit price (PHP)</label>
-                    <input value="₱299.00" readonly style="background: var(--surface-soft); color: var(--muted);">
-                </div>
-            </div>
-            <div class="actions" style="margin-top: 20px;">
-                <button class="btn btn-primary" type="submit" style="width: 100%;">Generate Prepaid Batch</button>
-            </div>
-        </form>
-    </aside>
-</div>
-
 <section class="panel" style="margin-top: 18px;">
     <p class="panel-label">Transactions</p>
-    <h2 class="panel-title">GCash / card Payment Records</h2>
+    <h2 class="panel-title">Payment Records</h2>
     <div class="table-wrap">
         <table class="data-table">
             <thead><tr><th>Receipt</th><th>Buyer</th><th>Payment Method</th><th>Amount</th><th>Status</th><th>Redeemed Date</th></tr></thead>
