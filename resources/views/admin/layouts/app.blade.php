@@ -15,7 +15,7 @@
         ['label' => 'Content', 'route' => 'admin.content.index', 'active' => 'admin.content.*', 'icon' => 'book-open', 'badge' => $pendingContentCount > 0 ? $pendingContentCount : null],
     ];
     
-    if ($isAdmin) {
+    if ($isAdmin || trim(strtolower(Auth::user()->role)) === 'instructor') {
         $navItems[] = ['label' => 'Vouchers', 'route' => 'admin.vouchers.index', 'active' => 'admin.vouchers.*', 'icon' => 'ticket'];
         $navItems[] = ['label' => 'Certificates', 'route' => 'admin.certificates.index', 'active' => 'admin.certificates.*', 'icon' => 'award'];
     }
@@ -37,8 +37,8 @@
         body.light-mode .sidebar { background: rgba(232,232,232,0.85); }
         .nav-list { display: flex; flex-direction: column; gap: 0.5rem; }
         .nav-link { padding: 0.68rem 0.85rem; border-radius: 8px; font-size: 0.83rem; color: var(--text); display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s; text-decoration: none; }
-        .nav-link:hover { background: rgba(255,255,255,0.05); }
-        body.light-mode .nav-link:hover { background: rgba(0,0,0,0.05); }
+        .nav-link:not(.active):hover { background: rgba(255,255,255,0.05); }
+        body.light-mode .nav-link:not(.active):hover { background: rgba(0,0,0,0.05); }
         .nav-link.active { background: var(--gradient); color: #fff; font-weight: 600; box-shadow: 0 4px 15px var(--glow); }
 
         .admin-main { flex: 1; background: var(--bg); display: flex; flex-direction: column; min-width: 0; overflow-y: auto; }
