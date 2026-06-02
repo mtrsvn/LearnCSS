@@ -369,7 +369,7 @@ class AdminController extends Controller
             'video_url' => 'required|string|max:255',
             'notes' => 'nullable|string',
             'sort_order' => 'required|integer',
-            'documentation' => 'nullable|file|mimes:pdf,doc,docx,txt,zip|max:10240', // max 10MB
+            'documentation' => 'nullable|file|mimes:pdf,doc,docx,txt,zip,png,jpg,jpeg,gif,webp|max:10240', // max 10MB
         ]);
 
         $data = [
@@ -409,7 +409,7 @@ class AdminController extends Controller
             'video_url' => 'required|string|max:255',
             'notes' => 'nullable|string',
             'sort_order' => 'required|integer',
-            'documentation' => 'nullable|file|mimes:pdf,doc,docx,txt,zip|max:10240',
+            'documentation' => 'nullable|file|mimes:pdf,doc,docx,txt,zip,png,jpg,jpeg,gif,webp|max:10240',
         ]);
 
         $data = [

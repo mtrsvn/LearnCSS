@@ -227,8 +227,8 @@
                     </div>
                     <div class="field full" style="border: 1px dashed var(--border); padding: 1rem; border-radius: 8px;">
                         <label for="lesson_documentation">Lesson Documentation File (Optional)</label>
-                        <p class="muted" style="margin-top: 0; font-size: 0.8rem; margin-bottom: 0.5rem;">Upload a PDF, DOC, or ZIP file to be available to students in the Documentation tab.</p>
-                        <input type="file" id="lesson_documentation" name="documentation" accept=".pdf,.doc,.docx,.zip,.txt" style="background: rgba(255,255,255,0.02); color: var(--text); padding: 0.3rem; border-radius: 8px; width: 100%; border: 1.5px solid var(--border); cursor: pointer; font-family: inherit; font-size: 0.85rem; height: 2.8rem; box-sizing: border-box;">
+                        <p class="muted" style="margin-top: 0; font-size: 0.8rem; margin-bottom: 0.5rem;">Upload a PDF, DOC, ZIP, or Image (PNG/JPG) to be available to students in the Documentation tab.</p>
+                        <input type="file" id="lesson_documentation" name="documentation" accept=".pdf,.doc,.docx,.zip,.txt,image/*" style="background: rgba(255,255,255,0.02); color: var(--text); padding: 0.3rem; border-radius: 8px; width: 100%; border: 1.5px solid var(--border); cursor: pointer; font-family: inherit; font-size: 0.85rem; height: 2.8rem; box-sizing: border-box;">
                         
                         <div id="current_documentation_info" style="display: none; margin-top: 0.5rem; font-size: 0.85rem; padding: 0.5rem; background: rgba(16, 185, 129, 0.1); border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.2); align-items: center; justify-content: space-between;">
                             <span><strong style="color: var(--correct);">Current File:</strong> <span id="current_doc_filename"></span></span>

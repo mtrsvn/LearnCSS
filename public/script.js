@@ -597,12 +597,36 @@ function renderLesson() {
     // Handle Documentation Tab visibility and link
     const tabDocs = $('tab-docs');
     const docsBtn = $('docs-download-btn');
+    const docsIframe = $('docs-iframe');
+    const docsIframeWrap = $('docs-iframe-wrap');
+    const docsImg = $('docs-img');
+    const docsImgWrap = $('docs-img-wrap');
+    const docsFallback = $('docs-fallback');
+
     if (lesson.documentationPath) {
         if (tabDocs) tabDocs.style.display = 'block';
         if (docsBtn) {
             docsBtn.href = lesson.documentationPath;
-            docsBtn.innerHTML = `Download ${lesson.documentationFilename || 'Documentation'}`;
         }
+        
+        const path = lesson.documentationPath.toLowerCase();
+        const isPdf = path.endsWith('.pdf');
+        const isImage = path.match(/\.(jpeg|jpg|gif|png|webp)$/) != null;
+
+        if (docsIframeWrap) docsIframeWrap.style.display = 'none';
+        if (docsImgWrap) docsImgWrap.style.display = 'none';
+        if (docsFallback) docsFallback.style.display = 'none';
+
+        if (isImage) {
+            if (docsImg) docsImg.src = lesson.documentationPath;
+            if (docsImgWrap) docsImgWrap.style.display = 'flex';
+        } else if (isPdf) {
+            if (docsIframe) docsIframe.src = lesson.documentationPath;
+            if (docsIframeWrap) docsIframeWrap.style.display = 'block';
+        } else {
+            if (docsFallback) docsFallback.style.display = 'flex';
+        }
+
     } else {
         if (tabDocs) tabDocs.style.display = 'none';
         switchMedia('video'); // Default back to video if no docs
@@ -623,6 +647,8 @@ function switchMedia(type) {
             tabVideo.style.color = 'var(--text)';
             tabVideo.style.borderBottom = '2px solid var(--accent)';
         }
+
+
         if (tabDocs) {
             tabDocs.style.color = 'var(--text-muted)';
             tabDocs.style.borderBottom = 'none';
@@ -638,7 +664,7 @@ function switchMedia(type) {
             tabVideo.style.color = 'var(--text-muted)';
             tabVideo.style.borderBottom = 'none';
         }
-        if (docsContainer) docsContainer.style.display = 'block';
+        if (docsContainer) docsContainer.style.display = 'flex';
         if (videoContainer) videoContainer.style.display = 'none';
     }
 }
@@ -998,4 +1024,3 @@ if (notifClearAll) {
         } catch (e) {}
     });
 }
-
