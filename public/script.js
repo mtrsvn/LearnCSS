@@ -1115,36 +1115,60 @@ function copyCertId() {
 
 function downloadCertificate() {
     const certNode = document.getElementById('certificate');
-    if (!certNode) return;
+    if (!certNode) {
+        alert("Error: Certificate not found on page.");
+        return;
+    }
     
-    const originalShadow = certNode.style.boxShadow;
-    const originalTransform = certNode.style.transform;
-    certNode.style.boxShadow = 'none';
-    certNode.style.transform = 'none';
-    
-    showToast('Generating image...', 'info');
-    
-    html2canvas(certNode, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: null
-    }).then(canvas => {
-        certNode.style.boxShadow = originalShadow;
-        certNode.style.transform = originalTransform;
+    try {
+        const originalShadow = certNode.style.boxShadow;
+        const originalTransform = certNode.style.transform;
+        const originalAspectRatio = certNode.style.aspectRatio;
         
-        const link = document.createElement('a');
-        const userName = state.currentUser ? state.currentUser.name.replace(/\s+/g, '_') : 'Completion';
-        link.download = `LearnCSS_Certificate_${userName}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
+        const rect = certNode.getBoundingClientRect();
+        const w = Math.round(rect.width) || 520;
+        const h = Math.round(rect.height) || 402;
         
-        showToast('Certificate downloaded successfully!', 'success');
-    }).catch(err => {
-        certNode.style.boxShadow = originalShadow;
-        certNode.style.transform = originalTransform;
-        showToast('Failed to generate image.', 'error');
-        console.error(err);
-    });
+        certNode.style.width = w + 'px';
+        certNode.style.height = h + 'px';
+        certNode.style.aspectRatio = 'auto';
+        certNode.style.boxShadow = 'none';
+        certNode.style.transform = 'none';
+        
+        html2canvas(certNode, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            width: w,
+            height: h
+        }).then(canvas => {
+            certNode.style.boxShadow = originalShadow;
+            certNode.style.transform = originalTransform;
+            certNode.style.aspectRatio = originalAspectRatio;
+            certNode.style.width = '';
+            certNode.style.height = '';
+            
+            const userName = (state.user && state.user.name) ? state.user.name.replace(/[^a-zA-Z0-9]/g, '_') : 'Learner';
+            const fileName = `LearnCSS_Certificate_${userName}.png`;
+            
+            const link = document.createElement('a');
+            link.download = fileName;
+            link.href = canvas.toDataURL('image/png', 1.0);
+            document.body.appendChild(link);
+            link.click();
+            setTimeout(() => document.body.removeChild(link), 100);
+            
+        }).catch(err => {
+            certNode.style.boxShadow = originalShadow;
+            certNode.style.transform = originalTransform;
+            certNode.style.aspectRatio = originalAspectRatio;
+            certNode.style.width = '';
+            certNode.style.height = '';
+            alert("Error rendering image. Please try another browser. Details: " + err);
+        });
+    } catch (e) {
+        alert("Fatal error setting up download: " + e);
+    }
 }
 
 function shareOnLinkedIn() {
