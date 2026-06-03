@@ -128,7 +128,7 @@ body { background:var(--bg); color:var(--text); font-family:'Plus Jakarta Sans',
 .mobile-menu-btn.active .burger-bars span:nth-child(3) { transform:translateY(-7px) rotate(-45deg); }
 .nav-actions { display:flex; gap:.75rem; align-items:center; }
 
-.hero { flex:1; display:flex; flex-direction:row; justify-content:space-between; align-items:center; text-align:left; padding:6rem 4rem 4rem; position:relative; max-width: 1200px; margin: 0 auto; gap: 4rem; width: 100%; }
+.hero { flex:1; display:flex; flex-direction:row; justify-content:space-between; align-items:center; text-align:left; padding:6rem 4rem 4rem; position:relative; max-width: 1300px; margin: 0 auto; gap: 8rem; width: 100%; }
 .hero-content { flex: 1; max-width: 600px; }
 .hero h1 { font-family:'Outfit',sans-serif; font-size:clamp(2.5rem,5vw,4.5rem); font-weight:800; line-height:1.08; letter-spacing:-.03em; margin-bottom:1.25rem; position:relative; }
 .hero h1 .gradient-text { background:var(--gradient); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
