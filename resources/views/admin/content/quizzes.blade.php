@@ -145,82 +145,72 @@
     </div>
 </section>
 
-<!-- ================= ADD / EDIT QUESTION MODAL ================= -->
-<div id="questionModal" class="modal">
-    <div class="modal-content" style="max-width: 650px;">
+<!-- ================= ADD / EDIT QUESTION FORM ================= -->
+<section id="questionFormContainer" class="panel" style="margin-top: 18px;">
+    <div class="panel-header" style="margin-bottom: 1.5rem;">
+        <p class="panel-label">Question editor</p>
+        <h2 id="modalTitle" class="panel-title">Add New Question</h2>
+    </div>
+    
+    <div class="form-container">
         <form id="questionForm" method="POST" action="{{ route('admin.content.quizzes.store') }}">
             @csrf
             <input type="hidden" id="question_method" name="_method" value="POST">
             
-            <div class="modal-header">
-                <h3 id="modalTitle" class="modal-title">Add New Question</h3>
-                <button type="button" class="modal-close" onclick="closeModal('questionModal')">&times;</button>
-            </div>
-            
-            <div class="modal-body">
-                <div class="form-grid">
-                    <div class="field full">
-                        <label for="q_scope">Assessment Scope / Topic</label>
-                        <select id="q_scope" name="topic_id" required>
-                            <option value="">-- Final Certification Exam --</option>
-                            @foreach ($topics as $topic)
-                                <option value="{{ $topic->id }}">{{ $topic->title }} Quiz</option>
-                            @endforeach
-                        </select>
-                    </div>
+            <div class="form-grid">
+                <div class="field full">
+                    <label for="q_scope">Assessment Scope / Topic</label>
+                    <select id="q_scope" name="topic_id" required>
+                        <option value="">-- Final Certification Exam --</option>
+                        @foreach ($topics as $topic)
+                            <option value="{{ $topic->id }}">{{ $topic->title }} Quiz</option>
+                        @endforeach
+                    </select>
+                </div>
 
-                    <div class="field full">
-                        <label for="q_text">Question Text</label>
-                        <textarea id="q_text" name="question" required placeholder="e.g. Which CSS property is used to change the text color?"></textarea>
-                    </div>
+                <div class="field full">
+                    <label for="q_text">Question Text</label>
+                    <textarea id="q_text" name="question" required placeholder="e.g. Which CSS property is used to change the text color?"></textarea>
+                </div>
 
-                    <div class="field">
-                        <label for="q_opt0">Option 1 (Index 0)</label>
-                        <input type="text" id="q_opt0" name="options[]" required placeholder="e.g. color">
-                    </div>
-                    <div class="field">
-                        <label for="q_opt1">Option 2 (Index 1)</label>
-                        <input type="text" id="q_opt1" name="options[]" required placeholder="e.g. text-color">
-                    </div>
-                    <div class="field">
-                        <label for="q_opt2">Option 3 (Index 2)</label>
-                        <input type="text" id="q_opt2" name="options[]" required placeholder="e.g. font-color">
-                    </div>
-                    <div class="field">
-                        <label for="q_opt3">Option 4 (Index 3)</label>
-                        <input type="text" id="q_opt3" name="options[]" required placeholder="e.g. background-color">
-                    </div>
+                <div class="field">
+                    <label for="q_opt0">Option 1 (Index 0)</label>
+                    <input type="text" id="q_opt0" name="options[]" required placeholder="e.g. color">
+                </div>
+                <div class="field">
+                    <label for="q_opt1">Option 2 (Index 1)</label>
+                    <input type="text" id="q_opt1" name="options[]" required placeholder="e.g. text-color">
+                </div>
+                <div class="field">
+                    <label for="q_opt2">Option 3 (Index 2)</label>
+                    <input type="text" id="q_opt2" name="options[]" required placeholder="e.g. font-color">
+                </div>
+                <div class="field">
+                    <label for="q_opt3">Option 4 (Index 3)</label>
+                    <input type="text" id="q_opt3" name="options[]" required placeholder="e.g. background-color">
+                </div>
 
-                    <div class="field full">
-                        <label for="q_answer">Correct Answer Option</label>
-                        <select id="q_answer" name="answer" required>
-                            <option value="0">Option 1 (Index 0)</option>
-                            <option value="1">Option 2 (Index 1)</option>
-                            <option value="2">Option 3 (Index 2)</option>
-                            <option value="3">Option 4 (Index 3)</option>
-                        </select>
-                    </div>
+                <div class="field full">
+                    <label for="q_answer">Correct Answer Option</label>
+                    <select id="q_answer" name="answer" required>
+                        <option value="0">Option 1 (Index 0)</option>
+                        <option value="1">Option 2 (Index 1)</option>
+                        <option value="2">Option 3 (Index 2)</option>
+                        <option value="3">Option 4 (Index 3)</option>
+                    </select>
                 </div>
             </div>
 
-            <div class="modal-footer">
-                <button type="button" class="btn btn-muted" onclick="closeModal('questionModal')">Cancel</button>
+            <div class="form-actions" style="margin-top: 1.5rem; display: flex; gap: 0.75rem; justify-content: flex-end;">
+                <button type="button" class="btn btn-muted" onclick="resetQuestionForm()">Clear</button>
                 <button type="submit" id="saveQuestionBtn" class="btn btn-primary">Create Question</button>
             </div>
         </form>
     </div>
-</div>
+</section>
 
 <script>
-    function openModal(id) {
-        document.getElementById(id).classList.add('open');
-    }
-    
-    function closeModal(id) {
-        document.getElementById(id).classList.remove('open');
-    }
-
-    function openAddQuestionModal() {
+    function resetQuestionForm() {
         document.getElementById('modalTitle').textContent = 'Add New Question';
         document.getElementById('q_scope').value = '';
         document.getElementById('q_text').value = '';
@@ -233,8 +223,11 @@
         document.getElementById('questionForm').action = "{{ route('admin.content.quizzes.store') }}";
         document.getElementById('question_method').value = 'POST';
         document.getElementById('saveQuestionBtn').textContent = 'Create Question';
-        
-        openModal('questionModal');
+    }
+
+    function openAddQuestionModal() {
+        resetQuestionForm();
+        document.getElementById('questionFormContainer').scrollIntoView({ behavior: 'smooth' });
     }
 
     document.querySelectorAll('.edit-question-btn').forEach(btn => {
@@ -269,7 +262,7 @@
             document.getElementById('question_method').value = 'POST'; // POST method with Route override
             document.getElementById('saveQuestionBtn').textContent = 'Save Question Changes';
             
-            openModal('questionModal');
+            document.getElementById('questionFormContainer').scrollIntoView({ behavior: 'smooth' });
         });
     });
 </script>

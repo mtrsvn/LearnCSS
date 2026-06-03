@@ -582,18 +582,15 @@ function updateFinalCard() {
 
     if (state.hasCertificate) {
         btn.className = 'topic-card completed final-exam-card';
-        btn.style.borderColor = 'var(--success, #10b981)';
-        btn.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.15)';
+        btn.style.borderColor = '';
+        btn.style.boxShadow = '';
         btn.innerHTML = `
-            <div class="exam-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <p class="topic-num" style="margin: 0; font-weight: 600; color: var(--success, #10b981);">Final Exam</p>
-                <span class="topic-done-badge" style="background: rgba(16, 185, 129, 0.1); color: var(--success, #10b981); padding: 0.25rem 0.6rem; border-radius: 9999px; font-size: 0.75rem; display: flex; align-items: center; gap: 0.35rem; font-weight: 600;"><i data-lucide="check-circle" style="width: 14px; height: 14px;"></i> Passed</span>
-            </div>
-            <h3 style="margin-bottom: 0.5rem; font-size: 1.25rem; color: var(--text);">Final Certification Exam</h3>
+            <p class="topic-num">Final Exam</p>
+            <h3 style="margin-bottom: 0.5rem; font-size: 1.25rem; color: var(--text);">Final Certification Exam<span class="topic-done-badge"><i data-lucide="check"></i></span></h3>
             <span id="final-card-status" style="display: block; margin-bottom: 1.5rem; color: var(--text-muted); font-size: 0.9rem;">You have successfully passed the final exam. Congratulations!</span>
             <div style="display: flex; gap: 0.75rem;">
-                <button id="view-cert-btn" class="btn-primary" style="flex: 1; font-size: 0.9rem; padding: 0.6rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;"><i data-lucide="award" style="width: 16px; height: 16px;"></i> View Certificate</button>
-                <button id="retake-exam-btn" class="btn-ghost" style="flex: 1; font-size: 0.9rem; padding: 0.6rem; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; gap: 0.5rem;"><i data-lucide="rotate-ccw" style="width: 16px; height: 16px;"></i> Retake</button>
+                <button id="view-cert-btn" class="btn-primary" style="flex: 1; font-size: 0.9rem; padding: 0.6rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">View Certificate</button>
+                <button id="retake-exam-btn" class="btn-ghost" style="flex: 1; font-size: 0.9rem; padding: 0.6rem; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">Retake</button>
             </div>
         `;
         
