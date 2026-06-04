@@ -529,12 +529,11 @@ function renderDashboard() {
             const midLockMsg = midUnlocked ? '' : '<span class="topic-lock"><i data-lucide="lock"></i>Complete previous topics to unlock Mid Exam</span>';
             
             const midCard = document.createElement('div');
-            midCard.className = `topic-card ${midUnlocked ? '' : 'locked'}`.trim();
-            midCard.style.borderColor = 'var(--accent)';
+            midCard.className = `topic-card ${midDone ? 'completed' : ''} ${midUnlocked ? '' : 'locked'}`.trim();
             midCard.innerHTML = `
-                <p class="topic-num" style="color: var(--accent); font-weight: bold;">Mid Exam</p>
-                <h3>Mid Certification Exam</h3>
-                <span style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.9rem;">Test your knowledge on the first half!</span>
+                <p class="topic-num" style="color: ${midDone ? 'var(--correct)' : 'var(--accent)'}; font-weight: bold;">Mid Exam</p>
+                <h3>Mid Certification Exam${midDone ? '<span class="topic-done-badge"><i data-lucide="check"></i></span>' : ''}</h3>
+                <span style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.9rem;">${midDone ? 'You have passed the Mid Certification Exam.' : 'Test your knowledge on the first half!'}</span>
                 ${midLockMsg}
             `;
             if (midUnlocked) {
@@ -697,7 +696,7 @@ function updateFinalCard() {
             </button>
         `;
         btn.onclick = async () => {
-            if (state.voucherCode) {
+            if (state.courseUnlocked) {
                 state.examType = 'final';
                 try {
                     const exam = await apiRequest('/api/exam/questions?type=final');
