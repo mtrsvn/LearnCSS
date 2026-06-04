@@ -551,13 +551,14 @@ function renderDashboard() {
         }
 
         const card = document.createElement('div');
-        card.className = `topic-card ${done ? 'completed' : ''} ${unlocked ? '' : 'locked'}`.trim();
+        card.className = `topic-card ${done ? 'completed' : ''} ${(unlocked || done) ? '' : 'locked'}`.trim();
         card.innerHTML = `
             <p class="topic-num">Topic ${topic.sort_order}</p>
             <h3>${topic.title}${done ? '<span class="topic-done-badge"><i data-lucide="check"></i></span>' : ''}</h3>
-            ${lockMsg}
+            ${(unlocked || done) ? '' : lockMsg}
         `;
-        if (unlocked) {
+        if (state.courseUnlocked) {
+            card.style.cursor = 'pointer';
             card.addEventListener('click', () => openTopic(index));
         }
         container.appendChild(card);
