@@ -14,24 +14,17 @@ class CourseController extends Controller
 {
     public function getTopics()
     {
-        $topics = Topic::with(['lessons' => function($q) {
-            $q->where('status', 'approved');
-        }])->where('status', 'approved')->orderBy('sort_order')->get();
+        $topics = Topic::where('status', 'approved')->orderBy('sort_order')->get();
 
         // Map database format to matches what frontend expects:
         $formattedTopics = $topics->map(function ($topic) {
             return [
                 'id' => $topic->id,
                 'title' => $topic->title,
-                'lessons' => $topic->lessons->map(function ($lesson) {
-                    return [
-                        'title' => $lesson->title,
-                        'videoUrl' => $lesson->video_url,
-                        'notes' => $lesson->notes,
-                        'documentationPath' => $lesson->documentation_path,
-                        'documentationFilename' => $lesson->documentation_filename
-                    ];
-                }),
+                'videoUrl' => $topic->video_url,
+                'videos' => $topic->videos,
+                'documentationPath' => $topic->documentation_path,
+                'documentationFilename' => $topic->documentation_filename,
                 // We'll lazy-load quizzes on demand or keep them embedded.
                 // Keeping them embedded matches index.html/script.js expectation!
                 'quiz' => $topic->quizQuestions()->where('status', 'approved')->get()->map(function ($q) {

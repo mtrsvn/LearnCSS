@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\Topic;
-use App\Models\Lesson;
+
 use App\Models\QuizQuestion;
 use App\Models\UserProgress;
 use App\Models\QuizAttempt;
@@ -303,13 +303,13 @@ class AdminController extends Controller
     // ─── CONTENT MANAGEMENT ──────────────────────────────────────
     public function content()
     {
-        $topics = Topic::with(['lessons', 'quizQuestions'])->orderBy('sort_order')->get();
+        $topics = Topic::with(['quizQuestions'])->orderBy('sort_order')->get();
         return view('admin.content.index', compact('topics'));
     }
 
     public function contentTopics()
     {
-        $topics = Topic::with('lessons')->orderBy('sort_order')->get();
+        $topics = Topic::orderBy('sort_order')->get();
         return view('admin.content.topics', compact('topics'));
     }
 
@@ -335,36 +335,44 @@ class AdminController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function reorderLessons(Request $request)
-    {
-        $request->validate([
-            'ordered_ids' => 'required|array',
-            'ordered_ids.*' => 'integer|exists:lessons,id'
-        ]);
 
-        foreach ($request->ordered_ids as $index => $id) {
-            Lesson::where('id', $id)->update(['sort_order' => $index + 1]);
-        }
-
-        return response()->json(['success' => true]);
-    }
 
     public function storeTopic(Request $request)
     {
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
+            'video_url' => 'nullable|string|max:255',
+            'videos' => 'nullable|array',
+            'videos.*' => 'nullable|string|max:255',
         ]);
 
         $status = (Auth::user()->is_admin || Auth::user()->role === 'admin') ? 'approved' : 'pending';
         $maxSortOrder = Topic::max('sort_order') ?? 0;
 
-        $topic = Topic::create([
+        // Clean up videos array (remove nulls/empty)
+        $videos = $request->input('videos', []);
+        $videos = array_values(array_filter($videos, function($v) { return !empty($v); }));
+
+        $data = [
             'title' => $request->input('title'),
             'description' => $request->input('description'),
+            'video_url' => $request->input('video_url'),
+            'videos' => $videos,
             'sort_order' => $maxSortOrder + 1,
             'status' => $status
-        ]);
+        ];
+
+        if ($request->hasFile('documentation')) {
+            $file = $request->file('documentation');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $path = $file->storeAs('documentation', $filename, 'public');
+            
+            $data['documentation_path'] = '/storage/' . $path;
+            $data['documentation_filename'] = $file->getClientOriginalName();
+        }
+
+        $topic = Topic::create($data);
 
         AuditLog::create([
             'user_id' => Auth::id(),
@@ -382,12 +390,35 @@ class AdminController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
+            'video_url' => 'nullable|string|max:255',
+            'videos' => 'nullable|array',
+            'videos.*' => 'nullable|string|max:255',
         ]);
 
-        $topic->update([
+        // Clean up videos array
+        $videos = $request->input('videos', []);
+        $videos = array_values(array_filter($videos, function($v) { return !empty($v); }));
+
+        $data = [
             'title' => $request->input('title'),
             'description' => $request->input('description'),
-        ]);
+            'video_url' => $request->input('video_url'),
+            'videos' => $videos,
+        ];
+
+        if ($request->hasFile('documentation')) {
+            $file = $request->file('documentation');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $path = $file->storeAs('documentation', $filename, 'public');
+            
+            $data['documentation_path'] = '/storage/' . $path;
+            $data['documentation_filename'] = $file->getClientOriginalName();
+        } elseif ($request->input('remove_documentation') === '1') {
+            $data['documentation_path'] = null;
+            $data['documentation_filename'] = null;
+        }
+
+        $topic->update($data);
 
         AuditLog::create([
             'user_id' => Auth::id(),
@@ -415,107 +446,7 @@ class AdminController extends Controller
         return back()->with('success', 'Topic deleted successfully.');
     }
 
-    // ─── LESSON CRUD ─────────────────────────────────────────────
-    public function storeLesson(Request $request)
-    {
-        $request->validate([
-            'topic_id' => 'required|exists:topics,id',
-            'title' => 'required|string|max:255',
-            'video_url' => 'required|string|max:255',
-            'notes' => 'nullable|string',
-            'sort_order' => 'required|integer',
-            'documentation' => 'nullable|file|mimes:pdf,doc,docx,txt,zip,png,jpg,jpeg,gif,webp|max:10240', // max 10MB
-        ]);
 
-        $status = (Auth::user()->is_admin || Auth::user()->role === 'admin') ? 'approved' : 'pending';
-
-        $data = [
-            'topic_id' => $request->input('topic_id'),
-            'title' => $request->input('title'),
-            'video_url' => $request->input('video_url'),
-            'notes' => $request->input('notes'),
-            'sort_order' => $request->input('sort_order'),
-            'status' => $status
-        ];
-
-        if ($request->hasFile('documentation')) {
-            $file = $request->file('documentation');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('documentation', $filename, 'public');
-            
-            $data['documentation_path'] = '/storage/' . $path;
-            $data['documentation_filename'] = $file->getClientOriginalName();
-        }
-
-        $lesson = Lesson::create($data);
-
-        AuditLog::create([
-            'user_id' => Auth::id(),
-            'action' => 'Create Lesson',
-            'description' => 'Created lesson: ' . $lesson->title . ' under topic: ' . $lesson->topic->title,
-            'ip_address' => $request->ip()
-        ]);
-
-        return back()->with('success', 'Lesson added successfully.');
-    }
-
-    public function updateLesson(Request $request, $id)
-    {
-        $lesson = Lesson::findOrFail($id);
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'video_url' => 'required|string|max:255',
-            'notes' => 'nullable|string',
-            'sort_order' => 'required|integer',
-            'documentation' => 'nullable|file|mimes:pdf,doc,docx,txt,zip,png,jpg,jpeg,gif,webp|max:10240',
-        ]);
-
-        $data = [
-            'title' => $request->input('title'),
-            'video_url' => $request->input('video_url'),
-            'notes' => $request->input('notes'),
-            'sort_order' => $request->input('sort_order'),
-        ];
-
-        if ($request->hasFile('documentation')) {
-            $file = $request->file('documentation');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('documentation', $filename, 'public');
-            
-            $data['documentation_path'] = '/storage/' . $path;
-            $data['documentation_filename'] = $file->getClientOriginalName();
-        } elseif ($request->input('remove_documentation') === '1') {
-            $data['documentation_path'] = null;
-            $data['documentation_filename'] = null;
-        }
-
-        $lesson->update($data);
-
-        AuditLog::create([
-            'user_id' => Auth::id(),
-            'action' => 'Update Lesson',
-            'description' => 'Updated lesson: ' . $lesson->title,
-            'ip_address' => $request->ip()
-        ]);
-
-        return back()->with('success', 'Lesson updated successfully.');
-    }
-
-    public function destroyLesson(Request $request, $id)
-    {
-        $lesson = Lesson::findOrFail($id);
-        $title = $lesson->title;
-        $lesson->delete();
-
-        AuditLog::create([
-            'user_id' => Auth::id(),
-            'action' => 'Delete Lesson',
-            'description' => 'Deleted lesson: ' . $title,
-            'ip_address' => $request->ip()
-        ]);
-
-        return back()->with('success', 'Lesson deleted successfully.');
-    }
 
     // ─── QUIZ CRUD ───────────────────────────────────────────────
     public function storeQuiz(Request $request)
@@ -603,15 +534,7 @@ class AdminController extends Controller
         return back()->with('success', 'Topic approved successfully.');
     }
 
-    public function approveLesson($id)
-    {
-        if (!Auth::user()->is_admin && Auth::user()->role !== 'admin') {
-            abort(403, 'Unauthorized action.');
-        }
-        $lesson = Lesson::findOrFail($id);
-        $lesson->update(['status' => 'approved']);
-        return back()->with('success', 'Lesson approved successfully.');
-    }
+
 
     public function approveQuiz($id)
     {

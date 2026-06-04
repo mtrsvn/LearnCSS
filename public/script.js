@@ -3,7 +3,7 @@ let state = {
     currentTopicIndex: null,
     currentLessonIndex: 0,
     completedTopics: [],
-    isFinalExam: false,
+    examType: 'quiz',
     voucherCode: localStorage.getItem('cssm_voucher') || null,
     courseUnlocked: false,
     hasBoughtVoucher: false
@@ -467,8 +467,8 @@ if (redeemBtn) {
                         renderDashboard();
                         showToast('Voucher accepted! You can now access the courses.', 'success');
                     } else {
-                        state.isFinalExam = true;
-                        const exam = await apiRequest('/api/exam/questions');
+                        state.examType = 'final';
+                        const exam = await apiRequest('/api/exam/questions?type=final');
                         if (exam && exam.success) {
                             finalExam = exam.questions;
                             startQuiz(finalExam);
@@ -504,12 +504,40 @@ function renderDashboard() {
             lockMsg = unlocked ? '' : '<span class="topic-lock"><i data-lucide="lock"></i>Complete the previous topic to unlock</span>';
         }
 
+        const midIndex = Math.floor(topics.length / 2);
+        if (index === midIndex && midIndex > 0) {
+            const midDone = false; // Add local state if you want to track it later, for now just show it
+            const midUnlocked = index === 0 || (prevTopicId && state.completedTopics.includes(prevTopicId));
+            const midLockMsg = midUnlocked ? '' : '<span class="topic-lock"><i data-lucide="lock"></i>Complete previous topics to unlock Mid Exam</span>';
+            
+            const midCard = document.createElement('div');
+            midCard.className = `topic-card ${midUnlocked ? '' : 'locked'}`.trim();
+            midCard.style.borderColor = 'var(--accent)';
+            midCard.innerHTML = `
+                <p class="topic-num" style="color: var(--accent); font-weight: bold;">Mid Exam</p>
+                <h3>Mid Certification Exam</h3>
+                <span style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.9rem;">Test your knowledge on the first half!</span>
+                ${midLockMsg}
+            `;
+            if (midUnlocked) {
+                midCard.addEventListener('click', async () => {
+                    state.examType = 'mid';
+                    try {
+                        const exam = await apiRequest('/api/exam/questions?type=mid');
+                        if (exam && exam.success) {
+                            startQuiz(exam.questions);
+                        }
+                    } catch(e) {}
+                });
+            }
+            container.appendChild(midCard);
+        }
+
         const card = document.createElement('div');
         card.className = `topic-card ${done ? 'completed' : ''} ${unlocked ? '' : 'locked'}`.trim();
         card.innerHTML = `
             <p class="topic-num">Topic ${topic.id}</p>
             <h3>${topic.title}${done ? '<span class="topic-done-badge"><i data-lucide="check"></i></span>' : ''}</h3>
-            <span>${topic.lessons.length} lesson${topic.lessons.length > 1 ? 's' : ''}</span>
             ${lockMsg}
         `;
         if (unlocked) {
@@ -606,9 +634,9 @@ function updateFinalCard() {
         
         $('retake-exam-btn').onclick = async (e) => {
             e.stopPropagation();
-            state.isFinalExam = true;
+            state.examType = 'final';
             try {
-                const exam = await apiRequest('/api/exam/questions');
+                const exam = await apiRequest('/api/exam/questions?type=final');
                 if (exam && exam.success) {
                     finalExam = exam.questions;
                     startQuiz(finalExam);
@@ -622,15 +650,10 @@ function updateFinalCard() {
         btn.style.borderColor = 'var(--border)';
         btn.style.boxShadow = 'none';
         btn.innerHTML = `
-            <div class="exam-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <p class="topic-num" style="margin: 0; font-weight: 600; color: var(--text-muted);">Final Exam</p>
-                <span class="topic-lock" style="color: var(--wrong, #ef4444); font-size: 0.85rem; display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="lock" style="width: 14px; height: 14px;"></i> Locked</span>
-            </div>
-            <h3 style="margin-bottom: 0.5rem; font-size: 1.25rem; color: var(--text-muted);">Final Certification Exam</h3>
-            <span id="final-card-status" style="display: block; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">Complete all topics to unlock this exam.</span>
-            <div style="background: var(--bg-secondary); padding: 0.75rem; border-radius: 8px; border: 1px dashed var(--border); text-align: center;">
-                <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Progress: ${state.completedTopics.length} / ${topics.length} topics</span>
-            </div>
+            <p class="topic-num" style="color: var(--text-muted); font-weight: bold;">Final Exam</p>
+            <h3 style="color: var(--text-muted);">Final Certification Exam</h3>
+            <span style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.9rem;">Comprehensive test covering all topics!</span>
+            <span class="topic-lock"><i data-lucide="lock"></i>Complete all topics to unlock</span>
         `;
         btn.onclick = null;
     } else {
@@ -650,9 +673,9 @@ function updateFinalCard() {
         `;
         btn.onclick = async () => {
             if (state.voucherCode) {
-                state.isFinalExam = true;
+                state.examType = 'final';
                 try {
-                    const exam = await apiRequest('/api/exam/questions');
+                    const exam = await apiRequest('/api/exam/questions?type=final');
                     if (exam && exam.success) {
                         finalExam = exam.questions;
                         startQuiz(finalExam);
@@ -670,7 +693,6 @@ function updateFinalCard() {
 // ─── Lesson ──────────────────────────────────────────────
 function openTopic(index) {
     state.currentTopicIndex = index;
-    state.currentLessonIndex = 0;
     
     if (topics[index]) {
         apiRequest('/api/progress/start', 'POST', { topic_id: topics[index].id })
@@ -687,28 +709,76 @@ function openTopic(index) {
 
 function renderLesson() {
     const topic  = topics[state.currentTopicIndex];
-    const lesson = topic.lessons[state.currentLessonIndex];
 
     const titleEl = $('current-topic-title');
     if (titleEl) titleEl.textContent = topic.title;
 
-    const list = $('lesson-list');
-    if (list) {
-        list.innerHTML = '';
-        topic.lessons.forEach((l, i) => {
-            const item = document.createElement('div');
-            item.className = `lesson-item ${i === state.currentLessonIndex ? 'active' : ''}`;
-            item.textContent = l.title;
-            item.addEventListener('click', () => { state.currentLessonIndex = i; renderLesson(); });
-            list.appendChild(item);
-        });
+    const allVideos = [];
+    if (topic.videoUrl) allVideos.push(topic.videoUrl);
+    if (topic.videos && Array.isArray(topic.videos)) {
+        allVideos.push(...topic.videos);
     }
 
+    const videosList = $('topic-videos-list');
+    const videoBtn = $('lesson-video-btn');
     const player = $('video-player');
-    if (player) player.src = lesson.videoUrl;
     
-    // Handle Documentation Tab visibility and link
-    const tabDocs = $('tab-docs');
+    // ALWAYS show the button as requested by the user
+    if (videoBtn) videoBtn.style.display = 'block';
+
+    if (videosList) {
+        videosList.innerHTML = '';
+        if (allVideos.length > 0) {
+            allVideos.forEach((vUrl, i) => {
+                const btn = document.createElement('button');
+                btn.className = `video-tab ${i === 0 ? 'active' : ''}`;
+                btn.textContent = `Video ${i + 1}`;
+                
+                // Convert YouTube watch URLs to embed URLs
+                const getEmbedUrl = (url) => {
+                    if (!url) return '';
+                    let vidId = '';
+                    if (url.includes('youtube.com/watch?v=')) {
+                        vidId = url.split('v=')[1].split('&')[0];
+                    } else if (url.includes('youtu.be/')) {
+                        vidId = url.split('youtu.be/')[1].split('?')[0];
+                    }
+                    return vidId ? `https://www.youtube.com/embed/${vidId}` : url;
+                };
+
+                const embedUrl = getEmbedUrl(vUrl);
+
+                btn.onclick = () => {
+                    if (player) player.src = embedUrl;
+                    Array.from(videosList.children).forEach(child => child.classList.remove('active'));
+                    btn.classList.add('active');
+                    switchMedia('video');
+                };
+                videosList.appendChild(btn);
+            });
+            if (player) {
+                // Initialize first video with embed URL parsing
+                const getFirstEmbedUrl = (url) => {
+                    if (!url) return '';
+                    let vidId = '';
+                    if (url.includes('youtube.com/watch?v=')) {
+                        vidId = url.split('v=')[1].split('&')[0];
+                    } else if (url.includes('youtu.be/')) {
+                        vidId = url.split('youtu.be/')[1].split('?')[0];
+                    }
+                    return vidId ? `https://www.youtube.com/embed/${vidId}` : url;
+                };
+                player.src = getFirstEmbedUrl(allVideos[0]);
+            }
+        } else {
+            // Even if no videos, clear the player
+            if (player) player.src = '';
+            videosList.innerHTML = '<p class="muted" style="text-align: center; width: 100%; padding: 2rem;">No videos available for this topic.</p>';
+        }
+    }
+    
+    // Handle Documentation Button visibility and link
+    const docsBtnSidebar = $('lesson-docs-btn');
     const docsBtn = $('docs-download-btn');
     const docsIframe = $('docs-iframe');
     const docsIframeWrap = $('docs-iframe-wrap');
@@ -716,13 +786,18 @@ function renderLesson() {
     const docsImgWrap = $('docs-img-wrap');
     const docsFallback = $('docs-fallback');
 
-    if (lesson.documentationPath) {
-        if (tabDocs) tabDocs.style.display = 'block';
+    if (docsBtnSidebar) {
+        docsBtnSidebar.style.display = 'block';
+        docsBtnSidebar.classList.add('active');
+    }
+
+    if (topic.documentationPath) {
         if (docsBtn) {
-            docsBtn.href = lesson.documentationPath;
+            docsBtn.style.display = 'inline-flex';
+            docsBtn.href = topic.documentationPath;
         }
         
-        const path = lesson.documentationPath.toLowerCase();
+        const path = topic.documentationPath.toLowerCase();
         const isPdf = path.endsWith('.pdf');
         const isImage = path.match(/\.(jpeg|jpg|gif|png|webp)$/) != null;
 
@@ -731,54 +806,62 @@ function renderLesson() {
         if (docsFallback) docsFallback.style.display = 'none';
 
         if (isImage) {
-            if (docsImg) docsImg.src = lesson.documentationPath;
+            if (docsImg) docsImg.src = topic.documentationPath;
             if (docsImgWrap) docsImgWrap.style.display = 'flex';
         } else if (isPdf) {
-            if (docsIframe) docsIframe.src = lesson.documentationPath;
+            if (docsIframe) docsIframe.src = topic.documentationPath;
             if (docsIframeWrap) docsIframeWrap.style.display = 'block';
         } else {
-            if (docsFallback) docsFallback.style.display = 'flex';
+            if (docsFallback) {
+                docsFallback.style.display = 'flex';
+                docsFallback.innerHTML = `
+                    <div style="width: 64px; height: 64px; border-radius: 16px; background: rgba(255,255,255,0.05); border: 1px dashed var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-muted); margin-bottom: 1.5rem;">
+                        <i data-lucide="file-archive" style="width: 32px; height: 32px;"></i>
+                    </div>
+                    <p class="muted" style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text); font-weight: 600;">Preview not available</p>
+                    <p class="muted" style="font-size: 0.9rem;">Please use the Download button to view this file.</p>
+                `;
+            }
         }
 
     } else {
-        if (tabDocs) tabDocs.style.display = 'none';
-        switchMedia('video'); // Default back to video if no docs
+        if (docsIframeWrap) docsIframeWrap.style.display = 'none';
+        if (docsImgWrap) docsImgWrap.style.display = 'none';
+        if (docsBtn) docsBtn.style.display = 'none';
+        if (docsFallback) {
+            docsFallback.style.display = 'flex';
+            docsFallback.innerHTML = `
+                <div style="width: 64px; height: 64px; border-radius: 16px; background: rgba(255,255,255,0.05); border: 1px dashed var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-muted); margin-bottom: 1.5rem;">
+                    <i data-lucide="file-x" style="width: 32px; height: 32px;"></i>
+                </div>
+                <p class="muted" style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text); font-weight: 600;">No Documentation</p>
+                <p class="muted" style="font-size: 0.9rem;">No documentation file has been uploaded for this topic.</p>
+            `;
+            if (window.lucide) lucide.createIcons();
+        }
+        
+        // If we are currently on the docs tab but there's no docs, maybe default to video
+        switchMedia('docs'); // Default to docs as requested
     }
-    
-    const notesEl = $('lesson-notes-content');
-    if (notesEl) notesEl.innerHTML = `<p>${lesson.notes}</p>`;
 }
 
 function switchMedia(type) {
-    const tabVideo = $('tab-video');
-    const tabDocs = $('tab-docs');
+    const btnVideo = $('lesson-video-btn');
+    const btnDocs = $('lesson-docs-btn');
     const videoContainer = $('video-container');
     const docsContainer = $('docs-container');
+    const videosList = $('topic-videos-list');
 
     if (type === 'video') {
-        if (tabVideo) {
-            tabVideo.style.color = 'var(--text)';
-            tabVideo.style.borderBottom = '2px solid var(--accent)';
-        }
-
-
-        if (tabDocs) {
-            tabDocs.style.color = 'var(--text-muted)';
-            tabDocs.style.borderBottom = 'none';
-        }
+        if (btnVideo) btnVideo.classList.add('active');
+        if (btnDocs) btnDocs.classList.remove('active');
         if (videoContainer) videoContainer.style.display = 'block';
         if (docsContainer) docsContainer.style.display = 'none';
     } else if (type === 'docs') {
-        if (tabDocs) {
-            tabDocs.style.color = 'var(--text)';
-            tabDocs.style.borderBottom = '2px solid var(--accent)';
-        }
-        if (tabVideo) {
-            tabVideo.style.color = 'var(--text-muted)';
-            tabVideo.style.borderBottom = 'none';
-        }
-        if (docsContainer) docsContainer.style.display = 'flex';
+        if (btnDocs) btnDocs.classList.add('active');
+        if (btnVideo) btnVideo.classList.remove('active');
         if (videoContainer) videoContainer.style.display = 'none';
+        if (docsContainer) docsContainer.style.display = 'flex';
     }
 }
 
@@ -788,7 +871,7 @@ if (backBtn) backBtn.addEventListener('click', () => showScreen('dashboard-scree
 const takeQuizBtn = $('take-quiz-btn');
 if (takeQuizBtn) {
     takeQuizBtn.addEventListener('click', () => {
-        state.isFinalExam = false;
+        state.examType = 'quiz';
         startQuiz(topics[state.currentTopicIndex].quiz);
     });
 }
@@ -811,8 +894,8 @@ function startQuiz(data) {
     
     clearInterval(quizTimerInterval);
     const timerEl = $('quiz-timer');
-    if (state.isFinalExam) {
-        quizTimerSeconds = 1200;
+    if (state.examType === 'final' || state.examType === 'mid') {
+        quizTimerSeconds = state.examType === 'final' ? 2400 : 1200; // 40 mins for final, 20 mins for mid
         timerEl.innerHTML = `<i data-lucide="timer" style="width: 16px; height: 16px; margin-right: 6px; vertical-align: text-bottom;"></i> <span id="quiz-timer-text" style="font-weight: bold; font-family: monospace; font-size: 1.1rem;">${formatTime(quizTimerSeconds)}</span>`;
         timerEl.style.display = 'inline-block';
         timerEl.style.padding = '0.4rem 0.8rem';
@@ -952,8 +1035,8 @@ if (nextQBtn) {
             const letterEl = btn.querySelector('.opt-letter');
             
             // For regular quiz, we know answers index locally.
-            // For final exam, options grading is performed securely at submit!
-            if (!state.isFinalExam) {
+            // For final exam or mid exam, options grading is performed securely at submit!
+            if (state.examType === 'quiz') {
                 if (i === q.answer) {
                     btn.classList.add('correct');
                     btn.style.borderColor = 'var(--success, #10b981)';
@@ -986,7 +1069,7 @@ if (nextQBtn) {
             }
         });
 
-        if (!state.isFinalExam && selected === q.answer) {
+        if (state.examType === 'quiz' && selected === q.answer) {
             score++;
         }
 
@@ -1000,27 +1083,31 @@ if (nextQBtn) {
 async function finishQuiz() {
     clearInterval(quizTimerInterval);
     
-    if (state.isFinalExam) {
+    if (state.examType === 'final' || state.examType === 'mid') {
         try {
             const data = await apiRequest('/api/exam/submit', 'POST', {
-                'voucher_code': state.voucherCode,
+                'voucher_code': state.voucherCode || '',
                 'answers': answersList
             });
 
             if (data && data.success) {
                 if (data.passed) {
-                    if (state.hasCertificate) {
-                        showToast('Congratulations! You passed the final exam again!', 'success');
+                    if (state.examType === 'mid') {
+                        showToast('Congratulations! You passed the Mid Exam.', 'success');
                     } else {
-                        showToast('Congratulations! You passed the final exam.', 'success');
-                        state.hasCertificate = true;
+                        if (state.hasCertificate) {
+                            showToast('Congratulations! You passed the final exam again!', 'success');
+                        } else {
+                            showToast('Congratulations! You passed the final exam.', 'success');
+                            state.hasCertificate = true;
+                        }
+                        showCertificate(data.certificate);
                     }
-                    showCertificate(data.certificate);
                 } else {
-                    showToast(`You scored ${data.score}/${data.total}. A perfect score is required.`, 'error');
-                    renderDashboard();
-                    showScreen('dashboard-screen');
+                    showToast(`You scored ${data.score}/${data.total}. You did not pass.`, 'error');
                 }
+                renderDashboard();
+                showScreen('dashboard-screen');
             }
         } catch (e) {}
     } else {

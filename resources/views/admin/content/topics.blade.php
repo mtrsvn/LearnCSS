@@ -56,7 +56,7 @@
         </div>
         <div class="table-wrap">
             <table class="data-table">
-                <thead><tr><th style="width: 30px;"></th><th>Order</th><th>Topic</th><th>Status</th><th>Lessons</th><th>Primary video</th><th>Actions</th></tr></thead>
+                <thead><tr><th style="width: 30px;"></th><th>Order</th><th>Topic</th><th>Status</th><th>Video</th><th>Actions</th></tr></thead>
                 <tbody id="topicsTableBody">
                     @forelse ($topics as $topic)
                         <tr data-id="{{ $topic->id }}">
@@ -70,10 +70,9 @@
                                     <span class="status warning">Pending</span>
                                 @endif
                             </td>
-                            <td style="vertical-align: middle;">{{ $topic->lessons->count() }} lessons</td>
                             <td style="vertical-align: middle;">
-                                @if ($topic->lessons->first())
-                                    <span class="muted"><code>{{ $topic->lessons->first()->video_url }}</code></span>
+                                @if ($topic->video_url)
+                                    <span class="muted"><code>{{ $topic->video_url }}</code></span>
                                 @else
                                     <span class="muted">No video configured</span>
                                 @endif
@@ -92,18 +91,13 @@
                                                 data-id="{{ $topic->id }}" 
                                                 data-title="{{ $topic->title }}" 
                                                 data-description="{{ $topic->description }}"
+                                                data-doc="{{ $topic->documentation_filename }}"
+                                                data-video="{{ $topic->video_url }}"
+                                                data-videos="{{ json_encode($topic->videos ?? []) }}"
                                                 {{ ($isInstructor && $topic->status === 'pending') ? 'disabled' : '' }}>
                                             Edit Topic
                                         </button>
-                                        <button class="btn-primary edit-lessons-btn" type="button" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; {{ ($isInstructor && $topic->status === 'pending') ? 'opacity: 0.5; cursor: not-allowed;' : '' }}"
-                                                data-id="{{ $topic->id }}"
-                                                data-title="{{ $topic->title }}"
-                                                data-lessons="{{ json_encode($topic->lessons) }}"
-                                                {{ ($isInstructor && $topic->status === 'pending') ? 'disabled' : '' }}>
-                                            Manage Lessons
-                                        </button>
                                     @endif
-
                                     <form action="{{ route('admin.content.topics.destroy', $topic->id) }}" method="POST" onsubmit="return confirmDelete(event, 'Are you sure you want to delete this topic and all its lessons/quizzes?');" style="margin:0;">
                                         @csrf
                                         @method('DELETE')
@@ -143,8 +137,7 @@
 
 <!-- ADD TOPIC MODAL -->
 <div id="addTopicModal" class="admin-modal">
-    <div class="admin-modal-content">
-        <form action="{{ route('admin.content.topics.store') }}" method="POST">
+    <form action="{{ route('admin.content.topics.store') }}" method="POST" enctype="multipart/form-data" class="admin-modal-content">
             @csrf
             <div class="admin-modal-header">
                 <h3 class="admin-modal-title">Add New Topic</h3>
@@ -160,20 +153,30 @@
                         <label for="add_description">Topic Description</label>
                         <textarea id="add_description" name="description" required placeholder="Brief description of the topic..." style="width: 100%; min-height: 80px; padding: 0.8rem; border-radius: 8px; border: 1.5px solid var(--border); background: rgba(255,255,255,0.02); color: var(--text); font-family: inherit; resize: vertical;"></textarea>
                     </div>
+                    <div class="field full">
+                        <label>Video Embed URLs (Optional)</label>
+                        <div id="add_topic_videos_container" style="display: flex; flex-direction: column; gap: 10px;">
+                            <input type="text" name="videos[]" placeholder="e.g. https://www.youtube.com/embed/dQw4w9WgXcQ">
+                        </div>
+                        <button type="button" class="btn-ghost btn-sm" onclick="addVideoInput('add_topic_videos_container')" style="margin-top: 10px; width: fit-content;">+ Add another video</button>
+                    </div>
+                    <div class="field full" style="border: 1px dashed var(--border); padding: 1rem; border-radius: 8px;">
+                        <label for="add_topic_documentation">Topic Documentation File (Optional)</label>
+                        <p class="muted" style="margin-top: 0; font-size: 0.8rem; margin-bottom: 0.5rem;">Upload a PDF, DOC, ZIP, or Image (PNG/JPG) to be available to students in the Documentation tab for this topic.</p>
+                        <input type="file" id="add_topic_documentation" name="documentation" accept=".pdf,.doc,.docx,.zip,.txt,image/*" style="background: rgba(255,255,255,0.02); color: var(--text); padding: 0.3rem; border-radius: 8px; width: 100%; border: 1.5px solid var(--border); cursor: pointer; font-family: inherit; font-size: 0.85rem; height: 2.8rem; box-sizing: border-box;">
+                    </div>
                 </div>
             </div>
             <div class="admin-modal-footer">
                 <button type="button" class="btn-ghost" onclick="closeModal('addTopicModal')">Cancel</button>
                 <button type="submit" class="btn-primary">Create Topic</button>
             </div>
-        </form>
-    </div>
+    </form>
 </div>
 
 <!-- EDIT TOPIC MODAL -->
 <div id="editTopicModal" class="admin-modal">
-    <div class="admin-modal-content">
-        <form id="editTopicForm" method="POST">
+    <form id="editTopicForm" method="POST" enctype="multipart/form-data" class="admin-modal-content">
             @csrf
             <div class="admin-modal-header">
                 <h3 class="admin-modal-title">Edit Topic</h3>
@@ -189,93 +192,35 @@
                         <label for="edit_description">Topic Description</label>
                         <textarea id="edit_description" name="description" required placeholder="Brief description of the topic..." style="width: 100%; min-height: 80px; padding: 0.8rem; border-radius: 8px; border: 1.5px solid var(--border); background: rgba(255,255,255,0.02); color: var(--text); font-family: inherit; resize: vertical;"></textarea>
                     </div>
+                    <div class="field full">
+                        <label>Video Embed URLs (Optional)</label>
+                        <div id="edit_topic_videos_container" style="display: flex; flex-direction: column; gap: 10px;">
+                            <input type="text" name="videos[]" placeholder="e.g. https://www.youtube.com/embed/dQw4w9WgXcQ">
+                        </div>
+                        <button type="button" class="btn-ghost btn-sm" onclick="addVideoInput('edit_topic_videos_container')" style="margin-top: 10px; width: fit-content;">+ Add another video</button>
+                    </div>
+                    <div class="field full" style="border: 1px dashed var(--border); padding: 1rem; border-radius: 8px;">
+                        <label for="edit_topic_documentation">Topic Documentation File (Optional)</label>
+                        <p class="muted" style="margin-top: 0; font-size: 0.8rem; margin-bottom: 0.5rem;">Upload a PDF, DOC, ZIP, or Image (PNG/JPG) to be available to students in the Documentation tab for this topic.</p>
+                        <input type="file" id="edit_topic_documentation" name="documentation" accept=".pdf,.doc,.docx,.zip,.txt,image/*" style="background: rgba(255,255,255,0.02); color: var(--text); padding: 0.3rem; border-radius: 8px; width: 100%; border: 1.5px solid var(--border); cursor: pointer; font-family: inherit; font-size: 0.85rem; height: 2.8rem; box-sizing: border-box;">
+                        
+                        <div id="current_topic_documentation_info" style="display: none; margin-top: 0.5rem; font-size: 0.85rem; padding: 0.5rem; background: rgba(16, 185, 129, 0.1); border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.2); align-items: center; justify-content: space-between;">
+                            <span><strong style="color: var(--correct);">Current File:</strong> <span id="current_topic_doc_filename"></span></span>
+                            <label style="display: inline-flex; align-items: center; gap: 0.3rem; margin: 0; font-size: 0.8rem; color: var(--wrong); cursor: pointer;">
+                                <input type="checkbox" name="remove_documentation" value="1" style="width: auto; margin: 0;"> Remove file
+                            </label>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="admin-modal-footer">
                 <button type="button" class="btn-ghost" onclick="closeModal('editTopicModal')">Cancel</button>
                 <button type="submit" class="btn-primary">Save Changes</button>
             </div>
-        </form>
-    </div>
+    </form>
 </div>
 
-<!-- MANAGE LESSONS MODAL -->
-<div id="manageLessonsModal" class="admin-modal" style="z-index: 1001;">
-    <div class="admin-modal-content" style="max-width: 800px;">
-        <div class="admin-modal-header">
-            <h3 class="admin-modal-title">Manage Lessons: <span id="lessonsModalTopicTitle"></span></h3>
-            <button type="button" class="admin-modal-close" onclick="closeModal('manageLessonsModal')">&times;</button>
-        </div>
-        <div class="admin-modal-body">
-            <!-- Lessons List -->
-            <h4 style="margin: 0 0 10px 0;">Current Lessons</h4>
-            <div class="table-wrap" style="margin-bottom: 20px;">
-                <table class="data-table" style="min-width: 100%;">
-                    <thead>
-                        <tr>
-                            <th style="width: 30px;"></th>
-                            <th>Order</th>
-                            <th>Lesson Title</th>
-                            <th>Status</th>
-                            <th>Video URL</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="lessonsTableBody">
-                        <!-- Loaded dynamically -->
-                    </tbody>
-                </table>
-            </div>
 
-            <hr style="border: 0; border-top: 1px solid var(--line); margin: 20px 0;">
-
-            <!-- Add/Edit Lesson Form -->
-            <h4 id="lessonFormTitle" style="margin: 0 0 15px 0;">Add New Lesson</h4>
-            
-            <form id="lessonForm" method="POST" action="{{ route('admin.content.lessons.store') }}" enctype="multipart/form-data">
-                @csrf
-                <input type="hidden" id="lesson_topic_id" name="topic_id">
-                <input type="hidden" id="lesson_method" name="_method" value="POST">
-                
-                <div class="form-grid">
-                    <div class="field">
-                        <label for="lesson_title">Lesson Title</label>
-                        <input type="text" id="lesson_title" name="title" required placeholder="e.g. Intro to Box Model">
-                    </div>
-                    <div class="field">
-                        <label for="lesson_sort_order">Sort Order</label>
-                        <input type="number" id="lesson_sort_order" name="sort_order" required value="1">
-                    </div>
-                    <div class="field full">
-                        <label for="lesson_video_url">Video Embed URL</label>
-                        <input type="text" id="lesson_video_url" name="video_url" required placeholder="e.g. https://www.youtube.com/embed/dQw4w9WgXcQ">
-                    </div>
-                    <div class="field full" style="border: 1px dashed var(--border); padding: 1rem; border-radius: 8px;">
-                        <label for="lesson_documentation">Lesson Documentation File (Optional)</label>
-                        <p class="muted" style="margin-top: 0; font-size: 0.8rem; margin-bottom: 0.5rem;">Upload a PDF, DOC, ZIP, or Image (PNG/JPG) to be available to students in the Documentation tab.</p>
-                        <input type="file" id="lesson_documentation" name="documentation" accept=".pdf,.doc,.docx,.zip,.txt,image/*" style="background: rgba(255,255,255,0.02); color: var(--text); padding: 0.3rem; border-radius: 8px; width: 100%; border: 1.5px solid var(--border); cursor: pointer; font-family: inherit; font-size: 0.85rem; height: 2.8rem; box-sizing: border-box;">
-                        
-                        <div id="current_documentation_info" style="display: none; margin-top: 0.5rem; font-size: 0.85rem; padding: 0.5rem; background: rgba(16, 185, 129, 0.1); border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.2); align-items: center; justify-content: space-between;">
-                            <span><strong style="color: var(--correct);">Current File:</strong> <span id="current_doc_filename"></span></span>
-                            <label style="display: inline-flex; align-items: center; gap: 0.3rem; margin: 0; font-size: 0.8rem; color: var(--wrong); cursor: pointer;">
-                                <input type="checkbox" name="remove_documentation" value="1" style="width: auto; margin: 0;"> Remove file
-                            </label>
-                        </div>
-                    </div>
-                    <div class="field full">
-                        <label for="lesson_notes">Interactive Study Notes</label>
-                        <textarea id="lesson_notes" name="notes" placeholder="Write markdown or detailed HTML/plain notes here..." style="width: 100%; min-height: 120px; padding: 0.8rem; border-radius: 8px; border: 1.5px solid var(--border); background: rgba(255,255,255,0.02); color: var(--text); font-family: inherit; resize: vertical; outline: none; font-size: 0.85rem; line-height: 1.5;"></textarea>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 10px;">
-                    <button type="button" id="cancelLessonEditBtn" class="btn-ghost" style="display: none;" onclick="resetLessonForm()">Cancel Edit</button>
-                    <button type="submit" id="saveLessonBtn" class="btn-primary">Add Lesson</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
 <script>
     // Modal Helpers
@@ -285,13 +230,24 @@
     
     function closeModal(id) {
         document.getElementById(id).classList.remove('open');
-        if (id === 'manageLessonsModal') {
-            resetLessonForm();
-        }
     }
 
     function openAddTopicModal() {
+        const container = document.getElementById('add_topic_videos_container');
+        if (container) container.innerHTML = createVideoRow('');
         openModal('addTopicModal');
+    }
+
+    function createVideoRow(value) {
+        return `<div style="display: flex; align-items: center; gap: 8px;">
+            <input type="text" name="videos[]" value="${value}" placeholder="e.g. https://www.youtube.com/watch?v=..." style="flex: 1;">
+            <button type="button" onclick="this.parentElement.remove()" style="background: none; border: none; color: var(--wrong); cursor: pointer; font-size: 1.2rem; padding: 0.4rem 0.6rem; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='none'" title="Remove video">&times;</button>
+        </div>`;
+    }
+
+    function addVideoInput(containerId) {
+        const container = document.getElementById(containerId);
+        container.insertAdjacentHTML('beforeend', createVideoRow(''));
     }
 
     // Topic Edit Bindings
@@ -300,164 +256,41 @@
             const id = btn.dataset.id;
             const title = btn.dataset.title;
             const description = btn.dataset.description;
+            const docFile = btn.dataset.doc;
+            const videoUrl = btn.dataset.video;
+            const videos = JSON.parse(btn.dataset.videos || '[]');
 
             document.getElementById('edit_title').value = title;
             document.getElementById('edit_description').value = description || '';
             document.getElementById('editTopicForm').action = `/admin/content/topics/${id}`;
             
+            const container = document.getElementById('edit_topic_videos_container');
+            if (container) {
+                container.innerHTML = '';
+                if (videos.length === 0 && !videoUrl) {
+                    container.innerHTML = createVideoRow('');
+                } else {
+                    if (videoUrl) {
+                        container.innerHTML += createVideoRow(videoUrl);
+                    }
+                    videos.forEach(v => {
+                        container.innerHTML += createVideoRow(v);
+                    });
+                }
+            }
+            
+            if (docFile) {
+                document.getElementById('current_topic_documentation_info').style.display = 'flex';
+                document.getElementById('current_topic_doc_filename').textContent = docFile;
+            } else {
+                document.getElementById('current_topic_documentation_info').style.display = 'none';
+            }
+            
             openModal('editTopicModal');
         });
     });
 
-    // Lessons Edit Bindings
-    document.querySelectorAll('.edit-lessons-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const topicId = btn.dataset.id;
-            const topicTitle = btn.dataset.title;
-            const lessons = JSON.parse(btn.dataset.lessons);
 
-            document.getElementById('lessonsModalTopicTitle').textContent = topicTitle;
-            document.getElementById('lesson_topic_id').value = topicId;
-
-            const tbody = document.getElementById('lessonsTableBody');
-            tbody.innerHTML = '';
-
-            if (lessons.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center;">No lessons added to this topic yet. Use the form below to add one!</td></tr>';
-            } else {
-                lessons.forEach(l => {
-                    const row = document.createElement('tr');
-                    row.dataset.id = l.id;
-                    
-                    const cellDrag = document.createElement('td');
-                    cellDrag.innerHTML = '<i data-lucide="grip-vertical" class="drag-handle" style="cursor: grab; color: var(--text-muted); width: 18px; opacity: 0.5;"></i>';
-                    
-                    const cellOrder = document.createElement('td');
-                    cellOrder.className = 'sort-order-cell';
-                    cellOrder.textContent = l.sort_order;
-                    
-                    const cellTitle = document.createElement('td');
-                    cellTitle.innerHTML = `<strong>${l.title}</strong>`;
-                    
-                    const cellStatus = document.createElement('td');
-                    if (l.status === 'approved') {
-                        cellStatus.innerHTML = '<span class="status success">Approved</span>';
-                    } else {
-                        cellStatus.innerHTML = '<span class="status warning">Pending</span>';
-                    }
-                    
-                    const cellVideo = document.createElement('td');
-                    cellVideo.innerHTML = `<code style="font-size: 11px;">${l.video_url}</code>`;
-                    
-                    const cellActions = document.createElement('td');
-                    cellActions.className = 'actions';
-                    cellActions.style.display = 'flex';
-                    cellActions.style.gap = '0.4rem';
-                    cellActions.style.alignItems = 'center';
-                    
-                    const isAdmin = {{ $isAdmin ? 'true' : 'false' }};
-                    const isInstructor = {{ $isInstructor ? 'true' : 'false' }};
-                    
-                    if (l.status === 'pending' && isAdmin) {
-                        const approveForm = document.createElement('form');
-                        approveForm.action = `/admin/content/lessons/${l.id}/approve`;
-                        approveForm.method = 'POST';
-                        approveForm.style.margin = '0';
-                        approveForm.innerHTML = `
-                            <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}'}">
-                            <button class="btn-primary" type="submit" style="padding: 0.3rem 0.7rem; font-size: 0.8rem; background: var(--correct); border-color: var(--correct);">Approve</button>
-                        `;
-                        cellActions.appendChild(approveForm);
-                    }
-                    
-                    if (!(isAdmin && l.status === 'pending')) {
-                        const editBtn = document.createElement('button');
-                        editBtn.className = 'btn-ghost';
-                        editBtn.type = 'button';
-                        editBtn.style.padding = '0.3rem 0.7rem';
-                        editBtn.style.fontSize = '0.8rem';
-                        editBtn.style.fontWeight = '500';
-                        editBtn.style.border = '1px solid var(--border)';
-                        editBtn.style.background = 'var(--surface-solid)';
-                        editBtn.style.borderRadius = '6px';
-                        editBtn.textContent = 'Edit';
-                        if (isInstructor && l.status === 'pending') {
-                            editBtn.disabled = true;
-                            editBtn.style.opacity = '0.5';
-                            editBtn.style.cursor = 'not-allowed';
-                        } else {
-                            editBtn.addEventListener('click', () => {
-                                document.getElementById('lessonFormTitle').textContent = `Edit Lesson: ${l.title}`;
-                                document.getElementById('lesson_title').value = l.title;
-                                document.getElementById('lesson_sort_order').value = l.sort_order;
-                                document.getElementById('lesson_video_url').value = l.video_url;
-                                document.getElementById('lesson_notes').value = l.notes || '';
-                                
-                                if (l.documentation_filename) {
-                                    document.getElementById('current_documentation_info').style.display = 'flex';
-                                    document.getElementById('current_doc_filename').textContent = l.documentation_filename;
-                                } else {
-                                    document.getElementById('current_documentation_info').style.display = 'none';
-                                }
-                                
-                                document.getElementById('lessonForm').action = `/admin/content/lessons/${l.id}`;
-                                document.getElementById('lesson_method').value = 'POST';
-                                
-                                document.getElementById('saveLessonBtn').textContent = 'Save Lesson Changes';
-                                document.getElementById('cancelLessonEditBtn').style.display = 'inline-flex';
-                            });
-                        }
-                        cellActions.appendChild(editBtn);
-                    }
-
-                    const deleteForm = document.createElement('form');
-                    deleteForm.action = `/admin/content/lessons/${l.id}`;
-                    deleteForm.method = 'POST';
-                    deleteForm.style.display = 'inline-block';
-                    deleteForm.style.margin = '0';
-                    deleteForm.onsubmit = (e) => confirmDelete(e, 'Are you sure you want to delete this lesson?');
-                    deleteForm.innerHTML = `
-                        <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}'}">
-                        <input type="hidden" name="_method" value="DELETE">
-                        <button class="btn btn-danger" type="submit" style="padding: 0.3rem 0.7rem; font-size: 0.8rem; font-weight: 500; min-height: auto; border-radius: 6px; background: var(--wrong); color: #fff; border: 1px solid var(--wrong); cursor: pointer; transition: all 0.2s;">Delete</button>
-                    `;
-                    
-                    cellActions.appendChild(deleteForm);
-                    
-                    row.appendChild(cellDrag);
-                    row.appendChild(cellOrder);
-                    row.appendChild(cellTitle);
-                    row.appendChild(cellStatus);
-                    row.appendChild(cellVideo);
-                    row.appendChild(cellActions);
-                    
-                    tbody.appendChild(row);
-                });
-            }
-
-            if (window.lucide) {
-                lucide.createIcons();
-            }
-
-            openModal('manageLessonsModal');
-        });
-    });
-
-    function resetLessonForm() {
-        document.getElementById('lessonFormTitle').textContent = 'Add New Lesson';
-        document.getElementById('lesson_title').value = '';
-        document.getElementById('lesson_sort_order').value = '1';
-        document.getElementById('lesson_video_url').value = '';
-        document.getElementById('lesson_documentation').value = '';
-        document.getElementById('current_documentation_info').style.display = 'none';
-        document.getElementById('lesson_notes').value = '';
-        
-        document.getElementById('lessonForm').action = "{{ route('admin.content.lessons.store') }}";
-        document.getElementById('lesson_method').value = 'POST';
-        
-        document.getElementById('saveLessonBtn').textContent = 'Add Lesson';
-        document.getElementById('cancelLessonEditBtn').style.display = 'none';
-    }
 
     // SortableJS initialization
     document.addEventListener('DOMContentLoaded', function() {
@@ -495,37 +328,7 @@
             });
         }
 
-        // Lessons Sortable
-        const lessonsTbody = document.getElementById('lessonsTableBody');
-        if (lessonsTbody) {
-            new Sortable(lessonsTbody, {
-                handle: '.drag-handle',
-                animation: 150,
-                onEnd: function (evt) {
-                    const orderedIds = Array.from(lessonsTbody.children).map(tr => tr.dataset.id);
-                    
-                    // Update UI order text immediately
-                    Array.from(lessonsTbody.children).forEach((tr, index) => {
-                        tr.querySelector('.sort-order-cell').textContent = index + 1;
-                    });
 
-                    fetch('{{ route("admin.content.lessons.reorder") }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': csrfToken
-                        },
-                        body: JSON.stringify({ ordered_ids: orderedIds })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if(data.success) {
-                            console.log('Lessons reordered successfully');
-                        }
-                    });
-                }
-            });
-        }
     });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>

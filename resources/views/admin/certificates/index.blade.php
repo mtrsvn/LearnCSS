@@ -36,7 +36,7 @@
     </div>
     <div class="table-wrap">
         <table class="data-table">
-            <thead><tr><th>Certificate code</th><th>User</th><th>Email</th><th>Issue date</th><th>Status</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Certificate code</th><th>User</th><th>Email</th><th>Issue date</th><th>Status</th></tr></thead>
             <tbody>
                 @forelse ($certificates as $certificate)
                     <tr>
@@ -45,15 +45,10 @@
                         <td>{{ $certificate->user->email ?? 'N/A' }}</td>
                         <td>{{ $certificate->issued_at ? \Carbon\Carbon::parse($certificate->issued_at)->format('M d, Y h:i A') : 'N/A' }}</td>
                         <td><span class="status success">Verified</span></td>
-                        <td>
-                            <div class="actions">
-                                <a href="/" target="_blank" class="btn btn-primary">Verify Link</a>
-                            </div>
-                        </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="muted">No certificates have been issued yet.</td>
+                        <td colspan="5" class="muted">No certificates have been issued yet.</td>
                     </tr>
                 @endforelse
             </tbody>

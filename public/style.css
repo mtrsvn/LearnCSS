@@ -39,6 +39,12 @@ body { background:var(--bg); color:var(--text); font-family:'Plus Jakarta Sans',
 
 .btn-primary:disabled { opacity:.4; cursor:not-allowed; transform:none; box-shadow:none; }
 .btn-ghost { background:transparent; color:var(--text-muted); border:1.5px solid var(--border); padding:.72rem 1.5rem; border-radius:10px; font-family:inherit; font-weight:600; font-size:.9rem; cursor:pointer; transition:all .3s; white-space:nowrap; }
+
+/* Video tab selector */
+.video-tab-list { display: flex; gap: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 4px; overflow-x: auto; margin-bottom: 1.25rem; }
+.video-tab { padding: 0.6rem 1.25rem; border-radius: 8px; border: none; background: transparent; color: var(--text-muted); font-family: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.25s ease; white-space: nowrap; position: relative; }
+.video-tab:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+.video-tab.active { background: var(--gradient); color: #fff; box-shadow: 0 2px 8px rgba(124,58,237,0.35); }
 .btn-icon-round { background:none; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--text-muted); transition:color .25s, transform .25s; flex-shrink:0; padding:.2rem; }
 
 .btn-icon-round svg { width:18px; height:18px; }
@@ -507,6 +513,8 @@ body.light-mode .tabs .tab:hover {
 .admin-modal-body {
     padding: 1.5rem;
     overflow-y: auto;
+    flex: 1 1 auto;
+    min-height: 0;
 }
 .admin-modal-footer {
     padding: 1.25rem 1.5rem;

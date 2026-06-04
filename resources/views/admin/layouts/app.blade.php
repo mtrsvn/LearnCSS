@@ -5,7 +5,6 @@
     $pendingContentCount = 0;
     if ($isAdmin) {
         $pendingContentCount = \App\Models\Topic::where('status', 'pending')->count() 
-                             + \App\Models\Lesson::where('status', 'pending')->count() 
                              + \App\Models\QuizQuestion::where('status', 'pending')->count();
     }
 

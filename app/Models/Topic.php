@@ -9,7 +9,20 @@ class Topic extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'description', 'sort_order', 'status'];
+    protected $fillable = [
+        'title',
+        'sort_order',
+        'status',
+        'description',
+        'video_url',
+        'videos',
+        'documentation_path',
+        'documentation_filename',
+    ];
+
+    protected $casts = [
+        'videos' => 'array',
+    ];
 
     public function lessons()
     {

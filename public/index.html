@@ -406,20 +406,22 @@
             <aside class="lesson-sidebar">
                 <button class="btn-ghost btn-sm" id="lesson-back-btn">Back</button>
                 <p class="sidebar-topic-title" id="current-topic-title">Topic</p>
-                <nav id="lesson-list"></nav>
-                <button id="take-quiz-btn" class="btn-primary" style="margin-top:auto;">Take Quiz</button>
+
+                <div style="margin-top:auto; display: flex; flex-direction: column; gap: 0.5rem; width: 100%;">
+                    <button id="lesson-docs-btn" class="btn-ghost active" onclick="switchMedia('docs')" style="width: 100%;">Documentation</button>
+                    <button id="lesson-video-btn" class="btn-ghost" onclick="switchMedia('video')" style="width: 100%;">Videos</button>
+                    <button id="take-quiz-btn" class="btn-primary" style="margin: 0; width: 100%;">Take Quiz</button>
+                </div>
             </aside>
             <main class="lesson-main">
-                <div class="media-tabs" style="display: flex; gap: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 1.5rem;">
-                    <button class="media-tab active" id="tab-video" onclick="switchMedia('video')" style="background: none; border: none; color: var(--text); font-weight: 600; cursor: pointer; padding: 0.5rem; border-bottom: 2px solid var(--accent);">Video</button>
-                    <button class="media-tab" id="tab-docs" onclick="switchMedia('docs')" style="background: none; border: none; color: var(--text-muted); font-weight: 600; cursor: pointer; padding: 0.5rem; display: none;">Documentation</button>
+                <div class="video-wrap" id="video-container" style="display: none; max-width: 1600px; margin: 0 auto; width: 100%;">
+                    <div id="topic-videos-list" class="video-tab-list">
+                        <!-- Dynamic Video Buttons -->
+                    </div>
+                    <iframe id="video-player" src="" frameborder="0" allowfullscreen style="width: 100%; height: 85vh; border-radius: 12px;"></iframe>
                 </div>
                 
-                <div class="video-wrap" id="video-container" style="max-width: 1100px; margin: 0 auto; width: 100%;">
-                    <iframe id="video-player" src="" frameborder="0" allowfullscreen></iframe>
-                </div>
-                
-                <div class="docs-wrap" id="docs-container" style="display: none; background: var(--bg); border-radius: 12px; padding: 0; text-align: center; border: 1px solid var(--border); overflow: hidden; max-width: 1100px; margin: 0 auto; width: 100%; aspect-ratio: 16/9; flex-direction: column;">
+                <div class="docs-wrap" id="docs-container" style="display: flex; background: var(--bg); border-radius: 12px; padding: 0; text-align: center; border: 1px solid var(--border); overflow: hidden; max-width: 1600px; margin: 0 auto; width: 100%; height: 85vh; flex-direction: column;">
                     <div style="padding: 1rem 1.5rem; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; z-index: 2;">
                         <div style="display: flex; align-items: center; gap: 0.8rem;">
                             <div style="width: 36px; height: 36px; border-radius: 8px; background: var(--gradient); display: flex; align-items: center; justify-content: center; color: #fff;">
@@ -450,11 +452,6 @@
                         <p class="muted" style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text); font-weight: 600;">Preview not available</p>
                         <p class="muted" style="font-size: 0.9rem;">Please use the Download button to view this file.</p>
                     </div>
-                </div>
-
-                <div class="notes-card" style="margin-top: 2rem;">
-                    <h4>Study Notes</h4>
-                    <div id="lesson-notes-content"></div>
                 </div>
             </main>
         </div>

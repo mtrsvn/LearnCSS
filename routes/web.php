@@ -129,12 +129,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/content/topics/{topic}', [AdminController::class, 'updateTopic'])->name('content.topics.update');
         Route::delete('/content/topics/{topic}', [AdminController::class, 'destroyTopic'])->name('content.topics.destroy');
 
-        // Lessons CRUD
-        Route::post('/content/lessons/reorder', [AdminController::class, 'reorderLessons'])->name('content.lessons.reorder');
-        Route::post('/content/lessons/{lesson}/approve', [AdminController::class, 'approveLesson'])->name('content.lessons.approve');
-        Route::post('/content/lessons', [AdminController::class, 'storeLesson'])->name('content.lessons.store');
-        Route::post('/content/lessons/{lesson}', [AdminController::class, 'updateLesson'])->name('content.lessons.update');
-        Route::delete('/content/lessons/{lesson}', [AdminController::class, 'destroyLesson'])->name('content.lessons.destroy');
 
         // Quizzes CRUD
         Route::post('/content/quizzes/{quiz}/approve', [AdminController::class, 'approveQuiz'])->name('content.quizzes.approve');
