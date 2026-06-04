@@ -313,9 +313,16 @@ class AdminController extends Controller
         return view('admin.content.topics', compact('topics'));
     }
 
-    public function contentQuizzes()
+    public function contentQuizzes(Request $request)
     {
-        $quizzes = QuizQuestion::with('topic')->get();
+        $query = QuizQuestion::with('topic');
+        
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where('question', 'like', "%{$search}%");
+        }
+        
+        $quizzes = $query->paginate(5);
         $topics = Topic::orderBy('sort_order')->get();
         return view('admin.content.quizzes', compact('quizzes', 'topics'));
     }

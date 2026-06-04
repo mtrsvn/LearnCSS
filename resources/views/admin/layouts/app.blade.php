@@ -293,6 +293,15 @@
         if (window.lucide) {
             lucide.createIcons();
         }
+
+        // Global ESC handler for admin modals
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.admin-modal.open').forEach(modal => {
+                    modal.classList.remove('open');
+                });
+            }
+        });
     </script>
 </body>
 </html>

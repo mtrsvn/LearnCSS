@@ -350,7 +350,7 @@ async function loadPublicCurriculum() {
             }
 
             data.topics.forEach((topic, index) => {
-                const numStr = (index + 1).toString().padStart(2, '0');
+                const numStr = (topic.sort_order).toString().padStart(2, '0');
                 const item = document.createElement('div');
                 item.className = 'roadmap-item';
                 item.innerHTML = `
@@ -386,6 +386,7 @@ async function loginUser(user) {
         if (pData && pData.success) {
             state.completedTopics = pData.completedTopics;
             state.hasCertificate = pData.hasCertificate || state.hasCertificate;
+            state.hasPassedMidExam = pData.hasPassedMidExam || false;
             if (pData.lastTopicStarted) {
                 state.lastTopicStarted = pData.lastTopicStarted;
             }
@@ -467,12 +468,17 @@ if (redeemBtn) {
                         renderDashboard();
                         showToast('Voucher accepted! You can now access the courses.', 'success');
                     } else {
-                        state.examType = 'final';
-                        const exam = await apiRequest('/api/exam/questions?type=final');
-                        if (exam && exam.success) {
-                            finalExam = exam.questions;
-                            startQuiz(finalExam);
-                            showToast('Voucher accepted! Starting exam...', 'success');
+                        const allDone = topics.length > 0 && state.completedTopics.length === topics.length;
+                        if (!allDone || !state.hasPassedMidExam) {
+                            showToast('The Final Exam can only be taken after completing all topics and the Mid Certification Exam.', 'error');
+                        } else {
+                            state.examType = 'final';
+                            const exam = await apiRequest('/api/exam/questions?type=final');
+                            if (exam && exam.success) {
+                                finalExam = exam.questions;
+                                startQuiz(finalExam);
+                                showToast('Voucher accepted! Starting exam...', 'success');
+                            }
                         }
                     }
                 }
@@ -501,12 +507,24 @@ function renderDashboard() {
             lockMsg = '<span class="topic-lock"><i data-lucide="lock"></i>Unlock courses with a voucher</span>';
         } else {
             unlocked = index === 0 || (prevTopicId && state.completedTopics.includes(prevTopicId));
-            lockMsg = unlocked ? '' : '<span class="topic-lock"><i data-lucide="lock"></i>Complete the previous topic to unlock</span>';
+            const midIndex = Math.floor(topics.length / 2);
+            
+            if (index >= midIndex && !state.hasPassedMidExam) {
+                if (index === midIndex && prevTopicId && state.completedTopics.includes(prevTopicId)) {
+                    unlocked = false;
+                    lockMsg = '<span class="topic-lock"><i data-lucide="lock"></i>Complete Mid Exam to unlock</span>';
+                } else {
+                    unlocked = false;
+                    lockMsg = '<span class="topic-lock"><i data-lucide="lock"></i>Complete the previous topic to unlock</span>';
+                }
+            } else {
+                lockMsg = unlocked ? '' : '<span class="topic-lock"><i data-lucide="lock"></i>Complete the previous topic to unlock</span>';
+            }
         }
 
         const midIndex = Math.floor(topics.length / 2);
         if (index === midIndex && midIndex > 0) {
-            const midDone = false; // Add local state if you want to track it later, for now just show it
+            const midDone = state.hasPassedMidExam;
             const midUnlocked = index === 0 || (prevTopicId && state.completedTopics.includes(prevTopicId));
             const midLockMsg = midUnlocked ? '' : '<span class="topic-lock"><i data-lucide="lock"></i>Complete previous topics to unlock Mid Exam</span>';
             
@@ -536,7 +554,7 @@ function renderDashboard() {
         const card = document.createElement('div');
         card.className = `topic-card ${done ? 'completed' : ''} ${unlocked ? '' : 'locked'}`.trim();
         card.innerHTML = `
-            <p class="topic-num">Topic ${topic.id}</p>
+            <p class="topic-num">Topic ${topic.sort_order}</p>
             <h3>${topic.title}${done ? '<span class="topic-done-badge"><i data-lucide="check"></i></span>' : ''}</h3>
             ${lockMsg}
         `;
@@ -595,7 +613,14 @@ if (resumeCourseBtn) {
                 return index === 0 || (prevTopicId && state.completedTopics.includes(prevTopicId));
             });
         }
-        if (nextIndex >= 0) openTopic(nextIndex);
+        if (nextIndex >= 0) {
+            const midIndex = Math.floor(topics.length / 2);
+            if (nextIndex >= midIndex && !state.hasPassedMidExam) {
+                showToast('Please complete the Mid Exam first before continuing to the next topic.', 'warning');
+            } else {
+                openTopic(nextIndex);
+            }
+        }
     });
 }
 
@@ -645,7 +670,7 @@ function updateFinalCard() {
         };
         
         btn.onclick = null;
-    } else if (!allDone) {
+    } else if (!allDone || !state.hasPassedMidExam) {
         btn.className = 'topic-card locked final-exam-card';
         btn.style.borderColor = 'var(--border)';
         btn.style.boxShadow = 'none';
@@ -653,7 +678,7 @@ function updateFinalCard() {
             <p class="topic-num" style="color: var(--text-muted); font-weight: bold;">Final Exam</p>
             <h3 style="color: var(--text-muted);">Final Certification Exam</h3>
             <span style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.9rem;">Comprehensive test covering all topics!</span>
-            <span class="topic-lock"><i data-lucide="lock"></i>Complete all topics to unlock</span>
+            <span class="topic-lock"><i data-lucide="lock"></i>Complete all topics and Mid Exam to unlock</span>
         `;
         btn.onclick = null;
     } else {
@@ -1405,3 +1430,23 @@ function shareOnLinkedIn() {
     
     window.open(linkedInUrl, '_blank', 'noopener,noreferrer');
 }
+
+// Global ESC handler to close modals
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        if (typeof closeModal === 'function') closeModal();
+        if (typeof hideCertificate === 'function') hideCertificate();
+        
+        const videoOverlay = $('video-modal-overlay');
+        if (videoOverlay && !videoOverlay.classList.contains('hidden')) {
+            videoOverlay.classList.add('hidden');
+            const vp = $('video-player');
+            if (vp) vp.pause();
+        }
+        
+        const docOverlay = $('doc-modal-overlay');
+        if (docOverlay && !docOverlay.classList.contains('hidden')) {
+            docOverlay.classList.add('hidden');
+        }
+    }
+});

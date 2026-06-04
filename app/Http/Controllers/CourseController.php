@@ -21,6 +21,7 @@ class CourseController extends Controller
             return [
                 'id' => $topic->id,
                 'title' => $topic->title,
+                'sort_order' => $topic->sort_order,
                 'videoUrl' => $topic->video_url,
                 'videos' => $topic->videos,
                 'documentationPath' => $topic->documentation_path,
@@ -77,6 +78,10 @@ class CourseController extends Controller
             'examStatus' => $snapshot['examStatus'],
             'lastTopicStarted' => $user->last_topic_id,
             'hasCertificate' => \App\Models\Certificate::where('user_id', $user->id)->exists(),
+            'hasPassedMidExam' => \App\Models\AuditLog::where('user_id', $user->id)
+                                    ->where('action', 'Mid Exam Completed')
+                                    ->where('description', 'LIKE', '%Passed: Yes%')
+                                    ->exists(),
         ]);
     }
 

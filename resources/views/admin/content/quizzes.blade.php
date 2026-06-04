@@ -34,37 +34,24 @@
                             <td><span class="status success">Published</span></td>
                         </tr>
                     @endforeach
-                    <tr>
-                        <td><strong>Final Certification Exam</strong></td>
-                        <td>{{ \App\Models\QuizQuestion::whereNull('topic_id')->count() }} questions</td>
-                        <td>Perfect score required (100%)</td>
-                        <td><span class="status success">Published</span></td>
-                    </tr>
                 </tbody>
             </table>
         </div>
     </section>
 
-    <aside class="panel">
-        <p class="panel-label">Curriculum parameters</p>
-        <h2 class="panel-title">Assessment Scope</h2>
-        <p class="panel-subtitle">Current standards configured in database:</p>
-        <div class="list-stack">
-            <div class="list-item">
-                <strong>Topic Quiz Rules</strong>
-                <span class="muted">Learners must complete the quiz under each topic. Correct answers register the topic as completed in their dashboard.</span>
-            </div>
-            <div class="list-item">
-                <strong>Final Certification Exam</strong>
-                <span class="muted">Requires 100% correct answers (5/5). Success generates a cryptographically verifiable certification serial.</span>
-            </div>
-        </div>
-    </aside>
 </div>
 
 <section class="panel" style="margin-top: 18px;">
-    <p class="panel-label">Question bank</p>
-    <h2 class="panel-title">Active Database Questions</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <div>
+            <p class="panel-label">Question bank</p>
+            <h2 class="panel-title" style="margin-bottom: 0;">Active Database Questions</h2>
+        </div>
+        <form action="{{ route('admin.content.quizzes') }}" method="GET" style="display: flex; gap: 0.5rem; margin: 0;">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search questions..." style="padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); min-width: 250px;">
+            <button type="submit" class="btn-primary" style="padding: 0.5rem 1rem;">Search</button>
+        </form>
+    </div>
     <div class="table-wrap">
         <table class="data-table">
             <thead>
@@ -138,6 +125,9 @@
                 @endforelse
             </tbody>
         </table>
+    </div>
+    <div style="margin-top: 1.5rem;">
+        {{ $quizzes->appends(['search' => request('search')])->links('pagination::bootstrap-4') }}
     </div>
 </section>
 
