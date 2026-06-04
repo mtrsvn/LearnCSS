@@ -1,0 +1,227 @@
+[
+    {
+        "id": 1,
+        "title": "CSS Basics",
+        "videos": [
+            "[https:\/\/www.youtube.com\/watch?v=1PnVor36_40",
+            "https:\/\/www.youtube.com\/watch?v=yfoY53QXEnI",
+            "https:\/\/www.youtube.com\/watch?v=yfoY53QXEnI",
+            "https:\/\/www.youtube.com\/watch?v=0afZj1G0BIE"
+        ]
+    },
+    {
+        "id": 17,
+        "title": "CSS Colors",
+        "videos": [
+            {
+                "title": "Part 1",
+                "url": "https:\/\/www.youtube.com\/watch?v=K1naz9wBwKU",
+                "notes": "<p>Video lesson part 1 for CSS Colors.<\/p>"
+            },
+            {
+                "title": "Part 2",
+                "url": "https:\/\/www.youtube.com\/watch?v=yfoY53QXEnI",
+                "notes": "<p>Video lesson part 2 for CSS Colors.<\/p>"
+            },
+            {
+                "title": "Part 3",
+                "url": "https:\/\/www.youtube.com\/watch?v=G3e-cpL7ofc",
+                "notes": "<p>Video lesson part 3 for CSS Colors.<\/p>"
+            }
+        ]
+    },
+    {
+        "id": 18,
+        "title": "CSS Backgrounds",
+        "videos": [
+            {
+                "title": "Part 1",
+                "url": "https:\/\/www.youtube.com\/watch?v=1Rs2ND1ryYc",
+                "notes": "<p>Video lesson part 1 for CSS Backgrounds.<\/p>"
+            },
+            {
+                "title": "Part 2",
+                "url": "https:\/\/www.youtube.com\/watch?v=yfoY53QXEnI",
+                "notes": "<p>Video lesson part 2 for CSS Backgrounds.<\/p>"
+            },
+            {
+                "title": "Part 3",
+                "url": "https:\/\/www.youtube.com\/watch?v=OXGznpKZ_sA",
+                "notes": "<p>Video lesson part 3 for CSS Backgrounds.<\/p>"
+            }
+        ]
+    },
+    {
+        "id": 19,
+        "title": "CSS Borders",
+        "videos": [
+            {
+                "title": "Part 1",
+                "url": "https:\/\/www.youtube.com\/watch?v=yfoY53QXEnI",
+                "notes": "<p>Video lesson part 1 for CSS Borders.<\/p>"
+            },
+            {
+                "title": "Part 2",
+                "url": "https:\/\/www.youtube.com\/watch?v=OXGznpKZ_sA",
+                "notes": "<p>Video lesson part 2 for CSS Borders.<\/p>"
+            },
+            {
+                "title": "Part 3",
+                "url": "https:\/\/www.youtube.com\/watch?v=1Rs2ND1ryYc",
+                "notes": "<p>Video lesson part 3 for CSS Borders.<\/p>"
+            }
+        ]
+    },
+    {
+        "id": 20,
+        "title": "CSS Margins and Paddings",
+        "videos": [
+            {
+                "title": "Part 1",
+                "url": "https:\/\/www.youtube.com\/watch?v=rIO5326FgPE",
+                "notes": "<p>Video lesson part 1 for CSS Margins and Paddings.<\/p>"
+            },
+            {
+                "title": "Part 2",
+                "url": "https:\/\/www.youtube.com\/watch?v=1Rs2ND1ryYc",
+                "notes": "<p>Video lesson part 2 for CSS Margins and Paddings.<\/p>"
+            },
+            {
+                "title": "Part 3",
+                "url": "https:\/\/www.youtube.com\/watch?v=yfoY53QXEnI",
+                "notes": "<p>Video lesson part 3 for CSS Margins and Paddings.<\/p>"
+            }
+        ]
+    },
+    {
+        "id": 30,
+        "title": "CSS Text",
+        "videos": "[{\"title\":\"CSS Introduction\",\"url\":\"https:\\\/\\\/www.youtube.com\\\/watch?v=yfoY53QXEnI\",\"notes\":\"<p>CSS stands for Cascading Style Sheets. CSS describes how HTML elements are to be displayed on screen, paper, or in other media. CSS saves a lot of work \\u2014 it can control the layout of multiple web pages all at once. External stylesheets are stored in CSS files.<\\\/p>\\n<ul>\\n  <li>CSS = Cascading Style Sheets<\\\/li>\\n  <li>Describes how HTML elements should be displayed<\\\/li>\\n  <li>Can control the layout of multiple web pages at once<\\\/li>\\n  <li>External stylesheets are stored in .css files<\\\/li>\\n<\\\/ul>\"},{\"title\":\"CSS Syntax\",\"url\":\"https:\\\/\\\/www.youtube.com\\\/watch?v=yfoY53QXEnI\",\"notes\":\"<p>A CSS rule consists of a <strong>selector<\\\/strong> and a <strong>declaration block<\\\/strong>.<\\\/p>\\n<ul>\\n  <li>The selector points to the HTML element you want to style.<\\\/li>\\n  <li>The declaration block contains one or more declarations separated by semicolons.<\\\/li>\\n  <li>Each declaration includes a CSS property name and a value, separated by a colon.<\\\/li>\\n  <li>Declaration blocks are surrounded by curly braces.<\\\/li>\\n<\\\/ul>\\n<p><strong>Code Example:<\\\/strong><\\\/p>\\n<pre><code>p {\\n  color: red;\\n  text-align: center;\\n}<\\\/code><\\\/pre>\\n<p><em>p<\\\/em> is the selector, <em>color<\\\/em> and <em>text-align<\\\/em> are properties, <em>red<\\\/em> and <em>center<\\\/em> are values.<\\\/p>\"},{\"title\":\"CSS Selectors\",\"url\":\"https:\\\/\\\/www.youtube.com\\\/watch?v=yfoY53QXEnI\",\"notes\":\"<p>CSS selectors are used to \\\"find\\\" (or select) HTML elements you want to style. The five main categories:<\\\/p>\\n<ul>\\n  <li><strong>Simple selectors<\\\/strong> \\u2014 select by name, id, or class<\\\/li>\\n  <li><strong>Combinator selectors<\\\/strong> \\u2014 select by relationship between elements<\\\/li>\\n  <li><strong>Pseudo-class selectors<\\\/strong> \\u2014 select based on a certain state<\\\/li>\\n  <li><strong>Pseudo-element selectors<\\\/strong> \\u2014 select and style part of an element<\\\/li>\\n  <li><strong>Attribute selectors<\\\/strong> \\u2014 select based on an attribute or value<\\\/li>\\n<\\\/ul>\\n<p><strong>Code Examples:<\\\/strong><\\\/p>\\n<pre><code>\\\/* Element selector *\\\/\\np { color: red; }\\n\\n\\\/* ID selector *\\\/\\n#para1 { text-align: center; }\\n\\n\\\/* Class selector *\\\/\\n.intro { font-size: 1.2em; }\\n\\n\\\/* Universal selector *\\\/\\n* { box-sizing: border-box; }\\n\\n\\\/* Grouping selector *\\\/\\nh1, h2, p { color: navy; }<\\\/code><\\\/pre>\"},{\"title\":\"How to Add CSS\",\"url\":\"https:\\\/\\\/www.youtube.com\\\/watch?v=yfoY53QXEnI\",\"notes\":\"<p>There are three ways to insert a style sheet:<\\\/p>\\n<ol>\\n  <li><strong>External CSS<\\\/strong> \\u2014 Link to an external .css file using the &lt;link&gt; element in the &lt;head&gt; section.<\\\/li>\\n  <li><strong>Internal CSS<\\\/strong> \\u2014 Use the &lt;style&gt; element inside the &lt;head&gt; section of an HTML page.<\\\/li>\\n  <li><strong>Inline CSS<\\\/strong> \\u2014 Use the style attribute directly on HTML elements.<\\\/li>\\n<\\\/ol>\\n<p><strong>External CSS Example:<\\\/strong><\\\/p>\\n<pre><code>&lt;head&gt;\\n  &lt;link rel=\\\"stylesheet\\\" href=\\\"mystyle.css\\\"&gt;\\n&lt;\\\/head&gt;<\\\/code><\\\/pre>\\n<p><strong>Internal CSS Example:<\\\/strong><\\\/p>\\n<pre><code>&lt;head&gt;\\n  &lt;style&gt;\\n    body { background-color: linen; }\\n    h1 { color: maroon; }\\n  &lt;\\\/style&gt;\\n&lt;\\\/head&gt;<\\\/code><\\\/pre>\\n<p><strong>Inline CSS Example:<\\\/strong><\\\/p>\\n<pre><code>&lt;h1 style=\\\"color: blue; text-align: center;\\\"&gt;Hello World&lt;\\\/h1&gt;<\\\/code><\\\/pre>\"},{\"title\":\"Cascading Order & Multiple Style Sheets\",\"url\":\"https:\\\/\\\/www.youtube.com\\\/watch?v=yfoY53QXEnI\",\"notes\":\"<p>When multiple styles are defined for the same element, CSS uses a cascading order. The priority from highest to lowest:<\\\/p>\\n<ol>\\n  <li><strong>Inline styles<\\\/strong> \\u2014 inside an HTML element (highest priority)<\\\/li>\\n  <li><strong>External and internal style sheets<\\\/strong> \\u2014 in the &lt;head&gt; section<\\\/li>\\n  <li><strong>Browser default<\\\/strong> \\u2014 lowest priority<\\\/li>\\n<\\\/ol>\\n<p>If the same selector is defined in both an external and an internal style sheet, the one that is defined <strong>last<\\\/strong> in the HTML will be used.<\\\/p>\\n<p><strong>Code Example:<\\\/strong><\\\/p>\\n<pre><code>\\\/* External CSS (mystyle.css) *\\\/\\nh1 { color: navy; }\\n\\n\\\/* Internal CSS (defined after external link) *\\\/\\nh1 { color: orange; }\\n\\n\\\/* Result: h1 will be orange because internal is last *\\\/<\\\/code><\\\/pre>\\n<p>An inline style has the highest priority and will override both external and internal styles.<\\\/p>\"}]"
+    },
+    {
+        "id": 21,
+        "title": "CSS Links, Lists, and Tables",
+        "videos": [
+            {
+                "title": "Part 1",
+                "url": "https:\/\/www.youtube.com\/watch?v=yfoY53QXEnI",
+                "notes": "<p>Video lesson part 1 for CSS Links, Lists, and Tables.<\/p>"
+            },
+            {
+                "title": "Part 2",
+                "url": "https:\/\/www.youtube.com\/watch?v=OXGznpKZ_sA",
+                "notes": "<p>Video lesson part 2 for CSS Links, Lists, and Tables.<\/p>"
+            },
+            {
+                "title": "Part 3",
+                "url": "https:\/\/www.youtube.com\/watch?v=1Rs2ND1ryYc",
+                "notes": "<p>Video lesson part 3 for CSS Links, Lists, and Tables.<\/p>"
+            }
+        ]
+    },
+    {
+        "id": 22,
+        "title": "CSS Display and Positioning",
+        "videos": [
+            {
+                "title": "Part 1",
+                "url": "https:\/\/www.youtube.com\/watch?v=jx5jmI0UlXU",
+                "notes": "<p>Video lesson part 1 for CSS Display and Positioning.<\/p>"
+            },
+            {
+                "title": "Part 2",
+                "url": "https:\/\/www.youtube.com\/watch?v=Y0_FMCji3iE",
+                "notes": "<p>Video lesson part 2 for CSS Display and Positioning.<\/p>"
+            },
+            {
+                "title": "Part 3",
+                "url": "https:\/\/www.youtube.com\/watch?v=yfoY53QXEnI",
+                "notes": "<p>Video lesson part 3 for CSS Display and Positioning.<\/p>"
+            }
+        ]
+    },
+    {
+        "id": 23,
+        "title": "CSS Navigation and Layout",
+        "videos": [
+            {
+                "title": "Part 1",
+                "url": "https:\/\/www.youtube.com\/watch?v=8QXhV0x0GZ0",
+                "notes": "<p>Video lesson part 1 for CSS Navigation and Layout.<\/p>"
+            },
+            {
+                "title": "Part 2",
+                "url": "https:\/\/www.youtube.com\/watch?v=yfoY53QXEnI",
+                "notes": "<p>Video lesson part 2 for CSS Navigation and Layout.<\/p>"
+            },
+            {
+                "title": "Part 3",
+                "url": "https:\/\/www.youtube.com\/watch?v=1Rs2ND1ryYc",
+                "notes": "<p>Video lesson part 3 for CSS Navigation and Layout.<\/p>"
+            }
+        ]
+    },
+    {
+        "id": 24,
+        "title": "CSS Advanced Features",
+        "videos": [
+            {
+                "title": "Part 1",
+                "url": "https:\/\/www.youtube.com\/watch?v=lAOkx2yZESY",
+                "notes": "<p>Video lesson part 1 for CSS Advanced Features.<\/p>"
+            },
+            {
+                "title": "Part 2",
+                "url": "https:\/\/www.youtube.com\/watch?v=1Rs2ND1ryYc",
+                "notes": "<p>Video lesson part 2 for CSS Advanced Features.<\/p>"
+            },
+            {
+                "title": "Part 3",
+                "url": "https:\/\/www.youtube.com\/watch?v=yfoY53QXEnI",
+                "notes": "<p>Video lesson part 3 for CSS Advanced Features.<\/p>"
+            }
+        ]
+    },
+    {
+        "id": 28,
+        "title": "CSS Responsive Design",
+        "videos": [
+            {
+                "title": "Responsive Web Design",
+                "url": "https:\/\/www.youtube.com\/watch?v=JJSoEo8JSnc",
+                "notes": "<p>Responsive Web Design (RWD) makes web pages look good on all devices \u2014 desktops, tablets, and phones. Uses the HTML &lt;meta&gt; viewport tag to control layout scaling on different screen sizes. Fluid grids use relative units (%, vw) instead of fixed pixels so layouts resize automatically. Flexible images and media scale within their containers to avoid overflow. CSS media queries apply different styles based on device width, height, or orientation.<\/p><p><strong>Code Example:<\/strong><\/p><pre><code>&lt;!-- In &lt;head&gt; section --&gt;\n&lt;meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"&gt;\n\n\/* Fluid container *\/\n.container {\n width: 100%;\n max-width: 1200px;\n margin: 0 auto;\n}<\/code><\/pre>"
+            },
+            {
+                "title": "Media Queries",
+                "url": "https:\/\/www.youtube.com\/watch?v=0xMQfnTU6oo",
+                "notes": "<p>Media queries apply CSS rules only when certain device conditions are met (width, height, orientation). Syntax: @media only screen and (max-width: 600px) { ... } Breakpoints are the screen widths where the layout changes (e.g., 600px, 768px, 1024px). Mobile-first design writes default styles for small screens, then uses min-width queries to scale up.<\/p><p><strong>Code Example:<\/strong><\/p><pre><code>\/* Mobile first \u2014 default *\/\n.col { width: 100%; }\n\/* Tablet: 601px+ *\/\n@media (min-width: 601px) {\n .col { width: 50%; }\n}\n\/* Desktop: 993px+ *\/\n@media (min-width: 993px) {\n .col { width: 25%; }\n}<\/code><\/pre>"
+            },
+            {
+                "title": "Flexbox",
+                "url": "https:\/\/www.youtube.com\/watch?v=2KL-z9A56SQ",
+                "notes": "<p>Flexbox (Flexible Box Layout) is a 1D layout model for arranging items in a row or column. Set display: flex on a parent container to make its children flex items. justify-content controls horizontal alignment: flex-start, center, space-between, space-around. align-items controls vertical alignment: stretch, center, flex-start, flex-end. flex-wrap: wrap allows items to wrap onto the next line when there isn't enough space.<\/p><p><strong>Code Example:<\/strong><\/p><pre><code>.flex-container {\n display: flex;\n flex-direction: row;\n flex-wrap: wrap;\n justify-content: space-between;\n align-items: center;\n gap: 16px;\n}\n.flex-item {\n flex: 1;\n min-width: 200px;\n}<\/code><\/pre>"
+            }
+        ]
+    },
+    {
+        "id": 29,
+        "title": "CSS Transforms & Animations",
+        "videos": [
+            {
+                "title": "CSS Transforms",
+                "url": "https:\/\/www.youtube.com\/watch?v=zHUpx90NerM",
+                "notes": "<p>The transform property applies 2D or 3D visual transformations to an element without affecting document flow. translate(x, y) moves an element horizontally and\/or vertically. rotate(deg) rotates an element. scale(x, y) resizes an element. skew(x, y) tilts an element. Multiple transforms can be chained in a single property. transform-origin changes the pivot point.<\/p><p><strong>Code Example:<\/strong><\/p><pre><code>\/* 2D Transforms *\/\n.move { transform: translate(50px, 20px); }\n.spin { transform: rotate(45deg); }\n.grow { transform: scale(1.5); }\n.tilt { transform: skewX(20deg); }\n\/* Combined *\/\n.combo { transform: rotate(30deg) scale(0.8); }<\/code><\/pre>"
+            },
+            {
+                "title": "CSS Transitions",
+                "url": "https:\/\/www.youtube.com\/watch?v=YszONjKpgg4",
+                "notes": "<p>CSS transitions smoothly animate a property change from one value to another over a set duration. transition-property specifies which CSS property to animate. transition-duration sets how long the transition takes. transition-timing-function controls the speed curve. transition-delay adds a pause before the transition starts. Use 'all' to transition every animatable property.<\/p><p><strong>Code Example:<\/strong><\/p><pre><code>.btn {\n background: #7B5EA7;\n color: white;\n padding: 10px 24px;\n transition: background 0.3s ease, transform 0.3s ease;\n}\n.btn:hover {\n background: #CC44AA;\n transform: scale(1.05);\n}<\/code><\/pre>"
+            },
+            {
+                "title": "CSS Animations",
+                "url": "https:\/\/www.youtube.com\/watch?v=9zBsdzdE4sM",
+                "notes": "<p>CSS animations allow elements to gradually change style using @keyframes and the animation property. @keyframes defines the animation steps: from\/to or percentage-based. animation-name links an element to a @keyframes rule. animation-duration sets how long one cycle takes. animation-fill-mode: forwards keeps the end-state style after the animation completes.<\/p><p><strong>Code Example:<\/strong><\/p><pre><code>@keyframes slideIn {\n from { transform: translateX(-100%); opacity: 0; }\n to { transform: translateX(0); opacity: 1; }\n}\n.box {\n animation: slideIn 0.6s ease-out forwards;\n}<\/code><\/pre>"
+            }
+        ]
+    }
+]

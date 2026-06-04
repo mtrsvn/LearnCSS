@@ -1,0 +1,74 @@
+[
+    {
+        "id": 1,
+        "title": "CSS Basics",
+        "documentation_path": "\/storage\/documentation\/1780582148_Module 1 CSS Basics.pdf",
+        "video_url": null
+    },
+    {
+        "id": 17,
+        "title": "CSS Colors",
+        "documentation_path": "\/storage\/documentation\/1780586692_Module 2 CSS Colors.pdf",
+        "video_url": null
+    },
+    {
+        "id": 18,
+        "title": "CSS Backgrounds",
+        "documentation_path": "\/storage\/documentation\/1780594235_Module-3-CSS-Backgrounds.pdf",
+        "video_url": null
+    },
+    {
+        "id": 19,
+        "title": "CSS Borders",
+        "documentation_path": "\/storage\/documentation\/1780594264_Module-4-CSS-Borders_20260604_214653_0000.pdf",
+        "video_url": null
+    },
+    {
+        "id": 20,
+        "title": "CSS Margins and Paddings",
+        "documentation_path": "\/storage\/documentation\/1780594274_Module 5 CSS Margins & Paddings.pdf",
+        "video_url": null
+    },
+    {
+        "id": 30,
+        "title": "CSS Text",
+        "documentation_path": null,
+        "video_url": null
+    },
+    {
+        "id": 21,
+        "title": "CSS Links, Lists, and Tables",
+        "documentation_path": "\/storage\/documentation\/1780594286_Module 7 CSS Links, Lists, and Tables.pdf",
+        "video_url": null
+    },
+    {
+        "id": 22,
+        "title": "CSS Display and Positioning",
+        "documentation_path": "\/storage\/documentation\/1780594294_Module 8 CSS Display and Positioning.pdf",
+        "video_url": null
+    },
+    {
+        "id": 23,
+        "title": "CSS Navigation and Layout",
+        "documentation_path": "\/storage\/documentation\/1780594302_Module 9 CSS Navigation and Layout.pdf",
+        "video_url": null
+    },
+    {
+        "id": 24,
+        "title": "CSS Advanced Features",
+        "documentation_path": "\/storage\/documentation\/1780594309_Module 10 CSS Advanced Features.pdf",
+        "video_url": null
+    },
+    {
+        "id": 28,
+        "title": "CSS Responsive Design",
+        "documentation_path": "\/storage\/documentation\/1780594320_CSS_Module11_Responsive_Design.pdf",
+        "video_url": null
+    },
+    {
+        "id": 29,
+        "title": "CSS Transforms & Animations",
+        "documentation_path": "\/storage\/documentation\/1780594331_CSS_Module12_Animations_Extras.pdf",
+        "video_url": null
+    }
+]

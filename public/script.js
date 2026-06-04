@@ -499,30 +499,23 @@ function renderDashboard() {
     topics.forEach((topic, index) => {
         const done = state.completedTopics.includes(topic.id);
         const prevTopicId = index > 0 ? topics[index - 1].id : null;
-        let unlocked = false;
+        let unlocked = index === 0 || (prevTopicId && state.completedTopics.includes(prevTopicId));
         let lockMsg = '';
-
-        if (!state.courseUnlocked) {
-            unlocked = false;
-            lockMsg = '<span class="topic-lock"><i data-lucide="lock"></i>Unlock courses with a voucher</span>';
-        } else {
-            unlocked = index === 0 || (prevTopicId && state.completedTopics.includes(prevTopicId));
-            const midIndex = Math.floor(topics.length / 2);
-            
-            if (index >= midIndex && !state.hasPassedMidExam && !done) {
-                if (index === midIndex && prevTopicId && state.completedTopics.includes(prevTopicId)) {
-                    unlocked = false;
-                    lockMsg = '<span class="topic-lock"><i data-lucide="lock"></i>Complete Mid Exam to unlock</span>';
-                } else {
-                    unlocked = false;
-                    lockMsg = '<span class="topic-lock"><i data-lucide="lock"></i>Complete the previous topic to unlock</span>';
-                }
+        
+        const midIndex = Math.floor(topics.length / 2);
+        
+        if (index >= midIndex && !state.hasPassedMidExam && !done) {
+            if (index === midIndex && prevTopicId && state.completedTopics.includes(prevTopicId)) {
+                unlocked = false;
+                lockMsg = '<span class="topic-lock"><i data-lucide="lock"></i>Complete Mid Exam to unlock</span>';
             } else {
-                lockMsg = unlocked ? '' : '<span class="topic-lock"><i data-lucide="lock"></i>Complete the previous topic to unlock</span>';
+                unlocked = false;
+                lockMsg = '<span class="topic-lock"><i data-lucide="lock"></i>Complete the previous topic to unlock</span>';
             }
+        } else {
+            lockMsg = unlocked ? '' : '<span class="topic-lock"><i data-lucide="lock"></i>Complete the previous topic to unlock</span>';
         }
 
-        const midIndex = Math.floor(topics.length / 2);
         if (index === midIndex && midIndex > 0) {
             const midDone = state.hasPassedMidExam;
             const midUnlocked = index === 0 || (prevTopicId && state.completedTopics.includes(prevTopicId));
@@ -557,10 +550,8 @@ function renderDashboard() {
             <h3>${topic.title}${done ? '<span class="topic-done-badge"><i data-lucide="check"></i></span>' : ''}</h3>
             ${(unlocked || done) ? '' : lockMsg}
         `;
-        if (state.courseUnlocked) {
-            card.style.cursor = 'pointer';
-            card.addEventListener('click', () => openTopic(index));
-        }
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', () => openTopic(index));
         container.appendChild(card);
     });
 
@@ -573,9 +564,7 @@ function renderDashboard() {
 
     const resumeBtn = $('resume-module-btn');
     if (resumeBtn) {
-        if (!state.courseUnlocked) {
-            resumeBtn.classList.add('hidden');
-        } else if (state.hasCertificate) {
+        if (state.hasCertificate) {
             resumeBtn.textContent = 'View Your Certificate';
             resumeBtn.classList.remove('hidden');
         } else if (state.completedTopics.length === 0 && !state.lastTopicStarted) {
@@ -759,16 +748,21 @@ function renderLesson() {
                 btn.className = `video-tab ${i === 0 ? 'active' : ''}`;
                 btn.textContent = `Video ${i + 1}`;
                 
-                // Convert YouTube watch URLs to embed URLs
-                const getEmbedUrl = (url) => {
-                    if (!url) return '';
-                    let vidId = '';
-                    if (url.includes('youtube.com/watch?v=')) {
-                        vidId = url.split('v=')[1].split('&')[0];
-                    } else if (url.includes('youtu.be/')) {
-                        vidId = url.split('youtu.be/')[1].split('?')[0];
+                const getEmbedUrl = (urlItem) => {
+                    let urlStr = '';
+                    if (typeof urlItem === 'string') {
+                        urlStr = urlItem;
+                    } else if (typeof urlItem === 'object' && urlItem !== null && urlItem.url) {
+                        urlStr = urlItem.url;
                     }
-                    return vidId ? `https://www.youtube.com/embed/${vidId}` : url;
+                    if (!urlStr) return '';
+                    let vidId = '';
+                    if (urlStr.includes('youtube.com/watch?v=')) {
+                        vidId = urlStr.split('v=')[1].split('&')[0];
+                    } else if (urlStr.includes('youtu.be/')) {
+                        vidId = urlStr.split('youtu.be/')[1].split('?')[0];
+                    }
+                    return vidId ? `https://www.youtube.com/embed/${vidId}` : urlStr;
                 };
 
                 const embedUrl = getEmbedUrl(vUrl);
@@ -783,15 +777,21 @@ function renderLesson() {
             });
             if (player) {
                 // Initialize first video with embed URL parsing
-                const getFirstEmbedUrl = (url) => {
-                    if (!url) return '';
-                    let vidId = '';
-                    if (url.includes('youtube.com/watch?v=')) {
-                        vidId = url.split('v=')[1].split('&')[0];
-                    } else if (url.includes('youtu.be/')) {
-                        vidId = url.split('youtu.be/')[1].split('?')[0];
+                const getFirstEmbedUrl = (urlItem) => {
+                    let urlStr = '';
+                    if (typeof urlItem === 'string') {
+                        urlStr = urlItem;
+                    } else if (typeof urlItem === 'object' && urlItem !== null && urlItem.url) {
+                        urlStr = urlItem.url;
                     }
-                    return vidId ? `https://www.youtube.com/embed/${vidId}` : url;
+                    if (!urlStr) return '';
+                    let vidId = '';
+                    if (urlStr.includes('youtube.com/watch?v=')) {
+                        vidId = urlStr.split('v=')[1].split('&')[0];
+                    } else if (urlStr.includes('youtu.be/')) {
+                        vidId = urlStr.split('youtu.be/')[1].split('?')[0];
+                    }
+                    return vidId ? `https://www.youtube.com/embed/${vidId}` : urlStr;
                 };
                 player.src = getFirstEmbedUrl(allVideos[0]);
             }
@@ -1013,6 +1013,7 @@ if (nextQBtn) {
         document.querySelectorAll('.quiz-option').forEach((btn, i) => {
             btn.disabled = true;
             btn.style.cursor = 'default';
+            const letterEl = btn.querySelector('.opt-letter');
             
             // For regular quiz, we know answers index locally.
             // For final exam or mid exam, options grading is performed securely at submit!
