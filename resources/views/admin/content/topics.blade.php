@@ -56,7 +56,7 @@
         </div>
         <div class="table-wrap">
             <table class="data-table">
-                <thead><tr><th style="width: 30px;"></th><th>Order</th><th>Topic</th><th>Status</th><th>Video</th><th>Actions</th></tr></thead>
+                <thead><tr><th style="width: 30px;"></th><th>Order</th><th>Topic</th><th>Status</th><th>Videos</th><th>Actions</th></tr></thead>
                 <tbody id="topicsTableBody">
                     @forelse ($topics as $topic)
                         <tr data-id="{{ $topic->id }}">
@@ -71,10 +71,15 @@
                                 @endif
                             </td>
                             <td style="vertical-align: middle;">
-                                @if ($topic->video_url)
-                                    <span class="muted"><code>{{ $topic->video_url }}</code></span>
+                                @php
+                                    $videoCount = is_array($topic->videos) ? count($topic->videos) : 0;
+                                @endphp
+                                @if ($videoCount > 0)
+                                    <span class="muted" style="font-weight: 500; color: var(--accent);">{{ $videoCount }} video{{ $videoCount > 1 ? 's' : '' }}</span>
+                                @elseif ($topic->video_url)
+                                    <span class="muted">1 video (legacy)</span>
                                 @else
-                                    <span class="muted">No video configured</span>
+                                    <span class="muted">0 videos</span>
                                 @endif
                             </td>
                             <td style="vertical-align: middle;">
