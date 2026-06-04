@@ -402,15 +402,25 @@ class AdminController extends Controller
             'videos.*' => 'nullable|string|max:255',
         ]);
 
-        // Clean up videos array
-        $videos = $request->input('videos', []);
-        $videos = array_values(array_filter($videos, function($v) { return !empty($v); }));
+        // Clean up videos array and merge with existing to preserve title/notes
+        $videosInput = $request->input('videos', []);
+        $videosInput = array_values(array_filter($videosInput, function($v) { return !empty($v) && $v !== '[object Object]'; }));
+        
+        $existingVideos = $topic->videos ?? [];
+        $mergedVideos = [];
+        foreach ($videosInput as $i => $url) {
+            if (isset($existingVideos[$i]) && is_array($existingVideos[$i])) {
+                $mergedVideos[] = array_merge($existingVideos[$i], ['url' => $url]);
+            } else {
+                $mergedVideos[] = ['title' => 'Part ' . ($i + 1), 'url' => $url, 'notes' => ''];
+            }
+        }
 
         $data = [
             'title' => $request->input('title'),
             'description' => $request->input('description'),
             'video_url' => $request->input('video_url'),
-            'videos' => $videos,
+            'videos' => $mergedVideos,
         ];
 
         if ($request->hasFile('documentation')) {

@@ -279,7 +279,10 @@
                         container.innerHTML += createVideoRow(videoUrl);
                     }
                     videos.forEach(v => {
-                        container.innerHTML += createVideoRow(v);
+                        const url = (typeof v === 'object' && v !== null) ? (v.url || '') : v;
+                        if (url && url !== '[object Object]') {
+                            container.innerHTML += createVideoRow(url);
+                        }
                     });
                 }
             }
