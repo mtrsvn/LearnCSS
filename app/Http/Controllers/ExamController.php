@@ -101,7 +101,7 @@ class ExamController extends Controller
             }
         }
 
-        $passed = ($score === $total);
+        $passed = ($total > 0 && ($score / $total) >= 0.80);
 
         QuizAttempt::create([
             'user_id' => $user->id,
