@@ -289,8 +289,17 @@ body { background:var(--bg); color:var(--text); font-family:'Plus Jakarta Sans',
 .quiz-meta { font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:1.25rem; }
 .quiz-box h3 { font-size:1.1rem; line-height:1.5; margin-bottom:1.5rem; }
 .quiz-progress { height:4px; background:var(--border); border-radius:99px; margin-bottom:1.5rem; overflow:hidden; }
-.quiz-progress-bar { height:100%; background:var(--gradient); border-radius:99px; transition:width .4s ease; }
-.options-list { display:flex; flex-direction:column; gap:.6rem; margin-bottom:1.5rem; }
+.quiz-progress-bar { height:100%; background:var(--gradient); border-radius:10px; transition:width .3s; }
+.options-list { margin-bottom:1.5rem; display:flex; flex-direction:column; gap:0.5rem; }
+
+.quiz-option { display: flex; align-items: center; text-align: left; width: 100%; padding: 1rem 1.25rem; border: 1px solid var(--border); border-radius: 12px; background: transparent; cursor: pointer; transition: all 0.2s ease; color: var(--text-muted); font-size: 1rem; font-family: inherit; }
+.quiz-option:hover { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.2); color: var(--text); }
+.quiz-option.selected { background: rgba(124,58,237,0.1); border-color: var(--accent); color: var(--text); box-shadow: 0 0 0 1px var(--accent); }
+
+.quiz-option .opt-letter { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); margin-right: 16px; font-weight: bold; font-size: 0.85rem; transition: all 0.2s ease; flex-shrink: 0; }
+.quiz-option.selected .opt-letter { background: var(--gradient); color: #fff; border-color: transparent; }
+.quiz-option .opt-text { flex: 1; line-height: 1.4; }
+
 .option-btn { background:rgba(255,255,255,.03); border:1.5px solid var(--border); padding:.85rem 1rem; border-radius:10px; color:var(--text); text-align:left; cursor:pointer; font-size:.875rem; font-family:inherit; transition:all .2s; }
 
 .option-btn.selected { border-color:var(--accent); background:rgba(124,58,237,.12); color:#fff; }

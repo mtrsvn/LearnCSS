@@ -956,66 +956,22 @@ function renderQuestion() {
 
         q.options.forEach((opt, i) => {
             const btn = document.createElement('button');
-            btn.className = 'option-btn';
-            btn.style.display = 'flex';
-            btn.style.alignItems = 'center';
-            btn.style.textAlign = 'left';
-            btn.style.width = '100%';
-            btn.style.padding = '1rem';
-            btn.style.marginBottom = '0.75rem';
-            btn.style.border = '2px solid var(--border)';
-            btn.style.borderRadius = '12px';
-            btn.style.backgroundColor = 'var(--bg-secondary)';
-            btn.style.cursor = 'pointer';
-            btn.style.transition = 'all 0.2s ease';
-            btn.style.color = 'var(--text)';
-            btn.style.fontSize = '1rem';
+            btn.className = 'quiz-option';
             
             const letter = String.fromCharCode(65 + i);
             btn.innerHTML = `
-                <span class="opt-letter" style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; margin-right: 16px; font-weight: bold; color: var(--text-muted); transition: all 0.2s ease; flex-shrink: 0;">${letter}</span>
-                <span class="opt-text" style="flex: 1; line-height: 1.4;">${opt}</span>
+                <span class="opt-letter">${letter}</span>
+                <span class="opt-text">${opt}</span>
             `;
             
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.option-btn').forEach(b => {
-                    b.classList.remove('selected');
-                    b.style.borderColor = 'var(--border)';
-                    b.style.backgroundColor = 'var(--bg-secondary)';
-                    const letterEl = b.querySelector('.opt-letter');
-                    if (letterEl) {
-                        letterEl.style.background = 'var(--bg)';
-                        letterEl.style.color = 'var(--text-muted)';
-                        letterEl.style.borderColor = 'var(--border)';
-                    }
-                });
-                
+                document.querySelectorAll('.quiz-option').forEach(b => b.classList.remove('selected'));
                 btn.classList.add('selected');
-                btn.style.borderColor = 'var(--accent)';
-                btn.style.backgroundColor = 'rgba(99, 102, 241, 0.05)';
-                const selLetter = btn.querySelector('.opt-letter');
-                if (selLetter) {
-                    selLetter.style.background = 'var(--accent)';
-                    selLetter.style.color = '#fff';
-                    selLetter.style.borderColor = 'var(--accent)';
-                }
-                
                 selected = i;
                 if (nextBtn) {
                     nextBtn.disabled = false;
                     nextBtn.style.opacity = '1';
                     nextBtn.style.cursor = 'pointer';
-                }
-            });
-            
-            btn.addEventListener('mouseenter', () => {
-                if (!btn.disabled && !btn.classList.contains('selected')) {
-                    btn.style.borderColor = 'var(--text-muted)';
-                }
-            });
-            btn.addEventListener('mouseleave', () => {
-                if (!btn.disabled && !btn.classList.contains('selected')) {
-                    btn.style.borderColor = 'var(--border)';
                 }
             });
             opts.appendChild(btn);
@@ -1029,10 +985,9 @@ if (nextQBtn) {
         const q = quizData[qIndex];
         answersList.push(selected);
 
-        document.querySelectorAll('.option-btn').forEach((btn, i) => {
+        document.querySelectorAll('.quiz-option').forEach((btn, i) => {
             btn.disabled = true;
             btn.style.cursor = 'default';
-            const letterEl = btn.querySelector('.opt-letter');
             
             // For regular quiz, we know answers index locally.
             // For final exam or mid exam, options grading is performed securely at submit!

@@ -79,7 +79,7 @@
             <tbody>
                 @forelse ($quizzes as $question)
                     <tr>
-                        <td style="vertical-align: middle;"><strong>{{ $question->question }}</strong></td>
+                        <td style="vertical-align: middle; max-width: 350px; white-space: normal; line-height: 1.5; font-size: 0.95rem;"><strong>{{ $question->question }}</strong></td>
                         <td style="vertical-align: middle;">
                             @php
                                 $opts = $question->options;
@@ -103,35 +103,31 @@
                             @endif
                         </td>
                         <td style="vertical-align: middle;">
-                            <div class="dropdown">
-                                <button class="dropdown-trigger" type="button" onclick="toggleDropdown(this, event)">&#8942;</button>
-                                <div class="dropdown-menu">
-                                    @if($question->status === 'pending' && $isAdmin)
-                                    <form action="{{ route('admin.content.quizzes.approve', $question->id) }}" method="POST" style="margin:0;">
-                                        @csrf
-                                        <button class="dropdown-item" type="submit" style="color: var(--correct);">Approve</button>
-                                    </form>
-                                    @endif
-                                    
-                                    @if(!($isAdmin && $question->status === 'pending'))
-                                        <button class="dropdown-item edit-question-btn" type="button"
-                                                data-id="{{ $question->id }}"
-                                                data-question="{{ $question->question }}"
-                                                data-topic-id="{{ $question->topic_id ?: '' }}"
-                                                data-options="{{ json_encode($question->options) }}"
-                                                data-answer="{{ $question->answer }}"
-                                                {{ ($isInstructor && $question->status === 'pending') ? 'disabled' : '' }}
-                                                style="{{ ($isInstructor && $question->status === 'pending') ? 'opacity: 0.5; cursor: not-allowed;' : '' }}">
-                                            Edit Question
-                                        </button>
-                                        <hr class="dropdown-divider">
-                                    @endif
-                                    <form action="{{ route('admin.content.quizzes.destroy', $question->id) }}" method="POST" onsubmit="return confirmDelete(event, 'Are you sure you want to delete this question?');" style="margin:0;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="dropdown-item danger" type="submit">Delete Question</button>
-                                    </form>
-                                </div>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                @if($question->status === 'pending' && $isAdmin)
+                                <form action="{{ route('admin.content.quizzes.approve', $question->id) }}" method="POST" style="margin:0;">
+                                    @csrf
+                                    <button type="submit" class="btn-ghost" style="padding: 0.35rem 0.6rem; font-size: 0.75rem; color: var(--correct); border-color: var(--correct);">Approve</button>
+                                </form>
+                                @endif
+                                
+                                @if(!($isAdmin && $question->status === 'pending'))
+                                    <button type="button" class="btn-ghost edit-question-btn" 
+                                            data-id="{{ $question->id }}"
+                                            data-question="{{ $question->question }}"
+                                            data-topic-id="{{ $question->topic_id ?: '' }}"
+                                            data-options="{{ json_encode($question->options) }}"
+                                            data-answer="{{ $question->answer }}"
+                                            {{ ($isInstructor && $question->status === 'pending') ? 'disabled' : '' }}
+                                            style="padding: 0.35rem 0.6rem; font-size: 0.75rem; {{ ($isInstructor && $question->status === 'pending') ? 'opacity: 0.5; cursor: not-allowed;' : '' }}">
+                                        Edit
+                                    </button>
+                                @endif
+                                <form action="{{ route('admin.content.quizzes.destroy', $question->id) }}" method="POST" onsubmit="return confirmDelete(event, 'Are you sure you want to delete this question?');" style="margin:0;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn-ghost" style="padding: 0.35rem 0.6rem; font-size: 0.75rem; color: var(--wrong); border-color: var(--wrong);">Delete</button>
+                                </form>
                             </div>
                         </td>
                     </tr>
@@ -145,32 +141,32 @@
     </div>
 </section>
 
-<!-- ================= ADD / EDIT QUESTION FORM ================= -->
-<section id="questionFormContainer" class="panel" style="margin-top: 18px;">
-    <div class="panel-header" style="margin-bottom: 1.5rem;">
-        <p class="panel-label">Question editor</p>
-        <h2 id="modalTitle" class="panel-title">Add New Question</h2>
-    </div>
-    
-    <div class="form-container">
-        <form id="questionForm" method="POST" action="{{ route('admin.content.quizzes.store') }}">
-            @csrf
-            <input type="hidden" id="question_method" name="_method" value="POST">
-            
+<!-- ================= ADD / EDIT QUESTION MODAL ================= -->
+<div id="questionModal" class="admin-modal">
+    <form id="questionForm" method="POST" action="{{ route('admin.content.quizzes.store') }}" class="admin-modal-content">
+        @csrf
+        <input type="hidden" id="question_method" name="_method" value="POST">
+        
+        <div class="admin-modal-header">
+            <h3 class="admin-modal-title" id="modalTitle">Add New Question</h3>
+            <button type="button" class="admin-modal-close" onclick="closeModal('questionModal')">&times;</button>
+        </div>
+        
+        <div class="admin-modal-body">
             <div class="form-grid">
                 <div class="field full">
                     <label for="q_scope">Assessment Scope / Topic</label>
                     <select id="q_scope" name="topic_id" required>
-                        <option value="">-- Final Certification Exam --</option>
+                        <option value="" disabled selected>-- Select a Topic --</option>
                         @foreach ($topics as $topic)
-                            <option value="{{ $topic->id }}">{{ $topic->title }} Quiz</option>
+                            <option value="{{ $topic->id }}">{{ $topic->title }}</option>
                         @endforeach
                     </select>
                 </div>
 
                 <div class="field full">
                     <label for="q_text">Question Text</label>
-                    <textarea id="q_text" name="question" required placeholder="e.g. Which CSS property is used to change the text color?"></textarea>
+                    <textarea id="q_text" name="question" required placeholder="e.g. Which CSS property is used to change the text color?" style="width: 100%; min-height: 80px; padding: 0.8rem; border-radius: 8px; border: 1.5px solid var(--border); background: rgba(255,255,255,0.02); color: var(--text); font-family: inherit; resize: vertical;"></textarea>
                 </div>
 
                 <div class="field">
@@ -200,16 +196,25 @@
                     </select>
                 </div>
             </div>
-
-            <div class="form-actions" style="margin-top: 1.5rem; display: flex; gap: 0.75rem; justify-content: flex-end;">
-                <button type="button" class="btn btn-muted" onclick="resetQuestionForm()">Clear</button>
-                <button type="submit" id="saveQuestionBtn" class="btn btn-primary">Create Question</button>
-            </div>
-        </form>
-    </div>
-</section>
+        </div>
+        
+        <div class="admin-modal-footer">
+            <button type="button" class="btn-ghost" onclick="closeModal('questionModal')">Cancel</button>
+            <button type="submit" id="saveQuestionBtn" class="btn-primary">Create Question</button>
+        </div>
+    </form>
+</div>
 
 <script>
+    // Modal Helpers
+    function openModal(id) {
+        document.getElementById(id).classList.add('open');
+    }
+    
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('open');
+    }
+
     function resetQuestionForm() {
         document.getElementById('modalTitle').textContent = 'Add New Question';
         document.getElementById('q_scope').value = '';
@@ -227,7 +232,7 @@
 
     function openAddQuestionModal() {
         resetQuestionForm();
-        document.getElementById('questionFormContainer').scrollIntoView({ behavior: 'smooth' });
+        openModal('questionModal');
     }
 
     document.querySelectorAll('.edit-question-btn').forEach(btn => {
@@ -262,7 +267,7 @@
             document.getElementById('question_method').value = 'POST'; // POST method with Route override
             document.getElementById('saveQuestionBtn').textContent = 'Save Question Changes';
             
-            document.getElementById('questionFormContainer').scrollIntoView({ behavior: 'smooth' });
+            openModal('questionModal');
         });
     });
 </script>
