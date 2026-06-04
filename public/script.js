@@ -1450,3 +1450,41 @@ document.addEventListener('keydown', (e) => {
         }
     }
 });
+
+// "No CSS" gimmick link
+const noCssBtn = $('hero-no-css-btn');
+if (noCssBtn) {
+    noCssBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const styles = document.querySelectorAll('link[rel="stylesheet"], style');
+        
+        // Disable all CSS
+        styles.forEach(el => el.disabled = true);
+        
+        // Create an "Exit" button with hardcoded inline styles so it looks like the landing page button
+        const exitBtn = document.createElement('button');
+        exitBtn.textContent = 'Bring CSS Back';
+        exitBtn.style.cssText = `
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: linear-gradient(135deg, #7c3aed, #4f46e5);
+            color: #fff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-family: 'Plus Jakarta Sans', sans-serif, system-ui;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            z-index: 99999;
+        `;
+        
+        exitBtn.addEventListener('click', () => {
+            styles.forEach(el => el.disabled = false);
+            exitBtn.remove();
+        });
+        
+        document.body.appendChild(exitBtn);
+    });
+}
