@@ -509,7 +509,7 @@ function renderDashboard() {
             unlocked = index === 0 || (prevTopicId && state.completedTopics.includes(prevTopicId));
             const midIndex = Math.floor(topics.length / 2);
             
-            if (index >= midIndex && !state.hasPassedMidExam) {
+            if (index >= midIndex && !state.hasPassedMidExam && !done) {
                 if (index === midIndex && prevTopicId && state.completedTopics.includes(prevTopicId)) {
                     unlocked = false;
                     lockMsg = '<span class="topic-lock"><i data-lucide="lock"></i>Complete Mid Exam to unlock</span>';
