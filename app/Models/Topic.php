@@ -29,6 +29,11 @@ class Topic extends Model
         return $this->hasMany(Lesson::class)->orderBy('sort_order');
     }
 
+    public function subtopics()
+    {
+        return $this->hasMany(Subtopic::class)->orderBy('sort_order');
+    }
+
     public function quizQuestions()
     {
         return $this->hasMany(QuizQuestion::class);

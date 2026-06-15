@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\Topic;
+use App\Models\Subtopic;
 
 use App\Models\QuizQuestion;
 use App\Models\UserProgress;
@@ -309,7 +310,7 @@ class AdminController extends Controller
 
     public function contentTopics()
     {
-        $topics = Topic::orderBy('sort_order')->get();
+        $topics = Topic::with(['subtopics'])->orderBy('sort_order')->get();
         return view('admin.content.topics', compact('topics'));
     }
 
@@ -347,45 +348,25 @@ class AdminController extends Controller
     public function storeTopic(Request $request)
     {
         $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'video_url' => 'nullable|string|max:255',
-            'videos' => 'nullable|array',
-            'videos.*' => 'nullable|string|max:255',
+            'title'       => 'required|string|max:255',
+            'description' => 'nullable|string',
         ]);
 
-        $status = (Auth::user()->is_admin || Auth::user()->role === 'admin') ? 'approved' : 'pending';
+        $status       = (Auth::user()->is_admin || Auth::user()->role === 'admin') ? 'approved' : 'pending';
         $maxSortOrder = Topic::max('sort_order') ?? 0;
 
-        // Clean up videos array (remove nulls/empty)
-        $videos = $request->input('videos', []);
-        $videos = array_values(array_filter($videos, function($v) { return !empty($v); }));
-
-        $data = [
-            'title' => $request->input('title'),
+        $topic = Topic::create([
+            'title'       => $request->input('title'),
             'description' => $request->input('description'),
-            'video_url' => $request->input('video_url'),
-            'videos' => $videos,
-            'sort_order' => $maxSortOrder + 1,
-            'status' => $status
-        ];
-
-        if ($request->hasFile('documentation')) {
-            $file = $request->file('documentation');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('documentation', $filename, 'public');
-            
-            $data['documentation_path'] = '/storage/' . $path;
-            $data['documentation_filename'] = $file->getClientOriginalName();
-        }
-
-        $topic = Topic::create($data);
+            'sort_order'  => $maxSortOrder + 1,
+            'status'      => $status,
+        ]);
 
         AuditLog::create([
-            'user_id' => Auth::id(),
-            'action' => 'Create Topic',
+            'user_id'     => Auth::id(),
+            'action'      => 'Create Topic',
             'description' => 'Created topic: ' . $topic->title,
-            'ip_address' => $request->ip()
+            'ip_address'  => $request->ip()
         ]);
 
         return back()->with('success', 'Topic created successfully.');
@@ -395,53 +376,20 @@ class AdminController extends Controller
     {
         $topic = Topic::findOrFail($id);
         $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'video_url' => 'nullable|string|max:255',
-            'videos' => 'nullable|array',
-            'videos.*' => 'nullable|string|max:255',
+            'title'       => 'required|string|max:255',
+            'description' => 'nullable|string',
         ]);
 
-        // Clean up videos array and merge with existing to preserve title/notes
-        $videosInput = $request->input('videos', []);
-        $videosInput = array_values(array_filter($videosInput, function($v) { return !empty($v) && $v !== '[object Object]'; }));
-        
-        $existingVideos = $topic->videos ?? [];
-        $mergedVideos = [];
-        foreach ($videosInput as $i => $url) {
-            if (isset($existingVideos[$i]) && is_array($existingVideos[$i])) {
-                $mergedVideos[] = array_merge($existingVideos[$i], ['url' => $url]);
-            } else {
-                $mergedVideos[] = ['title' => 'Part ' . ($i + 1), 'url' => $url, 'notes' => ''];
-            }
-        }
-
-        $data = [
-            'title' => $request->input('title'),
+        $topic->update([
+            'title'       => $request->input('title'),
             'description' => $request->input('description'),
-            'video_url' => $request->input('video_url'),
-            'videos' => $mergedVideos,
-        ];
-
-        if ($request->hasFile('documentation')) {
-            $file = $request->file('documentation');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('documentation', $filename, 'public');
-            
-            $data['documentation_path'] = '/storage/' . $path;
-            $data['documentation_filename'] = $file->getClientOriginalName();
-        } elseif ($request->input('remove_documentation') === '1') {
-            $data['documentation_path'] = null;
-            $data['documentation_filename'] = null;
-        }
-
-        $topic->update($data);
+        ]);
 
         AuditLog::create([
-            'user_id' => Auth::id(),
-            'action' => 'Update Topic',
+            'user_id'     => Auth::id(),
+            'action'      => 'Update Topic',
             'description' => 'Updated topic: ' . $topic->title,
-            'ip_address' => $request->ip()
+            'ip_address'  => $request->ip()
         ]);
 
         return back()->with('success', 'Topic updated successfully.');
@@ -463,6 +411,111 @@ class AdminController extends Controller
         return back()->with('success', 'Topic deleted successfully.');
     }
 
+
+    // ─── SUBTOPIC CRUD ───────────────────────────────────────────
+    public function storeSubtopic(Request $request)
+    {
+        $request->validate([
+            'topic_id'    => 'required|exists:topics,id',
+            'title'       => 'required|string|max:255',
+            'video_url'   => 'nullable|string|max:500',
+            'sort_order'  => 'nullable|integer',
+        ]);
+
+        $status = (Auth::user()->is_admin || Auth::user()->role === 'admin') ? 'approved' : 'pending';
+        $maxOrder = Subtopic::where('topic_id', $request->input('topic_id'))->max('sort_order') ?? 0;
+
+        $data = [
+            'topic_id'   => $request->input('topic_id'),
+            'title'      => $request->input('title'),
+            'video_url'  => $request->input('video_url'),
+            'sort_order' => $request->input('sort_order', $maxOrder + 1),
+            'status'     => $status,
+        ];
+
+        if ($request->hasFile('documentation')) {
+            $file     = $request->file('documentation');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $path     = $file->storeAs('documentation', $filename, 'public');
+            $data['documentation_path']     = '/storage/' . $path;
+            $data['documentation_filename'] = $file->getClientOriginalName();
+        }
+
+        $sub = Subtopic::create($data);
+
+        AuditLog::create([
+            'user_id'     => Auth::id(),
+            'action'      => 'Create Subtopic',
+            'description' => 'Created subtopic: ' . $sub->title . ' (Topic ID ' . $sub->topic_id . ')',
+            'ip_address'  => $request->ip()
+        ]);
+
+        return back()->with('success', 'Subtopic created successfully.');
+    }
+
+    public function updateSubtopic(Request $request, $id)
+    {
+        $sub = Subtopic::findOrFail($id);
+        $request->validate([
+            'title'      => 'required|string|max:255',
+            'video_url'  => 'nullable|string|max:500',
+            'sort_order' => 'nullable|integer',
+        ]);
+
+        $data = [
+            'title'      => $request->input('title'),
+            'video_url'  => $request->input('video_url'),
+            'sort_order' => $request->input('sort_order', $sub->sort_order),
+        ];
+
+        if ($request->hasFile('documentation')) {
+            $file     = $request->file('documentation');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $path     = $file->storeAs('documentation', $filename, 'public');
+            $data['documentation_path']     = '/storage/' . $path;
+            $data['documentation_filename'] = $file->getClientOriginalName();
+        } elseif ($request->input('remove_documentation') === '1') {
+            $data['documentation_path']     = null;
+            $data['documentation_filename'] = null;
+        }
+
+        $sub->update($data);
+
+        AuditLog::create([
+            'user_id'     => Auth::id(),
+            'action'      => 'Update Subtopic',
+            'description' => 'Updated subtopic: ' . $sub->title,
+            'ip_address'  => $request->ip()
+        ]);
+
+        return back()->with('success', 'Subtopic updated successfully.');
+    }
+
+    public function destroySubtopic(Request $request, $id)
+    {
+        $sub   = Subtopic::findOrFail($id);
+        $title = $sub->title;
+        $sub->delete();
+
+        AuditLog::create([
+            'user_id'     => Auth::id(),
+            'action'      => 'Delete Subtopic',
+            'description' => 'Deleted subtopic: ' . $title,
+            'ip_address'  => $request->ip()
+        ]);
+
+        return back()->with('success', 'Subtopic deleted successfully.');
+    }
+
+    public function approveSubtopic(Request $request, $id)
+    {
+        if (!Auth::user()->is_admin && Auth::user()->role !== 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
+        $sub = Subtopic::findOrFail($id);
+        $sub->update(['status' => 'approved']);
+        return back()->with('success', 'Subtopic approved successfully.');
+    }
 
 
     // ─── QUIZ CRUD ───────────────────────────────────────────────

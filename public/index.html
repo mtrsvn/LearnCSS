@@ -1,309 +1,621 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LearnCSS Master CSS & Get Certified</title>
-    <meta name="description" content="Learn CSS through interactive lessons, quizzes, and earn your professional certification. 10 comprehensive topics, video tutorials, and a final exam.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=5">
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-</head>
-<body class="light-mode">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>LearnCSS Master CSS & Get Certified</title>
+        <meta
+            name="description"
+            content="Learn CSS through interactive lessons, quizzes, and earn your professional certification. 10 comprehensive topics, video tutorials, and a final exam."
+        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="style.css?v=5" />
+        <script src="https://unpkg.com/lucide@latest"></script>
+        <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    </head>
+    <body class="light-mode">
+        <div id="toast-container" class="toast-container"></div>
 
-<div id="toast-container" class="toast-container"></div>
-
-<!-- ══════════════════════════════════════════════════════
+        <!-- ══════════════════════════════════════════════════════
      MODAL OVERLAY
 ══════════════════════════════════════════════════════ -->
-<div id="modal-overlay" class="modal-overlay hidden">
-
-    <!-- ─── Sign Up Modal ─── -->
-    <div id="modal-signup" class="modal modal-wide hidden">
-        <button class="modal-close" data-close><i data-lucide="x"></i></button>
-        <div class="auth-logo">LearnCSS</div>
-        <h2>Create Account</h2>
-        <p class="auth-sub">Fill in your details to get started.</p>
-
-        <div class="signup-grid">
-            <div class="field">
-                <label for="su-fname">First Name</label>
-                <input type="text" id="su-fname" placeholder="Juan" autocomplete="given-name">
-            </div>
-            <div class="field">
-                <label for="su-lname">Last Name</label>
-                <input type="text" id="su-lname" placeholder="dela Cruz" autocomplete="family-name">
-            </div>
-            <div class="field">
-                <label for="su-email">Email Address</label>
-                <input type="email" id="su-email" placeholder="juan@email.com" autocomplete="email">
-            </div>
-            <div class="field">
-                <label for="su-phone">Contact Number</label>
-                <input type="tel" id="su-phone" placeholder="+63 9XX XXX XXXX" autocomplete="tel">
-            </div>
-            <div class="field">
-                <label for="su-bdate">Birthdate</label>
-                <input type="text" id="su-bdate" placeholder="MM/DD/YYYY" maxlength="10" autocomplete="bday" inputmode="numeric">
-            </div>
-            <div class="field">
-                <label for="su-affname">Organization / University</label>
-                <input type="text" id="su-affname" placeholder="e.g. University of the Philippines">
-            </div>
-            <div class="field">
-                <label for="su-password">Password</label>
-                <div class="input-wrap">
-                    <input type="password" id="su-password" placeholder="Min. 6 characters" autocomplete="new-password">
-                    <button class="toggle-pw" type="button" data-target="su-password">Show</button>
-                </div>
-            </div>
-            <div class="field">
-                <label for="su-confirm">Confirm Password</label>
-                <div class="input-wrap">
-                    <input type="password" id="su-confirm" placeholder="Repeat password" autocomplete="new-password">
-                    <button class="toggle-pw" type="button" data-target="su-confirm">Show</button>
-                </div>
-            </div>
-        </div>
-
-        <button id="signup-btn" class="btn-primary btn-full" style="margin-top:1.1rem;">Create Account</button>
-        <p class="auth-switch">Already have an account? <a href="#" id="go-login">Sign in</a></p>
-    </div>
-
-    <!-- ─── Login Modal ─── -->
-    <div id="modal-login" class="modal hidden">
-        <button class="modal-close" data-close><i data-lucide="x"></i></button>
-        <div class="auth-logo">LearnCSS</div>
-        <h2>Welcome back</h2>
-        <p class="auth-sub">Sign in to continue your progress.</p>
-        <div class="field">
-            <label for="li-email">Email Address</label>
-            <input type="email" id="li-email" placeholder="juan@email.com" autocomplete="email">
-        </div>
-        <div class="field">
-            <label for="li-password">Password</label>
-            <div class="input-wrap">
-                <input type="password" id="li-password" placeholder="Your password" autocomplete="current-password">
-                <button class="toggle-pw" type="button" data-target="li-password">Show</button>
-            </div>
-        </div>
-        <div style="text-align:right; margin-bottom:1.1rem;">
-            <a href="#" id="go-forgot" class="auth-link">Forgot password?</a>
-        </div>
-        <button id="login-btn" class="btn-primary btn-full">Sign In</button>
-        <p class="auth-switch">Don't have an account? <a href="#" id="go-signup-2">Create one</a></p>
-    </div>
-
-    <!-- ─── Forgot Password Modal ─── -->
-    <div id="modal-forgot" class="modal hidden">
-        <button class="modal-close" data-close><i data-lucide="x"></i></button>
-        <div class="auth-logo">LearnCSS</div>
-        <h2>Reset Password</h2>
-        <p class="auth-sub">We'll help you recover your account.</p>
-        <div class="field">
-            <label for="fp-email">Email Address</label>
-            <input type="email" id="fp-email" placeholder="juan@email.com">
-        </div>
-        <button id="forgot-btn" class="btn-primary btn-full">Find Account</button>
-        <p class="auth-switch"><a href="#" id="go-login-2">Back to Sign In</a></p>
-    </div>
-
-    <!-- ─── Buy Voucher Modal ─── -->
-    <div id="modal-buy-voucher" class="modal hidden">
-        <button class="modal-close" data-close><i data-lucide="x"></i></button>
-        <div class="auth-logo">LearnCSS</div>
-        <h2>Purchase Voucher</h2>
-        <p class="auth-sub">Get access to the Courses and Final Certification Exam.</p>
-
-        <div class="voucher-product-card">
-            <div class="vpc-info">
-                <div class="vpc-icon"><i data-lucide="medal"></i></div>
-                <div>
-                    <p class="vpc-name">Course & Exam Voucher</p>
-                    <p class="vpc-desc">Unlocks all Topics and the Final Exam</p>
-                </div>
-            </div>
-            <div class="vpc-price">₱299</div>
-        </div>
-
-        <div id="buy-step-1">
-            <div class="voucher-promo">
-                <p class="promo-text">
-                    <strong>Unlock Your Professional Potential.</strong><br>
-                    Invest in your future with the LearnCSS Certification. This voucher provides exclusive access to our comprehensive courses and rigorous final examination.
-                </p>
-                <ul class="promo-features">
-                    <li>Full Access to All 10 Course Topics</li>
-                    <li>Official Industry-Recognized Certificate</li>
-                    <li>One-time Exam Access</li>
-                </ul>
-                <p class="promo-price">Price: ₱299.00</p>
-            </div>
-            <button id="buy-confirm-btn" class="btn-primary btn-full" style="margin-top:1.5rem;">Purchase Now</button>
-        </div>
-
-        <div id="buy-step-2" class="hidden">
-            <div class="voucher-success">
-                <div class="vs-icon"><i data-lucide="check-circle"></i></div>
-                <p>Payment successful! Here is your voucher code:</p>
-                <div class="voucher-code-display" id="generated-code"></div>
-                <p class="vs-note">Copy this code and enter it to unlock the courses.</p>
-            </div>
-            <button id="done-buying-btn" class="btn-primary btn-full">Done</button>
-        </div>
-    </div>
-
-    <!-- ─── Voucher Code Entry Modal ─── -->
-    <div id="modal-enter-voucher" class="modal hidden">
-        <button class="modal-close" data-close><i data-lucide="x"></i></button>
-        <div class="auth-logo">LearnCSS</div>
-        <h2>Enter Voucher Code</h2>
-        <p class="auth-sub">A valid voucher code is required to access the Courses and Final Exam.</p>
-        <div class="field">
-            <label for="voucher-input">Voucher Code</label>
-            <input type="text" id="voucher-input" placeholder="e.g. CSSM-XXXX-XXXX" autocomplete="off" style="text-transform:uppercase; letter-spacing:0.08em;">
-        </div>
-        <div class="voucher-hint">
-            Don't have a voucher? <a href="#" id="go-buy-voucher">Purchase one</a>
-        </div>
-        <button id="redeem-voucher-btn" class="btn-primary btn-full" style="margin-top:1rem;">Submit Voucher</button>
-    </div>
-
-</div><!-- end modal-overlay -->
-
-
-<!-- ══════════════════════════════════════════════════════
-     APP SCREENS
-══════════════════════════════════════════════════════ -->
-<div id="app">
-
-    <!-- ─── Landing ─────────────────────────────────── -->
-    <section id="landing-screen" class="screen active">
-        <nav class="landing-nav">
-            <div class="nav-logo">LearnCSS</div>
-            <button id="landing-menu-btn" class="mobile-menu-btn" aria-label="Toggle menu">
-                <div class="burger-bars"><span></span><span></span><span></span></div>
-            </button>
-            <div class="nav-actions" id="landing-nav-actions">
-                <button class="btn-ghost" id="nav-login-btn">Sign In</button>
-                <button class="btn-primary" id="nav-signup-btn">Get Started</button>
-                <button id="landing-theme-toggle" class="btn-icon-round" title="Toggle light/dark mode" aria-label="Toggle theme">
-                    <i id="landing-theme-icon" data-lucide="moon"></i>
+        <div id="modal-overlay" class="modal-overlay hidden">
+            <!-- ─── Sign Up Modal ─── -->
+            <div id="modal-signup" class="modal modal-wide hidden">
+                <button class="modal-close" data-close>
+                    <i data-lucide="x"></i>
                 </button>
-            </div>
-        </nav>
+                <div class="auth-logo">LearnCSS</div>
+                <h2>Create Account</h2>
+                <p class="auth-sub">Fill in your details to get started.</p>
 
-        <div class="hero">
-            <div class="hero-content">
-                <h1>Master CSS<br>Fundamentals.<br><span class="gradient-text">Get Certified Today.</span></h1>
-                <p class="hero-desc">From selectors to the box model, from colors to typography, work through each topic, pass the quiz, and walk away with a real certification you can show off.</p>
-                <div class="hero-cta">
-                    <button class="btn-primary btn-lg" id="hero-signup-btn">Start Learning</button>
-                    <button class="btn-ghost btn-lg" id="hero-login-btn">I Have an Account</button>
-                </div>
-                <div style="margin-top: 1.5rem;">
-                    <a href="#" id="hero-no-css-btn" style="color: var(--text-muted); font-size: 0.85rem; text-decoration: underline; cursor: pointer; transition: color 0.2s ease;">Curious? See what happens if there is no CSS.</a>
-                </div>
-            </div>
-            <div class="hero-visual">
-                <div class="hero-certificate cert-light">
-                    <div class="cert-paper-logo">LearnCSS</div>
-                    <div class="cert-accent"></div>
-                    <p class="cert-eyebrow" style="font-size: 0.65rem;">Certificate of Completion</p>
-                    <p class="cert-desc" style="font-size: 0.88rem; margin-bottom: 0.75rem;">This certifies that</p>
-                    <h2 style="font-size: 2.1rem; margin: 0.25rem 0 0.75rem; color: #1e293b; font-family: 'Outfit', sans-serif; font-weight: 700;">Juan Dela Cruz</h2>
-                    <p class="cert-desc" style="font-size: 0.88rem; line-height: 1.4; margin-bottom: 0.75rem;">has successfully completed all courses and passed the final exam in<br><strong style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.1em;">CSS Tutorial</strong></p>
-                    <hr class="cert-divider" style="margin: 1.1rem 0;">
-                    <div class="cert-meta-grid" style="font-size: 0.72rem;">
-                        <div class="cert-meta-item">
-                            <span class="meta-label">Credential ID</span>
-                            <span class="meta-val">CSSM-8B9X-4K2P</span>
+                <div class="signup-grid">
+                    <div class="field">
+                        <label for="su-fname">First Name</label>
+                        <input
+                            type="text"
+                            id="su-fname"
+                            placeholder="Juan"
+                            autocomplete="given-name"
+                        />
+                    </div>
+                    <div class="field">
+                        <label for="su-lname">Last Name</label>
+                        <input
+                            type="text"
+                            id="su-lname"
+                            placeholder="dela Cruz"
+                            autocomplete="family-name"
+                        />
+                    </div>
+                    <div class="field">
+                        <label for="su-email">Email Address</label>
+                        <input
+                            type="email"
+                            id="su-email"
+                            placeholder="juan@email.com"
+                            autocomplete="email"
+                        />
+                    </div>
+                    <div class="field">
+                        <label for="su-phone">Contact Number</label>
+                        <input
+                            type="tel"
+                            id="su-phone"
+                            placeholder="+63 9XX XXX XXXX"
+                            autocomplete="tel"
+                        />
+                    </div>
+                    <div class="field">
+                        <label for="su-bdate">Birthdate</label>
+                        <input
+                            type="text"
+                            id="su-bdate"
+                            placeholder="MM/DD/YYYY"
+                            maxlength="10"
+                            autocomplete="bday"
+                            inputmode="numeric"
+                        />
+                    </div>
+                    <div class="field">
+                        <label for="su-affname"
+                            >Organization / University</label
+                        >
+                        <input
+                            type="text"
+                            id="su-affname"
+                            placeholder="e.g. University of the Philippines"
+                        />
+                    </div>
+                    <div class="field">
+                        <label for="su-password">Password</label>
+                        <div class="input-wrap">
+                            <input
+                                type="password"
+                                id="su-password"
+                                placeholder="Min. 6 characters"
+                                autocomplete="new-password"
+                            />
+                            <button
+                                class="toggle-pw"
+                                type="button"
+                                data-target="su-password"
+                            >
+                                Show
+                            </button>
                         </div>
-                        <div class="cert-meta-item">
-                            <span class="meta-label">Issued Date</span>
-                            <span class="meta-val">June 2, 2026</span>
+                    </div>
+                    <div class="field">
+                        <label for="su-confirm">Confirm Password</label>
+                        <div class="input-wrap">
+                            <input
+                                type="password"
+                                id="su-confirm"
+                                placeholder="Repeat password"
+                                autocomplete="new-password"
+                            />
+                            <button
+                                class="toggle-pw"
+                                type="button"
+                                data-target="su-confirm"
+                            >
+                                Show
+                            </button>
                         </div>
                     </div>
                 </div>
+
+                <button
+                    id="signup-btn"
+                    class="btn-primary btn-full"
+                    style="margin-top: 1.1rem"
+                >
+                    Create Account
+                </button>
+                <p class="auth-switch">
+                    Already have an account?
+                    <a href="#" id="go-login">Sign in</a>
+                </p>
+            </div>
+
+            <!-- ─── Login Modal ─── -->
+            <div id="modal-login" class="modal hidden">
+                <button class="modal-close" data-close>
+                    <i data-lucide="x"></i>
+                </button>
+                <div class="auth-logo">LearnCSS</div>
+                <h2>Welcome back</h2>
+                <p class="auth-sub">Sign in to continue your progress.</p>
+                <div class="field">
+                    <label for="li-email">Email Address</label>
+                    <input
+                        type="email"
+                        id="li-email"
+                        placeholder="juan@email.com"
+                        autocomplete="email"
+                    />
+                </div>
+                <div class="field">
+                    <label for="li-password">Password</label>
+                    <div class="input-wrap">
+                        <input
+                            type="password"
+                            id="li-password"
+                            placeholder="Your password"
+                            autocomplete="current-password"
+                        />
+                        <button
+                            class="toggle-pw"
+                            type="button"
+                            data-target="li-password"
+                        >
+                            Show
+                        </button>
+                    </div>
+                </div>
+                <div style="text-align: right; margin-bottom: 1.1rem">
+                    <a href="#" id="go-forgot" class="auth-link"
+                        >Forgot password?</a
+                    >
+                </div>
+                <button id="login-btn" class="btn-primary btn-full">
+                    Sign In
+                </button>
+                <p class="auth-switch">
+                    Don't have an account?
+                    <a href="#" id="go-signup-2">Create one</a>
+                </p>
+            </div>
+
+            <!-- ─── Forgot Password Modal ─── -->
+            <div id="modal-forgot" class="modal hidden">
+                <button class="modal-close" data-close>
+                    <i data-lucide="x"></i>
+                </button>
+                <div class="auth-logo">LearnCSS</div>
+                <h2>Reset Password</h2>
+                <p class="auth-sub">We'll help you recover your account.</p>
+                <div class="field">
+                    <label for="fp-email">Email Address</label>
+                    <input
+                        type="email"
+                        id="fp-email"
+                        placeholder="juan@email.com"
+                    />
+                </div>
+                <button id="forgot-btn" class="btn-primary btn-full">
+                    Find Account
+                </button>
+                <p class="auth-switch">
+                    <a href="#" id="go-login-2">Back to Sign In</a>
+                </p>
+            </div>
+
+            <!-- ─── Buy Voucher Modal ─── -->
+            <div id="modal-buy-voucher" class="modal hidden">
+                <button class="modal-close" data-close>
+                    <i data-lucide="x"></i>
+                </button>
+                <div class="auth-logo">LearnCSS</div>
+                <h2>Purchase Voucher</h2>
+                <p class="auth-sub">
+                    Get access to the Courses and Final Certification Exam.
+                </p>
+
+                <div class="voucher-product-card">
+                    <div class="vpc-info">
+                        <div class="vpc-icon"><i data-lucide="medal"></i></div>
+                        <div>
+                            <p class="vpc-name">Course & Exam Voucher</p>
+                            <p class="vpc-desc">
+                                Unlocks all Topics and the Final Exam
+                            </p>
+                        </div>
+                    </div>
+                    <div class="vpc-price">₱299</div>
+                </div>
+
+                <div id="buy-step-1">
+                    <div class="voucher-promo">
+                        <p class="promo-text">
+                            <strong>Unlock Your Professional Potential.</strong
+                            ><br />
+                            Invest in your future with the LearnCSS
+                            Certification. This voucher provides exclusive
+                            access to our comprehensive courses and rigorous
+                            final examination.
+                        </p>
+                        <ul class="promo-features">
+                            <li>Full Access to All 10 Course Topics</li>
+                            <li>Official Industry-Recognized Certificate</li>
+                            <li>One-time Exam Access</li>
+                        </ul>
+                        <p class="promo-price">Price: ₱299.00</p>
+                    </div>
+                    <button
+                        id="buy-confirm-btn"
+                        class="btn-primary btn-full"
+                        style="margin-top: 1.5rem"
+                    >
+                        Purchase Now
+                    </button>
+                </div>
+
+                <div id="buy-step-2" class="hidden">
+                    <div class="voucher-success">
+                        <div class="vs-icon">
+                            <i data-lucide="check-circle"></i>
+                        </div>
+                        <p>Payment successful! Here is your voucher code:</p>
+                        <div
+                            class="voucher-code-display"
+                            id="generated-code"
+                        ></div>
+                        <p class="vs-note">
+                            Copy this code and enter it to unlock the courses.
+                        </p>
+                    </div>
+                    <button id="done-buying-btn" class="btn-primary btn-full">
+                        Done
+                    </button>
+                </div>
+            </div>
+
+            <!-- ─── Voucher Code Entry Modal ─── -->
+            <div id="modal-enter-voucher" class="modal hidden">
+                <button class="modal-close" data-close>
+                    <i data-lucide="x"></i>
+                </button>
+                <div class="auth-logo">LearnCSS</div>
+                <h2>Enter Voucher Code</h2>
+                <p class="auth-sub">
+                    A valid voucher code is required to access the Courses and
+                    Final Exam.
+                </p>
+                <div class="field">
+                    <label for="voucher-input">Voucher Code</label>
+                    <input
+                        type="text"
+                        id="voucher-input"
+                        placeholder="e.g. CSSM-XXXX-XXXX"
+                        autocomplete="off"
+                        style="
+                            text-transform: uppercase;
+                            letter-spacing: 0.08em;
+                        "
+                    />
+                </div>
+                <div class="voucher-hint">
+                    Don't have a voucher?
+                    <a href="#" id="go-buy-voucher">Purchase one</a>
+                </div>
+                <button
+                    id="redeem-voucher-btn"
+                    class="btn-primary btn-full"
+                    style="margin-top: 1rem"
+                >
+                    Submit Voucher
+                </button>
             </div>
         </div>
+        <!-- end modal-overlay -->
 
-        <!-- What You'll Actually Learn -->
-        <div class="curriculum-section reveal">
-            <div class="curriculum-header">
-                <p class="section-eyebrow">The Curriculum</p>
-                <h2>Here's what you'll cover,<br>topic by topic.</h2>
-                <p class="curriculum-sub">Not random YouTube playlists. A structured path from the basics to the stuff that actually trips people up, margins collapsing, the box model, specificity. Each topic has video lessons and a quiz you need to pass before moving on.</p>
-            </div>
+        <!-- ══════════════════════════════════════════════════════
+     APP SCREENS
+══════════════════════════════════════════════════════ -->
+        <div id="app">
+            <!-- ─── Landing ─────────────────────────────────── -->
+            <section id="landing-screen" class="screen active">
+                <nav class="landing-nav">
+                    <div class="nav-logo">LearnCSS</div>
+                    <button
+                        id="landing-menu-btn"
+                        class="mobile-menu-btn"
+                        aria-label="Toggle menu"
+                    >
+                        <div class="burger-bars">
+                            <span></span><span></span><span></span>
+                        </div>
+                    </button>
+                    <div class="nav-actions" id="landing-nav-actions">
+                        <button class="btn-ghost" id="nav-login-btn">
+                            Sign In
+                        </button>
+                        <button class="btn-primary" id="nav-signup-btn">
+                            Get Started
+                        </button>
+                        <button
+                            id="landing-theme-toggle"
+                            class="btn-icon-round"
+                            title="Toggle light/dark mode"
+                            aria-label="Toggle theme"
+                        >
+                            <i id="landing-theme-icon" data-lucide="moon"></i>
+                        </button>
+                    </div>
+                </nav>
 
-            <div class="topic-roadmap" id="dynamic-topic-roadmap">
-                <div style="padding: 2rem; text-align: center; color: var(--text-muted);">
-                    <i data-lucide="loader-2" class="spin" style="margin-bottom: 1rem; display: inline-block;"></i>
-                    <p>Loading curriculum...</p>
+                <div class="hero">
+                    <div class="hero-content">
+                        <h1>
+                            Master CSS<br />Fundamentals.<br /><span
+                                class="gradient-text"
+                                >Get Certified Today.</span
+                            >
+                        </h1>
+                        <p class="hero-desc">
+                            From selectors to the box model, from colors to
+                            typography, work through each topic, pass the quiz,
+                            and walk away with a real certification you can show
+                            off.
+                        </p>
+                        <div class="hero-cta">
+                            <button
+                                class="btn-primary btn-lg"
+                                id="hero-signup-btn"
+                            >
+                                Start Learning
+                            </button>
+                            <button
+                                class="btn-ghost btn-lg"
+                                id="hero-login-btn"
+                            >
+                                I Have an Account
+                            </button>
+                        </div>
+                        <div style="margin-top: 1.5rem">
+                            <a
+                                href="#"
+                                id="hero-no-css-btn"
+                                style="
+                                    color: var(--text-muted);
+                                    font-size: 0.85rem;
+                                    text-decoration: underline;
+                                    cursor: pointer;
+                                    transition: color 0.2s ease;
+                                "
+                                >Curious? See what happens if there is no
+                                CSS.</a
+                            >
+                        </div>
+                    </div>
+                    <div class="hero-visual">
+                        <div class="hero-certificate cert-light">
+                            <div class="cert-paper-logo">LearnCSS</div>
+                            <div class="cert-accent"></div>
+                            <p class="cert-eyebrow" style="font-size: 0.65rem">
+                                Certificate of Completion
+                            </p>
+                            <p
+                                class="cert-desc"
+                                style="
+                                    font-size: 0.88rem;
+                                    margin-bottom: 0.75rem;
+                                "
+                            >
+                                This certifies that
+                            </p>
+                            <h2
+                                style="
+                                    font-size: 2.1rem;
+                                    margin: 0.25rem 0 0.75rem;
+                                    color: #1e293b;
+                                    font-family: &quot;Outfit&quot;, sans-serif;
+                                    font-weight: 700;
+                                "
+                            >
+                                Juan Dela Cruz
+                            </h2>
+                            <p
+                                class="cert-desc"
+                                style="
+                                    font-size: 0.88rem;
+                                    line-height: 1.4;
+                                    margin-bottom: 0.75rem;
+                                "
+                            >
+                                has successfully completed all courses and
+                                passed the final exam in<br /><strong
+                                    style="
+                                        font-family:
+                                            &quot;Outfit&quot;, sans-serif;
+                                        font-weight: 800;
+                                        font-size: 1.1em;
+                                    "
+                                    >CSS Tutorial</strong
+                                >
+                            </p>
+                            <hr class="cert-divider" style="margin: 1.1rem 0" />
+                            <div
+                                class="cert-meta-grid"
+                                style="font-size: 0.72rem"
+                            >
+                                <div class="cert-meta-item">
+                                    <span class="meta-label"
+                                        >Credential ID</span
+                                    >
+                                    <span class="meta-val">CSSM-8B9X-4K2P</span>
+                                </div>
+                                <div class="cert-meta-item">
+                                    <span class="meta-label">Issued Date</span>
+                                    <span class="meta-val">June 2, 2026</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="curriculum-cta">
-                <p>After completing all topics, you unlock the <strong>Final Certification Exam</strong>, pass it and earn your verified credential.</p>
-                <button class="btn-primary btn-lg" id="curriculum-signup-btn">Start from Topic 1</button>
-            </div>
-        </div>
+                <!-- What You'll Actually Learn -->
+                <div class="curriculum-section reveal">
+                    <div class="curriculum-header">
+                        <p class="section-eyebrow">The Curriculum</p>
+                        <h2>Here's what you'll cover,<br />topic by topic.</h2>
+                        <p class="curriculum-sub">
+                            Not random YouTube playlists. A structured path from
+                            the basics to the stuff that actually trips people
+                            up, margins collapsing, the box model, specificity.
+                            Each topic has video lessons and a quiz you need to
+                            pass before moving on.
+                        </p>
+                    </div>
 
-        <!-- Why This Course -->
-        <div class="why-section reveal">
-            <p class="section-eyebrow">Why LearnCSS</p>
-            <h2>Built different from the usual<br>online course stuff.</h2>
+                    <div class="topic-roadmap" id="dynamic-topic-roadmap">
+                        <div
+                            style="
+                                padding: 2rem;
+                                text-align: center;
+                                color: var(--text-muted);
+                            "
+                        >
+                            <i
+                                data-lucide="loader-2"
+                                class="spin"
+                                style="
+                                    margin-bottom: 1rem;
+                                    display: inline-block;
+                                "
+                            ></i>
+                            <p>Loading curriculum...</p>
+                        </div>
+                    </div>
 
-            <div class="why-grid">
-                <div class="why-card">
-                    <div class="why-icon"><i data-lucide="play-circle"></i></div>
-                    <h3>Video-first, not walls of text</h3>
-                    <p>Each topic starts with curated video lessons. Watch, rewatch, then prove you get it.</p>
+                    <div class="curriculum-cta">
+                        <p>
+                            After completing all topics, you unlock the
+                            <strong>Final Certification Exam</strong>, pass it
+                            and earn your verified credential.
+                        </p>
+                        <button
+                            class="btn-primary btn-lg"
+                            id="curriculum-signup-btn"
+                        >
+                            Start from Topic 1
+                        </button>
+                    </div>
                 </div>
-                <div class="why-card">
-                    <div class="why-icon"><i data-lucide="pencil-line"></i></div>
-                    <h3>Quizzes that actually check</h3>
-                    <p>Not just "click next." You need a perfect score to pass each topic quiz. It keeps you honest.</p>
-                </div>
-                <div class="why-card">
-                    <div class="why-icon"><i data-lucide="target"></i></div>
-                    <h3>Structured, not scattered</h3>
-                    <p>10 topics in a deliberate order, intro, syntax, visuals, layout, typography. No jumping around.</p>
-                </div>
-                <div class="why-card">
-                    <div class="why-icon"><i data-lucide="award"></i></div>
-                    <h3>A certificate you earned</h3>
-                    <p>Pass all topics + the final exam with a voucher. Print it, put it on LinkedIn, whatever, you earned it.</p>
-                </div>
-                <div class="why-card">
-                    <div class="why-icon"><i data-lucide="save"></i></div>
-                    <h3>Your progress is saved</h3>
-                    <p>Close the tab, come back tomorrow. Your completed topics stay completed. No starting over.</p>
-                </div>
-                <div class="why-card">
-                    <div class="why-icon"><i data-lucide="badge-check"></i></div>
-                    <h3>Free to learn, pay to certify</h3>
-                    <p>All 10 topics and quizzes are completely free. Only the final cert exam needs a ₱299 voucher.</p>
-                </div>
-            </div>
-        </div>
 
-        <!-- Code Preview Strip -->
-        <div class="code-preview-section reveal">
-            <div class="code-preview-inner">
-                <div class="code-preview-text">
-                    <p class="section-eyebrow">By the end</p>
-                    <h2>You'll read this<br>and actually know<br>what it does.</h2>
-                    <p>Not just "I've seen this before." More like "I know exactly why this works and I can write it from scratch."</p>
-                    <button class="btn-primary" id="preview-signup-btn">Let's Go</button>
+                <!-- Why This Course -->
+                <div class="why-section reveal">
+                    <p class="section-eyebrow">Why LearnCSS</p>
+                    <h2>
+                        Built different from the usual<br />online course stuff.
+                    </h2>
+
+                    <div class="why-grid">
+                        <div class="why-card">
+                            <div class="why-icon">
+                                <i data-lucide="play-circle"></i>
+                            </div>
+                            <h3>Video-first, not walls of text</h3>
+                            <p>
+                                Each topic starts with curated video lessons.
+                                Watch, rewatch, then prove you get it.
+                            </p>
+                        </div>
+                        <div class="why-card">
+                            <div class="why-icon">
+                                <i data-lucide="pencil-line"></i>
+                            </div>
+                            <h3>Quizzes that actually check</h3>
+                            <p>
+                                Not just "click next." You need a perfect score
+                                to pass each topic quiz. It keeps you honest.
+                            </p>
+                        </div>
+                        <div class="why-card">
+                            <div class="why-icon">
+                                <i data-lucide="target"></i>
+                            </div>
+                            <h3>Structured, not scattered</h3>
+                            <p>
+                                10 topics in a deliberate order, intro, syntax,
+                                visuals, layout, typography. No jumping around.
+                            </p>
+                        </div>
+                        <div class="why-card">
+                            <div class="why-icon">
+                                <i data-lucide="award"></i>
+                            </div>
+                            <h3>A certificate you earned</h3>
+                            <p>
+                                Pass all topics + the final exam with a voucher.
+                                Print it, put it on LinkedIn, whatever, you
+                                earned it.
+                            </p>
+                        </div>
+                        <div class="why-card">
+                            <div class="why-icon">
+                                <i data-lucide="save"></i>
+                            </div>
+                            <h3>Your progress is saved</h3>
+                            <p>
+                                Close the tab, come back tomorrow. Your
+                                completed topics stay completed. No starting
+                                over.
+                            </p>
+                        </div>
+                        <div class="why-card">
+                            <div class="why-icon">
+                                <i data-lucide="badge-check"></i>
+                            </div>
+                            <h3>Free to learn, pay to certify</h3>
+                            <p>
+                                All 10 topics and quizzes are completely free.
+                                Only the final cert exam needs a ₱299 voucher.
+                            </p>
+                        </div>
+                    </div>
                 </div>
-                <div class="code-preview-block">
-                    <div class="code-window">
-                        <div class="code-dots"><span></span><span></span><span></span></div>
-                        <pre><code><span class="code-selector">.card</span> {
+
+                <!-- Code Preview Strip -->
+                <div class="code-preview-section reveal">
+                    <div class="code-preview-inner">
+                        <div class="code-preview-text">
+                            <p class="section-eyebrow">By the end</p>
+                            <h2>
+                                You'll read this<br />and actually know<br />what
+                                it does.
+                            </h2>
+                            <p>
+                                Not just "I've seen this before." More like "I
+                                know exactly why this works and I can write it
+                                from scratch."
+                            </p>
+                            <button class="btn-primary" id="preview-signup-btn">
+                                Let's Go
+                            </button>
+                        </div>
+                        <div class="code-preview-block">
+                            <div class="code-window">
+                                <div class="code-dots">
+                                    <span></span><span></span><span></span>
+                                </div>
+                                <pre><code><span class="code-selector">.card</span> {
   <span class="code-prop">background</span>: <span class="code-val">linear-gradient</span>(135deg, #7c3aed, #3b82f6);
   <span class="code-prop">border-radius</span>: <span class="code-num">16px</span>;
   <span class="code-prop">padding</span>: <span class="code-num">2rem</span>;
@@ -314,249 +626,856 @@
   <span class="code-prop">border</span>: <span class="code-num">2px</span> solid <span class="code-val">rgba</span>(255,255,255,.15);
   <span class="code-prop">box-shadow</span>: <span class="code-num">0 20px 40px</span> <span class="code-val">rgba</span>(0,0,0,.3);
 }</code></pre>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
+                <footer class="landing-footer">
+                    <span>© 2026 LearnCSS, All rights reserved</span>
+                    <span>Built with passion for learning</span>
+                </footer>
+            </section>
 
-        <footer class="landing-footer">
-            <span>© 2026 LearnCSS, All rights reserved</span>
-            <span>Built with passion for learning</span>
-        </footer>
-    </section>
-
-    <!-- ─── Dashboard ───────────────────────────────── -->
-    <section id="dashboard-screen" class="screen">
-        <nav class="landing-nav">
-            <div class="nav-logo">LearnCSS</div>
-            <button id="dashboard-menu-btn" class="mobile-menu-btn" aria-label="Toggle menu">
-                <div class="burger-bars"><span></span><span></span><span></span></div>
-            </button>
-            <div class="nav-actions" id="dashboard-nav-actions">
-                <button id="logout-btn" class="btn-ghost">Log out</button>
-                <button id="theme-toggle-btn" class="btn-icon-round" title="Toggle light/dark mode" aria-label="Toggle theme">
-                    <i id="theme-icon" data-lucide="moon"></i>
-                </button>
-            </div>
-        </nav>
-        <div class="dashboard-body">
-            <section class="dashboard-hero">
-                <div class="dashboard-hero-copy">
-                    <p class="section-eyebrow">Learning dashboard</p>
-                    <h1>Welcome back, <span id="dashboard-hero-name">User</span>.</h1>
-                    <p class="dashboard-hero-text">Track your progress through the CSS certification path, complete each topic, and unlock the final exam when you’re ready.</p>
-                    <div class="dashboard-hero-actions">
-                        <button id="resume-module-btn" class="btn-primary hidden">Resume Module</button>
-                        <button id="buy-voucher-hero-btn" class="btn-primary">Buy Voucher</button>
-                        <button id="redeem-voucher-hero-btn" class="btn-ghost">Activate Voucher</button>
+            <!-- ─── Dashboard ───────────────────────────────── -->
+            <section id="dashboard-screen" class="screen">
+                <nav class="landing-nav">
+                    <div class="nav-logo">LearnCSS</div>
+                    <button
+                        id="dashboard-menu-btn"
+                        class="mobile-menu-btn"
+                        aria-label="Toggle menu"
+                    >
+                        <div class="burger-bars">
+                            <span></span><span></span><span></span>
+                        </div>
+                    </button>
+                    <div class="nav-actions" id="dashboard-nav-actions">
+                        <button id="logout-btn" class="btn-ghost">
+                            Log out
+                        </button>
+                        <button
+                            id="theme-toggle-btn"
+                            class="btn-icon-round"
+                            title="Toggle light/dark mode"
+                            aria-label="Toggle theme"
+                        >
+                            <i id="theme-icon" data-lucide="moon"></i>
+                        </button>
                     </div>
-                </div>
-                <div class="dashboard-hero-panel">
-                    <div class="dashboard-user-info">
-                        <div class="user-info-row">
-                            <div class="info-icon"><i data-lucide="user"></i></div>
-                            <div class="info-content">
-                                <span class="info-label">Name</span>
-                                <strong id="panel-name"></strong>
+                </nav>
+                <div class="dashboard-body">
+                    <section class="dashboard-hero">
+                        <div class="dashboard-hero-copy">
+                            <p class="section-eyebrow">Learning dashboard</p>
+                            <h1>
+                                Welcome back,
+                                <span id="dashboard-hero-name">User</span>.
+                            </h1>
+                            <p class="dashboard-hero-text">
+                                Track your progress through the CSS
+                                certification path, complete each topic, and
+                                unlock the final exam when you’re ready.
+                            </p>
+                            <div class="dashboard-hero-actions">
+                                <button
+                                    id="resume-module-btn"
+                                    class="btn-primary hidden"
+                                >
+                                    Resume Module
+                                </button>
+                                <button
+                                    id="buy-voucher-hero-btn"
+                                    class="btn-primary"
+                                >
+                                    Buy Voucher
+                                </button>
+                                <button
+                                    id="redeem-voucher-hero-btn"
+                                    class="btn-ghost"
+                                >
+                                    Activate Voucher
+                                </button>
                             </div>
                         </div>
-                        <div class="user-info-row">
-                            <div class="info-icon"><i data-lucide="mail"></i></div>
-                            <div class="info-content">
-                                <span class="info-label">Email</span>
-                                <strong id="panel-email"></strong>
+                        <div class="dashboard-hero-panel">
+                            <div class="dashboard-user-info">
+                                <div class="user-info-row">
+                                    <div class="info-icon">
+                                        <i data-lucide="user"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <span class="info-label">Name</span>
+                                        <strong id="panel-name"></strong>
+                                    </div>
+                                </div>
+                                <div class="user-info-row">
+                                    <div class="info-icon">
+                                        <i data-lucide="mail"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <span class="info-label">Email</span>
+                                        <strong id="panel-email"></strong>
+                                    </div>
+                                </div>
+                                <div class="user-info-row">
+                                    <div class="info-icon">
+                                        <i data-lucide="building"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <span class="info-label"
+                                            >Organization / University</span
+                                        >
+                                        <strong id="panel-org"></strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="dashboard-metrics">
+                                <div class="hero-metric">
+                                    <span class="metric-label">Progress</span>
+                                    <strong id="dashboard-progress-summary"
+                                        >0%</strong
+                                    >
+                                </div>
+                                <div class="hero-metric">
+                                    <span class="metric-label"
+                                        >Modules Completed</span
+                                    >
+                                    <strong id="dashboard-modules-completed"
+                                        >0</strong
+                                    >
+                                </div>
                             </div>
                         </div>
-                        <div class="user-info-row">
-                            <div class="info-icon"><i data-lucide="building"></i></div>
-                            <div class="info-content">
-                                <span class="info-label">Organization / University</span>
-                                <strong id="panel-org"></strong>
-                            </div>
-                        </div>
+                    </section>
+
+                    <div class="dashboard-section-head">
+                        <p class="section-label">Your Topics</p>
+                        <p class="section-subtitle">
+                            Select a topic card to continue the lesson flow.
+                        </p>
                     </div>
-                    <div class="dashboard-metrics">
-                        <div class="hero-metric">
-                            <span class="metric-label">Progress</span>
-                            <strong id="dashboard-progress-summary">0%</strong>
-                        </div>
-                        <div class="hero-metric">
-                            <span class="metric-label">Modules Completed</span>
-                            <strong id="dashboard-modules-completed">0</strong>
-                        </div>
+                    <div class="topics-grid" id="topics-container"></div>
+                    <div
+                        class="topic-card locked final-exam-card"
+                        id="final-exam-btn"
+                    >
+                        <p class="topic-num">Final Exam</p>
+                        <h3>Final Certification Exam</h3>
+                        <span id="final-card-status"
+                            >Complete all topics to unlock this exam.</span
+                        >
+                        <span class="topic-lock" id="final-card-lock"
+                            ><i data-lucide="lock"></i>Finish all topics to
+                            unlock</span
+                        >
                     </div>
                 </div>
             </section>
 
-            <div class="dashboard-section-head">
-                <p class="section-label">Your Topics</p>
-                <p class="section-subtitle">Select a topic card to continue the lesson flow.</p>
-            </div>
-            <div class="topics-grid" id="topics-container"></div>
-            <div class="topic-card locked final-exam-card" id="final-exam-btn">
-                <p class="topic-num">Final Exam</p>
-                <h3>Final Certification Exam</h3>
-                <span id="final-card-status">Complete all topics to unlock this exam.</span>
-                <span class="topic-lock" id="final-card-lock"><i data-lucide="lock"></i>Finish all topics to unlock</span>
-            </div>
-        </div>
-    </section>
+            <!-- ─── Lesson ───────────────────────────────────── -->
+            <section id="lesson-screen" class="screen">
+                <div class="lesson-wrapper">
+                    <!-- ═══ LEFT SIDEBAR: Topic + Subtopics List ═══ -->
+                    <aside class="lesson-sidebar">
+                        <button
+                            class="btn-ghost btn-sm lesson-back-link"
+                            id="lesson-back-btn"
+                            style="margin-bottom: 1rem"
+                        >
+                            <i
+                                data-lucide="arrow-left"
+                                style="width: 14px; height: 14px"
+                            ></i>
+                            Back
+                        </button>
 
-    <!-- ─── Lesson ───────────────────────────────────── -->
-    <section id="lesson-screen" class="screen">
-        <div class="lesson-wrapper">
-            <aside class="lesson-sidebar">
-                <button class="btn-ghost btn-sm" id="lesson-back-btn">Back</button>
-                <p class="sidebar-topic-title" id="current-topic-title">Topic</p>
+                        <div class="lesson-sidebar-topic">
+                            <p class="sidebar-topic-eyebrow">Current Topic</p>
+                            <p
+                                class="sidebar-topic-title"
+                                id="current-topic-title"
+                            >
+                                Topic
+                            </p>
+                        </div>
 
-                <div style="margin-top:auto; display: flex; flex-direction: column; gap: 0.5rem; width: 100%;">
-                    <button id="lesson-docs-btn" class="btn-ghost active" onclick="switchMedia('docs')" style="width: 100%;">Documentation</button>
-                    <button id="lesson-video-btn" class="btn-ghost" onclick="switchMedia('video')" style="width: 100%;">Videos</button>
-                    <button id="take-quiz-btn" class="btn-primary" style="margin: 0; width: 100%;">Take Quiz</button>
-                </div>
-            </aside>
-            <main class="lesson-main">
-                <div class="video-wrap" id="video-container" style="display: none; max-width: 1600px; margin: 0 auto; width: 100%;">
-                    <div id="topic-videos-list" class="video-tab-list">
-                        <!-- Dynamic Video Buttons -->
-                    </div>
-                    <iframe id="video-player" src="" frameborder="0" allowfullscreen style="width: 100%; height: 85vh; border-radius: 12px;"></iframe>
-                </div>
-                
-                <div class="docs-wrap" id="docs-container" style="display: flex; background: var(--bg); border-radius: 12px; padding: 0; text-align: center; border: 1px solid var(--border); overflow: hidden; max-width: 1600px; margin: 0 auto; width: 100%; height: 85vh; flex-direction: column;">
-                    <div style="padding: 1rem 1.5rem; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; z-index: 2;">
-                        <div style="display: flex; align-items: center; gap: 0.8rem;">
-                            <div style="width: 36px; height: 36px; border-radius: 8px; background: var(--gradient); display: flex; align-items: center; justify-content: center; color: #fff;">
-                                <i data-lucide="file-text" style="width: 18px; height: 18px;"></i>
+                        <div class="subtopics-nav" id="subtopics-nav-list">
+                            <!-- Dynamically filled by renderLesson() -->
+                        </div>
+
+                        <div class="lesson-sidebar-actions">
+                            <button
+                                id="take-quiz-btn"
+                                class="btn-primary"
+                                style="width: 100%"
+                            >
+                                <i
+                                    data-lucide="pencil-line"
+                                    style="width: 15px; height: 15px"
+                                ></i>
+                                Take Quiz
+                            </button>
+                        </div>
+                    </aside>
+
+                    <!-- ═══ MAIN CONTENT AREA ═══ -->
+                    <main class="lesson-main">
+                        <!-- Subtopic header bar -->
+                        <div class="subtopic-header" id="subtopic-header">
+                            <div class="subtopic-header-info">
+                                <span
+                                    class="subtopic-header-num"
+                                    id="subtopic-header-num"
+                                    >Subtopic 1</span
+                                >
+                                <h2
+                                    class="subtopic-header-title"
+                                    id="subtopic-header-title"
+                                >
+                                    Loading...
+                                </h2>
                             </div>
-                            <h3 style="margin: 0; font-size: 1.15rem; color: var(--text); font-weight: 700;">Lesson Material</h3>
                         </div>
-                        <a href="#" id="docs-download-btn" target="_blank" class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none; border-radius: 8px; display: flex; align-items: center; gap: 0.4rem;">
-                            <i data-lucide="download" style="width: 16px; height: 16px;"></i> Download
-                        </a>
-                    </div>
-                    
-                    <!-- For PDFs (Native Browser Viewer) -->
-                    <div id="docs-iframe-wrap" style="flex: 1; display: none; padding: 1.5rem; background: var(--bg2); overflow: hidden;">
-                        <iframe id="docs-iframe" style="width: 100%; height: 100%; border: 1px solid var(--border); border-radius: 12px; background: #fff;"></iframe>
-                    </div>
-                    
-                    <!-- For Images -->
-                    <div id="docs-img-wrap" style="flex: 1; display: none; padding: 1.5rem; background: var(--bg2); align-items: center; justify-content: center; overflow: hidden;">
-                        <img id="docs-img" src="" style="max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; border-radius: 12px;" />
-                    </div>
 
-                    <!-- Fallback for unsupported preview types -->
-                    <div id="docs-fallback" style="flex: 1; display: none; align-items: center; justify-content: center; padding: 3rem; flex-direction: column; background: var(--bg2);">
-                        <div style="width: 64px; height: 64px; border-radius: 16px; background: rgba(255,255,255,0.05); border: 1px dashed var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-muted); margin-bottom: 1.5rem;">
-                            <i data-lucide="file-archive" style="width: 32px; height: 32px;"></i>
+                        <!-- No subtopics placeholder -->
+                        <div
+                            id="no-subtopics-msg"
+                            style="
+                                display: none;
+                                flex: 1;
+                                align-items: center;
+                                justify-content: center;
+                                flex-direction: column;
+                                gap: 1rem;
+                                padding: 3rem;
+                                text-align: center;
+                            "
+                        >
+                            <i
+                                data-lucide="inbox"
+                                style="
+                                    width: 48px;
+                                    height: 48px;
+                                    color: var(--text-muted);
+                                "
+                            ></i>
+                            <p
+                                style="
+                                    color: var(--text-muted);
+                                    font-size: 1rem;
+                                "
+                            >
+                                This topic has no subtopics yet. Check back
+                                later.
+                            </p>
                         </div>
-                        <p class="muted" style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text); font-weight: 600;">Preview not available</p>
-                        <p class="muted" style="font-size: 0.9rem;">Please use the Download button to view this file.</p>
-                    </div>
-                </div>
-            </main>
-        </div>
-    </section>
 
-    <!-- ─── Quiz ─────────────────────────────────────── -->
-    <section id="quiz-screen" class="screen">
-        <div class="quiz-box">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <p class="quiz-meta" style="margin-bottom: 0;">Question <span id="current-q">1</span> / <span id="total-q">2</span></p>
-                <div id="quiz-timer" class="hidden" style="font-size: 1rem; font-family: monospace; font-weight: bold; color: var(--danger); background: #fee2e2; padding: 0.2rem 0.6rem; border-radius: 4px;">20:00</div>
-            </div>
-            <div class="quiz-progress"><div class="quiz-progress-bar" id="quiz-progress-bar" style="width:0%"></div></div>
-            <h3 id="question-text">Question</h3>
-            <div class="options-list" id="options-container"></div>
-            <button id="next-q-btn" class="btn-primary" disabled>Next</button>
-        </div>
-    </section>
+                        <!-- ─── DOCS PANEL ─── -->
+                        <div
+                            class="docs-wrap"
+                            id="docs-container"
+                            style="display: none; flex-direction: column"
+                        >
+                            <div class="docs-toolbar">
+                                <div
+                                    style="
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 0.75rem;
+                                    "
+                                >
+                                    <div
+                                        style="
+                                            width: 32px;
+                                            height: 32px;
+                                            border-radius: 8px;
+                                            background: var(--gradient);
+                                            display: flex;
+                                            align-items: center;
+                                            justify-content: center;
+                                            color: #fff;
+                                            flex-shrink: 0;
+                                        "
+                                    >
+                                        <i
+                                            data-lucide="file-text"
+                                            style="width: 16px; height: 16px"
+                                        ></i>
+                                    </div>
+                                    <div>
+                                        <p
+                                            style="
+                                                margin: 0;
+                                                font-size: 0.8rem;
+                                                color: var(--text-muted);
+                                            "
+                                        >
+                                            Lesson Material
+                                        </p>
+                                        <p
+                                            style="
+                                                margin: 0;
+                                                font-size: 0.9rem;
+                                                font-weight: 600;
+                                                color: var(--text);
+                                            "
+                                            id="docs-filename-label"
+                                        >
+                                            Document
+                                        </p>
+                                    </div>
+                                </div>
+                                <a
+                                    href="#"
+                                    id="docs-download-btn"
+                                    target="_blank"
+                                    class="btn-primary"
+                                    style="
+                                        padding: 0.4rem 0.9rem;
+                                        font-size: 0.82rem;
+                                        text-decoration: none;
+                                        border-radius: 8px;
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 0.35rem;
+                                    "
+                                >
+                                    <i
+                                        data-lucide="download"
+                                        style="width: 14px; height: 14px"
+                                    ></i>
+                                    Download
+                                </a>
+                            </div>
 
-    <!-- ─── Certificate ───────────────────────────────── -->
-    <section id="certificate-screen" class="screen">
-        <div class="cert-split-layout">
-            <!-- Left Side: Certificate Preview -->
-            <div class="cert-preview-col">
-                <div id="certificate" class="certificate-paper cert-light">
-                    <div class="cert-paper-logo">LearnCSS</div>
-                    <div class="cert-accent"></div>
-                    <p class="cert-eyebrow" style="font-size: 0.65rem;">Certificate of Completion</p>
-                    <p class="cert-desc" style="font-size: 0.88rem; margin-bottom: 0.75rem;">This certifies that</p>
-                    <h2 id="cert-user-name" style="font-size: 2.1rem; margin: 0.25rem 0 0.75rem; color: #1e293b; font-family: 'Outfit', sans-serif; font-weight: 700;">Juan Dela Cruz</h2>
-                    <p class="cert-desc" style="font-size: 0.88rem; line-height: 1.4; margin-bottom: 0.75rem;">has successfully completed all courses and passed the final exam in<br><strong style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.1em;">CSS Tutorial</strong></p>
-                    <hr class="cert-divider" style="margin: 1.1rem 0;">
-                    <div class="cert-meta-grid" style="font-size: 0.72rem;">
-                        <div class="cert-meta-item">
-                            <span class="meta-label">Credential ID</span>
-                            <span class="meta-val" id="cert-credential-id">CSSM-XXXX-XXXX</span>
+                            <!-- PDF iframe viewer -->
+                            <div
+                                id="docs-iframe-wrap"
+                                style="
+                                    flex: 1;
+                                    display: none;
+                                    overflow: hidden;
+                                    margin: 1.5rem;
+                                    border-radius: 12px;
+                                    border: 1px solid var(--border);
+                                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                                "
+                            >
+                                <iframe
+                                    id="docs-iframe"
+                                    style="
+                                        width: 100%;
+                                        height: 100%;
+                                        border: none;
+                                        background: #fff;
+                                        display: block;
+                                    "
+                                ></iframe>
+                            </div>
+                            <!-- Image viewer -->
+                            <div
+                                id="docs-img-wrap"
+                                style="
+                                    flex: 1;
+                                    display: none;
+                                    align-items: center;
+                                    justify-content: center;
+                                    padding: 1.5rem;
+                                    margin: 1.5rem;
+                                    border-radius: 12px;
+                                    border: 1px solid var(--border);
+                                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                                    background: var(--bg2);
+                                "
+                            >
+                                <img
+                                    id="docs-img"
+                                    src=""
+                                    style="
+                                        max-width: 100%;
+                                        max-height: 100%;
+                                        object-fit: contain;
+                                        border-radius: 12px;
+                                    "
+                                />
+                            </div>
+                            <!-- Fallback / No doc -->
+                            <div
+                                id="docs-fallback"
+                                style="
+                                    flex: 1;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    flex-direction: column;
+                                    gap: 1rem;
+                                    padding: 3rem;
+                                    margin: 1.5rem;
+                                    border-radius: 12px;
+                                    border: 1px solid var(--border);
+                                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                                    background: var(--bg2);
+                                    text-align: center;
+                                "
+                            >
+                                <div
+                                    style="
+                                        width: 64px;
+                                        height: 64px;
+                                        border-radius: 16px;
+                                        background: rgba(255, 255, 255, 0.05);
+                                        border: 1px dashed var(--border);
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        color: var(--text-muted);
+                                    "
+                                >
+                                    <i
+                                        data-lucide="file-x"
+                                        style="width: 32px; height: 32px"
+                                    ></i>
+                                </div>
+                                <p style="color: var(--text); font-weight: 600">
+                                    No Document
+                                </p>
+                                <p
+                                    style="
+                                        color: var(--text-muted);
+                                        font-size: 0.9rem;
+                                    "
+                                >
+                                    No PDF or slides uploaded for this subtopic.
+                                </p>
+                            </div>
                         </div>
-                        <div class="cert-meta-item">
-                            <span class="meta-label">Issued Date</span>
-                            <span class="meta-val" id="current-date"></span>
+
+                        <!-- ─── VIDEO PANEL ─── -->
+                        <div
+                            class="docs-wrap"
+                            id="video-container"
+                            style="display: none; flex-direction: column"
+                        >
+                            <div class="docs-toolbar">
+                                <div
+                                    style="
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 0.75rem;
+                                    "
+                                >
+                                    <div
+                                        style="
+                                            width: 32px;
+                                            height: 32px;
+                                            border-radius: 8px;
+                                            background: var(--gradient);
+                                            display: flex;
+                                            align-items: center;
+                                            justify-content: center;
+                                            color: #fff;
+                                            flex-shrink: 0;
+                                        "
+                                    >
+                                        <i
+                                            data-lucide="play-circle"
+                                            style="width: 16px; height: 16px"
+                                        ></i>
+                                    </div>
+                                    <div>
+                                        <p
+                                            style="
+                                                margin: 0;
+                                                font-size: 0.8rem;
+                                                color: var(--text-muted);
+                                            "
+                                        >
+                                            Lesson Video
+                                        </p>
+                                        <p
+                                            style="
+                                                margin: 0;
+                                                font-size: 0.9rem;
+                                                font-weight: 600;
+                                                color: var(--text);
+                                            "
+                                            id="video-title-label"
+                                        >
+                                            Video
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Video iframe viewer -->
+                            <div
+                                id="video-iframe-wrap"
+                                style="
+                                    flex: 1;
+                                    display: none;
+                                    overflow: hidden;
+                                    margin: 1.5rem;
+                                    border-radius: 12px;
+                                    border: 1px solid var(--border);
+                                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                                "
+                            >
+                                <iframe
+                                    id="video-player"
+                                    src=""
+                                    frameborder="0"
+                                    allowfullscreen
+                                    style="
+                                        width: 100%;
+                                        height: 100%;
+                                        border: none;
+                                        background: #000;
+                                        display: block;
+                                    "
+                                ></iframe>
+                            </div>
+                            <!-- Video unavailable -->
+                            <div
+                                id="video-unavailable"
+                                style="
+                                    flex: 1;
+                                    display: none;
+                                    align-items: center;
+                                    justify-content: center;
+                                    flex-direction: column;
+                                    gap: 1rem;
+                                    padding: 3rem;
+                                    margin: 1.5rem;
+                                    border-radius: 12px;
+                                    border: 1px solid var(--border);
+                                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                                    background: var(--bg2);
+                                    text-align: center;
+                                "
+                            >
+                                <div
+                                    style="
+                                        width: 64px;
+                                        height: 64px;
+                                        border-radius: 16px;
+                                        background: rgba(255, 255, 255, 0.05);
+                                        border: 1px dashed var(--border);
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        color: var(--text-muted);
+                                    "
+                                >
+                                    <i
+                                        data-lucide="video-off"
+                                        style="width: 32px; height: 32px"
+                                    ></i>
+                                </div>
+                                <p style="color: var(--text); font-weight: 600">
+                                    No Video
+                                </p>
+                                <p
+                                    style="
+                                        color: var(--text-muted);
+                                        font-size: 0.9rem;
+                                    "
+                                >
+                                    No video uploaded for this subtopic.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- ─── COMPLETION BAR ─── -->
+                        <div id="mark-complete-bar" style="
+                            display: none;
+                            padding: 1rem 1.5rem;
+                            border-top: 1px solid var(--border);
+                            background: var(--surface);
+                            justify-content: flex-end;
+                            align-items: center;
+                        ">
+                            <button id="mark-complete-btn" class="btn-primary" style="
+                                padding: 0.6rem 1.25rem;
+                                border-radius: 8px;
+                                font-size: 0.9rem;
+                                font-weight: 600;
+                                display: flex;
+                                align-items: center;
+                                gap: 0.5rem;
+                            ">
+                                Mark as Complete & Continue
+                                <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>
+                            </button>
+                        </div>
+                    </main>
+                </div>
+            </section>
+
+            <!-- ─── Quiz ─────────────────────────────────────── -->
+            <section id="quiz-screen" class="screen">
+                <div class="quiz-box">
+                    <div
+                        style="
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 0.5rem;
+                        "
+                    >
+                        <p class="quiz-meta" style="margin-bottom: 0">
+                            Question <span id="current-q">1</span> /
+                            <span id="total-q">2</span>
+                        </p>
+                        <div
+                            id="quiz-timer"
+                            class="hidden"
+                            style="
+                                font-size: 1rem;
+                                font-family: monospace;
+                                font-weight: bold;
+                                color: var(--danger);
+                                background: #fee2e2;
+                                padding: 0.2rem 0.6rem;
+                                border-radius: 4px;
+                            "
+                        >
+                            20:00
+                        </div>
+                    </div>
+                    <div class="quiz-progress">
+                        <div
+                            class="quiz-progress-bar"
+                            id="quiz-progress-bar"
+                            style="width: 0%"
+                        ></div>
+                    </div>
+                    <h3 id="question-text">Question</h3>
+                    <div class="options-list" id="options-container"></div>
+                    <button id="next-q-btn" class="btn-primary" disabled>
+                        Next
+                    </button>
+                </div>
+            </section>
+
+            <!-- ─── Certificate ───────────────────────────────── -->
+            <section id="certificate-screen" class="screen">
+                <div class="cert-split-layout">
+                    <!-- Left Side: Certificate Preview -->
+                    <div class="cert-preview-col">
+                        <div
+                            id="certificate"
+                            class="certificate-paper cert-light"
+                        >
+                            <div class="cert-paper-logo">LearnCSS</div>
+                            <div class="cert-accent"></div>
+                            <p class="cert-eyebrow" style="font-size: 0.65rem">
+                                Certificate of Completion
+                            </p>
+                            <p
+                                class="cert-desc"
+                                style="
+                                    font-size: 0.88rem;
+                                    margin-bottom: 0.75rem;
+                                "
+                            >
+                                This certifies that
+                            </p>
+                            <h2
+                                id="cert-user-name"
+                                style="
+                                    font-size: 2.1rem;
+                                    margin: 0.25rem 0 0.75rem;
+                                    color: #1e293b;
+                                    font-family: &quot;Outfit&quot;, sans-serif;
+                                    font-weight: 700;
+                                "
+                            >
+                                Juan Dela Cruz
+                            </h2>
+                            <p
+                                class="cert-desc"
+                                style="
+                                    font-size: 0.88rem;
+                                    line-height: 1.4;
+                                    margin-bottom: 0.75rem;
+                                "
+                            >
+                                has successfully completed all courses and
+                                passed the final exam in<br /><strong
+                                    style="
+                                        font-family:
+                                            &quot;Outfit&quot;, sans-serif;
+                                        font-weight: 800;
+                                        font-size: 1.1em;
+                                    "
+                                    >CSS Tutorial</strong
+                                >
+                            </p>
+                            <hr class="cert-divider" style="margin: 1.1rem 0" />
+                            <div
+                                class="cert-meta-grid"
+                                style="font-size: 0.72rem"
+                            >
+                                <div class="cert-meta-item">
+                                    <span class="meta-label"
+                                        >Credential ID</span
+                                    >
+                                    <span
+                                        class="meta-val"
+                                        id="cert-credential-id"
+                                        >CSSM-XXXX-XXXX</span
+                                    >
+                                </div>
+                                <div class="cert-meta-item">
+                                    <span class="meta-label">Issued Date</span>
+                                    <span
+                                        class="meta-val"
+                                        id="current-date"
+                                    ></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Side: Details & Actions -->
+                    <div class="cert-details-col">
+                        <div class="cert-screen-header">
+                            <h2>Your Certificate</h2>
+                            <p>
+                                You've successfully completed all required
+                                courses.
+                            </p>
+                        </div>
+
+                        <div class="cert-actions">
+                            <button onclick="copyCertId()" class="btn-ghost">
+                                Copy Certificate ID
+                            </button>
+                            <button
+                                onclick="shareOnLinkedIn()"
+                                class="btn-ghost"
+                            >
+                                Share on LinkedIn
+                            </button>
+                            <button
+                                onclick="downloadCertificate()"
+                                class="btn-ghost"
+                            >
+                                Download Image
+                            </button>
+                        </div>
+                        <div
+                            style="
+                                margin-top: auto;
+                                display: flex;
+                                flex-direction: column;
+                                gap: 0.75rem;
+                            "
+                        >
+                            <div
+                                class="linkedin-instructions"
+                                style="cursor: pointer; display: inline-block"
+                                onclick="
+                                    document
+                                        .getElementById('linkedin-modal')
+                                        .classList.remove('hidden')
+                                "
+                            >
+                                <h3 style="margin: 0">
+                                    How to add the certification to a LinkedIn
+                                    profile
+                                </h3>
+                            </div>
+
+                            <div
+                                class="cert-extra-info"
+                                style="
+                                    font-size: 0.85rem;
+                                    color: var(--text-muted);
+                                    line-height: 1.6;
+                                "
+                            >
+                                This official credential verifies your CSS
+                                mastery. Add it to your resume to showcase your
+                                newly acquired skills to potential employers.
+                            </div>
+
+                            <div
+                                class="cert-nav-back"
+                                style="text-align: left; margin-top: 0"
+                            >
+                                <button
+                                    onclick="showScreen('dashboard-screen')"
+                                    class="btn-ghost"
+                                    style="border: none; padding: 0"
+                                >
+                                    Back to Dashboard
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <!-- end #app -->
+
+        <!-- LinkedIn Instructions Modal -->
+        <div
+            id="linkedin-modal"
+            class="modal-overlay hidden"
+            onclick="if (event.target === this) this.classList.add('hidden');"
+        >
+            <div class="modal">
+                <button
+                    class="modal-close"
+                    onclick="
+                        document
+                            .getElementById('linkedin-modal')
+                            .classList.add('hidden')
+                    "
+                >
+                    <i data-lucide="x"></i>
+                </button>
+                <h2>LinkedIn Instructions</h2>
+                <div
+                    class="linkedin-instructions-modal"
+                    style="margin-top: 1.5rem; text-align: left"
+                >
+                    <div class="li-step">
+                        <strong>Step 1: Navigate</strong>
+                        <p>
+                            Me &gt; View Profile &gt; Licenses & Certifications
+                            &gt; click '+' and add your LearnCSS certificate.
+                        </p>
+                    </div>
+                    <div class="li-step">
+                        <strong>Step 2: Enter details</strong>
+                        <p>
+                            Fill in the form with the following details and
+                            click save:
+                        </p>
+                    </div>
+                    <div class="li-fields">
+                        <div class="li-field">
+                            <span>Name:</span> <strong>CSS Tutorial</strong>
+                        </div>
+                        <div class="li-field">
+                            <span>Issuing Organization:</span>
+                            <strong>LearnCSS</strong>
+                        </div>
+                        <div class="li-field">
+                            <span>Credential ID:</span>
+                            <strong id="li-cred-id-modal">XXXX-XXXX</strong>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Right Side: Details & Actions -->
-            <div class="cert-details-col">
-                <div class="cert-screen-header">
-                    <h2>Your Certificate</h2>
-                    <p>You've successfully completed all required courses.</p>
-                </div>
-                
-                <div class="cert-actions">
-                    <button onclick="copyCertId()" class="btn-ghost">Copy Certificate ID</button>
-                    <button onclick="shareOnLinkedIn()" class="btn-ghost">Share on LinkedIn</button>
-                    <button onclick="downloadCertificate()" class="btn-ghost">Download Image</button>
-                </div>
-                <div style="margin-top: auto; display: flex; flex-direction: column; gap: 0.75rem;">
-                    <div class="linkedin-instructions" style="cursor: pointer; display: inline-block;" onclick="document.getElementById('linkedin-modal').classList.remove('hidden')">
-                        <h3 style="margin: 0;">How to add the certification to a LinkedIn profile</h3>
-                    </div>
-                    
-                    <div class="cert-extra-info" style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.6;">
-                        This official credential verifies your CSS mastery. Add it to your resume to showcase your newly acquired skills to potential employers.
-                    </div>
-                    
-                    <div class="cert-nav-back" style="text-align: left; margin-top: 0;">
-                        <button onclick="showScreen('dashboard-screen')" class="btn-ghost" style="border:none; padding: 0;">Back to Dashboard</button>
-                    </div>
-                </div>
-            </div>
         </div>
-    </section>
 
-</div><!-- end #app -->
-
-<!-- LinkedIn Instructions Modal -->
-<div id="linkedin-modal" class="modal-overlay hidden" onclick="if(event.target===this) this.classList.add('hidden')">
-    <div class="modal">
-        <button class="modal-close" onclick="document.getElementById('linkedin-modal').classList.add('hidden')"><i data-lucide="x"></i></button>
-        <h2>LinkedIn Instructions</h2>
-        <div class="linkedin-instructions-modal" style="margin-top: 1.5rem; text-align: left;">
-            <div class="li-step">
-                <strong>Step 1: Navigate</strong>
-                <p>Me &gt; View Profile &gt; Licenses & Certifications &gt; click '+' and add your LearnCSS certificate.</p>
-            </div>
-            <div class="li-step">
-                <strong>Step 2: Enter details</strong>
-                <p>Fill in the form with the following details and click save:</p>
-            </div>
-            <div class="li-fields">
-                <div class="li-field"><span>Name:</span> <strong>CSS Tutorial</strong></div>
-                <div class="li-field"><span>Issuing Organization:</span> <strong>LearnCSS</strong></div>
-                <div class="li-field"><span>Credential ID:</span> <strong id="li-cred-id-modal">XXXX-XXXX</strong></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script src="script.js?v=2"></script>
-<script>
-    lucide.createIcons();
-</script>
-</body>
+        <script src="script.js?v=2"></script>
+        <script>
+            lucide.createIcons();
+        </script>
+    </body>
 </html>

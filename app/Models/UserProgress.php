@@ -11,7 +11,7 @@ class UserProgress extends Model
 
     protected $table = 'user_progress';
 
-    protected $fillable = ['user_id', 'topic_id', 'completed_at'];
+    protected $fillable = ['user_id', 'topic_id', 'max_unlocked_index', 'completed_at'];
 
     public function user()
     {

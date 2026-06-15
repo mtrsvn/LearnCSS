@@ -3,6 +3,7 @@ let state = {
     currentTopicIndex: null,
     currentLessonIndex: 0,
     completedTopics: [],
+    topicProgressMap: {},
     examType: 'quiz',
     voucherCode: localStorage.getItem('cssm_voucher') || null,
     courseUnlocked: false,
@@ -385,6 +386,7 @@ async function loginUser(user) {
         const pData = await apiRequest('/api/progress');
         if (pData && pData.success) {
             state.completedTopics = pData.completedTopics;
+            state.topicProgressMap = pData.topicProgressMap || {};
             state.hasCertificate = pData.hasCertificate || state.hasCertificate;
             state.hasPassedMidExam = pData.hasPassedMidExam || false;
             if (pData.lastTopicStarted) {
@@ -393,6 +395,7 @@ async function loginUser(user) {
         }
     } catch (e) {
         state.completedTopics = [];
+        state.topicProgressMap = {};
     }
 
 
@@ -704,10 +707,13 @@ function updateFinalCard() {
     if (typeof lucide !== 'undefined') lucide.createIcons({ root: btn });
 }
 
-// ─── Lesson ──────────────────────────────────────────────
+// ─── Lesson (Coursera-style) ──────────────────────────────────
+let currentSubtopicIndex = 0;
+
 function openTopic(index) {
     state.currentTopicIndex = index;
-    
+    currentSubtopicIndex = 0;
+
     if (topics[index]) {
         apiRequest('/api/progress/start', 'POST', { topic_id: topics[index].id })
             .then(res => {
@@ -721,174 +727,295 @@ function openTopic(index) {
     showScreen('lesson-screen');
 }
 
-function renderLesson() {
-    const topic  = topics[state.currentTopicIndex];
+function renderLesson(openIdx = 0) {
+    const topic = topics[state.currentTopicIndex];
+    if (!topic) return;
 
+    // Determine current unlocked progress for this topic from backend
+    let maxUnlocked = state.topicProgressMap[topic.id] || 0;
+    window.currentUnlockedIdx = maxUnlocked;
+    window.currentTopicStorageKey = `certApp_progress_${topic.id}`; // legacy fallback if needed
+
+    // Set topic title in sidebar
     const titleEl = $('current-topic-title');
     if (titleEl) titleEl.textContent = topic.title;
 
-    const allVideos = [];
-    if (topic.videoUrl) allVideos.push(topic.videoUrl);
-    if (topic.videos && Array.isArray(topic.videos)) {
-        allVideos.push(...topic.videos);
+    const navList = $('subtopics-nav-list');
+    if (!navList) return;
+    navList.innerHTML = '';
+
+    const subtopics = topic.subtopics || [];
+    const noSubMsg  = $('no-subtopics-msg');
+    const subHeader = $('subtopic-header');
+    const videoWrap = $('video-container');
+    const docsWrap  = $('docs-container');
+
+    if (subtopics.length === 0) {
+        // No subtopics — show placeholder
+        if (noSubMsg)  noSubMsg.style.display  = 'flex';
+        if (subHeader) subHeader.style.display = 'none';
+        if (videoWrap) videoWrap.style.display = 'none';
+        if (docsWrap)  docsWrap.style.display  = 'none';
+
+        // Legacy fallback: show topic-level video/docs if present
+        if (topic.videoUrl || (topic.videos && topic.videos.length) || topic.documentationPath) {
+            if (noSubMsg) noSubMsg.style.display = 'none';
+            if (subHeader) {
+                subHeader.style.display = 'flex';
+                const numEl = $('subtopic-header-num');
+                const ttlEl = $('subtopic-header-title');
+                if (numEl) numEl.textContent = 'Topic Content';
+                if (ttlEl) ttlEl.textContent = topic.title;
+            }
+            loadVideoForSubtopic({ videoUrl: topic.videoUrl });
+            loadDocsForSubtopic({ documentationPath: topic.documentationPath, documentationFilename: topic.documentationFilename });
+            
+            if (videoWrap) videoWrap.style.display = 'block';
+            if (docsWrap)  docsWrap.style.display  = 'flex';
+        }
+        return;
     }
 
-    const videosList = $('topic-videos-list');
-    const videoBtn = $('lesson-video-btn');
-    const player = $('video-player');
-    
-    // ALWAYS show the button as requested by the user
-    if (videoBtn) videoBtn.style.display = 'block';
+    if (noSubMsg)  noSubMsg.style.display  = 'none';
+    if (subHeader) subHeader.style.display = 'flex';
 
-    if (videosList) {
-        videosList.innerHTML = '';
-        if (allVideos.length > 0) {
-            allVideos.forEach((vUrl, i) => {
-                const btn = document.createElement('button');
-                btn.className = `video-tab ${i === 0 ? 'active' : ''}`;
-                btn.textContent = `Video ${i + 1}`;
-                
-                const getEmbedUrl = (urlItem) => {
-                    let urlStr = '';
-                    if (typeof urlItem === 'string') {
-                        urlStr = urlItem;
-                    } else if (typeof urlItem === 'object' && urlItem !== null && urlItem.url) {
-                        urlStr = urlItem.url;
-                    }
-                    if (!urlStr) return '';
-                    let vidId = '';
-                    if (urlStr.includes('youtube.com/watch?v=')) {
-                        vidId = urlStr.split('v=')[1].split('&')[0];
-                    } else if (urlStr.includes('youtu.be/')) {
-                        vidId = urlStr.split('youtu.be/')[1].split('?')[0];
-                    }
-                    return vidId ? `https://www.youtube.com/embed/${vidId}` : urlStr;
-                };
+    // Build flattened items list for openFlattenedItem()
+    window.currentFlattenedItems = [];
+    subtopics.forEach((sub, subIndex) => {
+        if (sub.documentationPath) {
+            window.currentFlattenedItems.push({ sub, type: 'doc',   subIndex });
+        }
+        if (sub.videoUrl) {
+            window.currentFlattenedItems.push({ sub, type: 'video', subIndex });
+        }
+        if (!sub.videoUrl && !sub.documentationPath) {
+            window.currentFlattenedItems.push({ sub, type: 'none',  subIndex });
+        }
+    });
 
-                const embedUrl = getEmbedUrl(vUrl);
+    // Build GROUPED sidebar: subtopic title as header, items nested under it
+    subtopics.forEach((sub, subIndex) => {
+        // ── Group header (non-clickable) ──
+        const group = document.createElement('div');
+        group.className = 'sub-group';
 
-                btn.onclick = () => {
-                    if (player) player.src = embedUrl;
-                    Array.from(videosList.children).forEach(child => child.classList.remove('active'));
-                    btn.classList.add('active');
-                    switchMedia('video');
-                };
-                videosList.appendChild(btn);
+        const groupHeader = document.createElement('div');
+        groupHeader.className = 'sub-group-header';
+        groupHeader.innerHTML = `
+            <span class="sub-group-num">${subIndex + 1}</span>
+            <span class="sub-group-title">${sub.title}</span>
+        `;
+        group.appendChild(groupHeader);
+
+        // ── Child items ──
+        const childItems = [];
+        if (sub.documentationPath) {
+            const flatIdx = window.currentFlattenedItems.findIndex(
+                f => f.subIndex === subIndex && f.type === 'doc'
+            );
+            childItems.push({ label: 'Reading', icon: '📄', flatIdx });
+        }
+        if (sub.videoUrl) {
+            const flatIdx = window.currentFlattenedItems.findIndex(
+                f => f.subIndex === subIndex && f.type === 'video'
+            );
+            childItems.push({ label: 'Video', icon: '▶', flatIdx });
+        }
+        if (childItems.length === 0) {
+            const flatIdx = window.currentFlattenedItems.findIndex(
+                f => f.subIndex === subIndex && f.type === 'none'
+            );
+            childItems.push({ label: 'No content', icon: '—', flatIdx });
+        }
+
+        childItems.forEach(({ label, icon, flatIdx }) => {
+            const btn = document.createElement('button');
+            btn.className = 'subtopic-nav-item sub-child-item';
+            btn.dataset.flatIdx = flatIdx;
+            
+            // Check lock state
+            if (flatIdx > window.currentUnlockedIdx) {
+                btn.classList.add('locked');
+                btn.innerHTML = `<span class="sub-child-icon" style="opacity: 0.5; margin-right: 0.3rem;"><i data-lucide="lock" style="width: 14px; height: 14px;"></i></span><span class="sub-child-label">${label}</span>`;
+            } else {
+                btn.innerHTML = `<span class="sub-child-label">${label}</span>`;
+            }
+
+            btn.addEventListener('click', () => {
+                if (flatIdx <= window.currentUnlockedIdx) {
+                    openFlattenedItem(flatIdx);
+                }
             });
-            if (player) {
-                // Initialize first video with embed URL parsing
-                const getFirstEmbedUrl = (urlItem) => {
-                    let urlStr = '';
-                    if (typeof urlItem === 'string') {
-                        urlStr = urlItem;
-                    } else if (typeof urlItem === 'object' && urlItem !== null && urlItem.url) {
-                        urlStr = urlItem.url;
-                    }
-                    if (!urlStr) return '';
-                    let vidId = '';
-                    if (urlStr.includes('youtube.com/watch?v=')) {
-                        vidId = urlStr.split('v=')[1].split('&')[0];
-                    } else if (urlStr.includes('youtu.be/')) {
-                        vidId = urlStr.split('youtu.be/')[1].split('?')[0];
-                    }
-                    return vidId ? `https://www.youtube.com/embed/${vidId}` : urlStr;
-                };
-                player.src = getFirstEmbedUrl(allVideos[0]);
-            }
-        } else {
-            // Even if no videos, clear the player
-            if (player) player.src = '';
-            videosList.innerHTML = '<p class="muted" style="text-align: center; width: 100%; padding: 2rem;">No videos available for this topic.</p>';
-        }
+            group.appendChild(btn);
+        });
+
+        navList.appendChild(group);
+    });
+
+    // Open target item
+    if (window.currentFlattenedItems.length > 0) {
+        openFlattenedItem(openIdx);
     }
-    
-    // Handle Documentation Button visibility and link
-    const docsBtnSidebar = $('lesson-docs-btn');
-    const docsBtn = $('docs-download-btn');
-    const docsIframe = $('docs-iframe');
-    const docsIframeWrap = $('docs-iframe-wrap');
-    const docsImg = $('docs-img');
-    const docsImgWrap = $('docs-img-wrap');
-    const docsFallback = $('docs-fallback');
+}
 
-    if (docsBtnSidebar) {
-        docsBtnSidebar.style.display = 'block';
-        docsBtnSidebar.classList.add('active');
-    }
+function openFlattenedItem(index) {
+    const item = window.currentFlattenedItems[index];
+    if (!item) return;
 
-    if (topic.documentationPath) {
-        if (docsBtn) {
-            docsBtn.style.display = 'inline-flex';
-            docsBtn.href = topic.documentationPath;
-        }
-        
-        const path = topic.documentationPath.toLowerCase();
-        const isPdf = path.endsWith('.pdf');
-        const isImage = path.match(/\.(jpeg|jpg|gif|png|webp)$/) != null;
+    // Update active nav item — match by data-flat-idx
+    document.querySelectorAll('.sub-child-item').forEach(el => {
+        el.classList.toggle('active', parseInt(el.dataset.flatIdx) === index);
+    });
 
-        if (docsIframeWrap) docsIframeWrap.style.display = 'none';
-        if (docsImgWrap) docsImgWrap.style.display = 'none';
-        if (docsFallback) docsFallback.style.display = 'none';
+    // Update header
+    const numEl = $('subtopic-header-num');
+    const ttlEl = $('subtopic-header-title');
+    if (numEl) numEl.textContent = `${item.type === 'video' ? '▶ Video' : '📄 Reading'} · Part ${item.subIndex + 1}`;
+    if (ttlEl) ttlEl.textContent = item.sub.title;
 
-        if (isImage) {
-            if (docsImg) docsImg.src = topic.documentationPath;
-            if (docsImgWrap) docsImgWrap.style.display = 'flex';
-        } else if (isPdf) {
-            if (docsIframe) docsIframe.src = topic.documentationPath;
-            if (docsIframeWrap) docsIframeWrap.style.display = 'block';
-        } else {
-            if (docsFallback) {
-                docsFallback.style.display = 'flex';
-                docsFallback.innerHTML = `
-                    <div style="width: 64px; height: 64px; border-radius: 16px; background: rgba(255,255,255,0.05); border: 1px dashed var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-muted); margin-bottom: 1.5rem;">
-                        <i data-lucide="file-archive" style="width: 32px; height: 32px;"></i>
-                    </div>
-                    <p class="muted" style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text); font-weight: 600;">Preview not available</p>
-                    <p class="muted" style="font-size: 0.9rem;">Please use the Download button to view this file.</p>
-                `;
-            }
-        }
+    const videoContainer = $('video-container');
+    const docsContainer  = $('docs-container');
 
+    if (item.type === 'video') {
+        if (videoContainer) videoContainer.style.display = 'flex';
+        if (docsContainer)  docsContainer.style.display  = 'none';
+        loadVideoForSubtopic(item.sub);
+    } else if (item.type === 'doc') {
+        if (videoContainer) videoContainer.style.display = 'none';
+        if (docsContainer)  docsContainer.style.display  = 'flex';
+        loadDocsForSubtopic(item.sub);
     } else {
-        if (docsIframeWrap) docsIframeWrap.style.display = 'none';
-        if (docsImgWrap) docsImgWrap.style.display = 'none';
+        if (videoContainer) videoContainer.style.display = 'none';
+        if (docsContainer)  docsContainer.style.display  = 'none';
+    }
+
+    // Handle "Mark as Complete & Continue" button
+    const completeBar = $('mark-complete-bar');
+    const completeBtn = $('mark-complete-btn');
+    if (completeBar && completeBtn) {
+        if (index < window.currentFlattenedItems.length - 1) {
+            completeBar.style.display = 'flex';
+            completeBtn.onclick = async () => {
+                const nextIdx = index + 1;
+                // Unlock if needed
+                if (nextIdx > window.currentUnlockedIdx) {
+                    window.currentUnlockedIdx = nextIdx;
+                    const topic = topics[state.currentTopicIndex];
+                    state.topicProgressMap[topic.id] = nextIdx;
+                    
+                    // Save to backend
+                    try {
+                        await apiRequest('/api/progress/unlock', 'POST', {
+                            topic_id: topic.id,
+                            max_unlocked_index: nextIdx
+                        });
+                    } catch (e) {
+                        console.error('Failed to save progress to backend');
+                    }
+
+                    renderLesson(nextIdx); // re-render to update locks, which also opens it
+                } else {
+                    openFlattenedItem(nextIdx);
+                }
+            };
+        } else {
+            completeBar.style.display = 'none';
+        }
+    }
+
+    if (window.lucide) lucide.createIcons();
+}
+
+function loadVideoForSubtopic(sub) {
+    const player       = $('video-player');
+    const videoIframeWrap = $('video-iframe-wrap');
+    const unavailable  = $('video-unavailable');
+    const titleLabel   = $('video-title-label');
+
+    // Reset
+    if (videoIframeWrap) videoIframeWrap.style.display = 'none';
+    if (unavailable)     unavailable.style.display     = 'none';
+
+    if (titleLabel) titleLabel.textContent = sub.title || 'Video';
+
+    if (!sub.videoUrl) {
+        if (unavailable) unavailable.style.display = 'flex';
+        return;
+    }
+
+    // Parse YouTube URL to embed format
+    const getEmbedUrl = (url) => {
+        if (!url) return '';
+        let vidId = '';
+        if (url.includes('youtube.com/watch?v=')) {
+            vidId = url.split('v=')[1].split('&')[0];
+        } else if (url.includes('youtu.be/')) {
+            vidId = url.split('youtu.be/')[1].split('?')[0];
+        } else if (url.includes('youtube.com/embed/')) {
+            return url;
+        }
+        return vidId ? `https://www.youtube.com/embed/${vidId}?rel=0` : url;
+    };
+
+    if (player) {
+        player.src = getEmbedUrl(sub.videoUrl);
+    }
+    if (videoIframeWrap) videoIframeWrap.style.display = 'block';
+}
+
+function loadDocsForSubtopic(sub) {
+    const docsBtn       = $('docs-download-btn');
+    const docsIframe    = $('docs-iframe');
+    const docsIframeWrap = $('docs-iframe-wrap');
+    const docsImg       = $('docs-img');
+    const docsImgWrap   = $('docs-img-wrap');
+    const docsFallback  = $('docs-fallback');
+    const filenameLabel = $('docs-filename-label');
+
+    // Reset
+    if (docsIframeWrap) docsIframeWrap.style.display = 'none';
+    if (docsImgWrap)    docsImgWrap.style.display    = 'none';
+    if (docsFallback)   docsFallback.style.display   = 'none';
+
+    if (!sub.documentationPath) {
         if (docsBtn) docsBtn.style.display = 'none';
+        if (docsFallback) docsFallback.style.display = 'flex';
+        if (filenameLabel) filenameLabel.textContent = 'No document';
+        return;
+    }
+
+    if (docsBtn) {
+        docsBtn.style.display = 'inline-flex';
+        docsBtn.href = sub.documentationPath;
+    }
+    if (filenameLabel) filenameLabel.textContent = sub.documentationFilename || 'Document';
+
+    const path  = sub.documentationPath.toLowerCase();
+    const isPdf = path.endsWith('.pdf');
+    const isImg = /\.(jpeg|jpg|gif|png|webp)$/.test(path);
+
+    if (isImg) {
+        if (docsImg) docsImg.src = sub.documentationPath;
+        if (docsImgWrap) docsImgWrap.style.display = 'flex';
+    } else if (isPdf) {
+        if (docsIframe) docsIframe.src = sub.documentationPath;
+        if (docsIframeWrap) docsIframeWrap.style.display = 'block';
+    } else {
         if (docsFallback) {
             docsFallback.style.display = 'flex';
             docsFallback.innerHTML = `
-                <div style="width: 64px; height: 64px; border-radius: 16px; background: rgba(255,255,255,0.05); border: 1px dashed var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-muted); margin-bottom: 1.5rem;">
-                    <i data-lucide="file-x" style="width: 32px; height: 32px;"></i>
+                <div style="width:64px;height:64px;border-radius:16px;background:rgba(255,255,255,0.05);border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;color:var(--text-muted);">
+                    <i data-lucide="file-archive" style="width:32px;height:32px;"></i>
                 </div>
-                <p class="muted" style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text); font-weight: 600;">No Documentation</p>
-                <p class="muted" style="font-size: 0.9rem;">No documentation file has been uploaded for this topic.</p>
+                <p style="color:var(--text);font-weight:600;">Preview not available</p>
+                <p style="color:var(--text-muted);font-size:0.9rem;">Use the Download button to view this file.</p>
             `;
-            if (window.lucide) lucide.createIcons();
+            if (window.lucide) lucide.createIcons({ root: docsFallback });
         }
-        
-        // If we are currently on the docs tab but there's no docs, maybe default to video
-        switchMedia('docs'); // Default to docs as requested
     }
 }
 
-function switchMedia(type) {
-    const btnVideo = $('lesson-video-btn');
-    const btnDocs = $('lesson-docs-btn');
-    const videoContainer = $('video-container');
-    const docsContainer = $('docs-container');
-    const videosList = $('topic-videos-list');
 
-    if (type === 'video') {
-        if (btnVideo) btnVideo.classList.add('active');
-        if (btnDocs) btnDocs.classList.remove('active');
-        if (videoContainer) videoContainer.style.display = 'block';
-        if (docsContainer) docsContainer.style.display = 'none';
-    } else if (type === 'docs') {
-        if (btnDocs) btnDocs.classList.add('active');
-        if (btnVideo) btnVideo.classList.remove('active');
-        if (videoContainer) videoContainer.style.display = 'none';
-        if (docsContainer) docsContainer.style.display = 'flex';
-    }
-}
 
 const backBtn = $('lesson-back-btn');
 if (backBtn) backBtn.addEventListener('click', () => showScreen('dashboard-screen'));
@@ -900,6 +1027,7 @@ if (takeQuizBtn) {
         startQuiz(topics[state.currentTopicIndex].quiz);
     });
 }
+
 
 // ─── Quiz ─────────────────────────────────────────────────
 let quizData = [], qIndex = 0, score = 0, selected = null, answersList = [];

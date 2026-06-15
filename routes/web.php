@@ -33,6 +33,7 @@ Route::prefix('api')->group(function () {
         Route::get('/topics', [CourseController::class, 'getTopics']);
         Route::get('/progress', [CourseController::class, 'getProgress']);
         Route::post('/progress/start', [CourseController::class, 'startTopic']);
+        Route::post('/progress/unlock', [CourseController::class, 'unlockProgress']);
         Route::post('/quiz/attempt', [CourseController::class, 'submitQuiz']);
 
         // Vouchers
@@ -128,6 +129,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/content/topics', [AdminController::class, 'storeTopic'])->name('content.topics.store');
         Route::post('/content/topics/{topic}', [AdminController::class, 'updateTopic'])->name('content.topics.update');
         Route::delete('/content/topics/{topic}', [AdminController::class, 'destroyTopic'])->name('content.topics.destroy');
+
+        // Subtopics CRUD
+        Route::post('/content/subtopics', [AdminController::class, 'storeSubtopic'])->name('content.subtopics.store');
+        Route::post('/content/subtopics/{subtopic}/approve', [AdminController::class, 'approveSubtopic'])->name('content.subtopics.approve');
+        Route::post('/content/subtopics/{subtopic}', [AdminController::class, 'updateSubtopic'])->name('content.subtopics.update');
+        Route::delete('/content/subtopics/{subtopic}', [AdminController::class, 'destroySubtopic'])->name('content.subtopics.destroy');
 
 
         // Quizzes CRUD

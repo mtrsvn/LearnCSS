@@ -18,21 +18,34 @@ class CourseController extends Controller
 
         // Map database format to matches what frontend expects:
         $formattedTopics = $topics->map(function ($topic) {
+            // Build subtopics list (Coursera-style: each subtopic has its own video + doc)
+            $subtopics = $topic->subtopics()->where('status', 'approved')->get()->map(function ($sub) {
+                return [
+                    'id'                    => $sub->id,
+                    'title'                 => $sub->title,
+                    'sort_order'            => $sub->sort_order,
+                    'videoUrl'              => $sub->video_url,
+                    'documentationPath'     => $sub->documentation_path,
+                    'documentationFilename' => $sub->documentation_filename,
+                ];
+            });
+
             return [
-                'id' => $topic->id,
-                'title' => $topic->title,
+                'id'         => $topic->id,
+                'title'      => $topic->title,
                 'sort_order' => $topic->sort_order,
-                'videoUrl' => $topic->video_url,
-                'videos' => $topic->videos,
-                'documentationPath' => $topic->documentation_path,
+                'subtopics'  => $subtopics,
+                // Legacy fields kept for backward compatibility
+                'videoUrl'              => $topic->video_url,
+                'videos'                => $topic->videos,
+                'documentationPath'     => $topic->documentation_path,
                 'documentationFilename' => $topic->documentation_filename,
-                // We'll lazy-load quizzes on demand or keep them embedded.
-                // Keeping them embedded matches index.html/script.js expectation!
+                // Quiz questions embedded
                 'quiz' => $topic->quizQuestions()->where('status', 'approved')->get()->map(function ($q) {
                     return [
                         'question' => $q->question,
-                        'options' => $q->options,
-                        'answer' => $q->answer
+                        'options'  => $q->options,
+                        'answer'   => $q->answer
                     ];
                 })
             ];
@@ -40,7 +53,7 @@ class CourseController extends Controller
 
         return response()->json([
             'success' => true,
-            'topics' => $formattedTopics
+            'topics'  => $formattedTopics
         ]);
     }
 
@@ -64,15 +77,18 @@ class CourseController extends Controller
             ], 401);
         }
 
-        $progress = UserProgress::where('user_id', $user->id)
-            ->pluck('topic_id')
-            ->toArray();
+        $progressData = UserProgress::where('user_id', $user->id)
+            ->get(['topic_id', 'max_unlocked_index']);
 
-        $snapshot = $this->updateUserProgressSnapshot($user->id, count($progress));
+        $completedTopics = $progressData->pluck('topic_id')->toArray();
+        $topicProgressMap = $progressData->pluck('max_unlocked_index', 'topic_id')->toArray();
+
+        $snapshot = $this->updateUserProgressSnapshot($user->id, count($completedTopics));
 
         return response()->json([
             'success' => true,
-            'completedTopics' => $progress,
+            'completedTopics' => $completedTopics,
+            'topicProgressMap' => $topicProgressMap,
             'progressPercentage' => $snapshot['progressPercentage'],
             'modulesCompletedCount' => $snapshot['modulesCompletedCount'],
             'examStatus' => $snapshot['examStatus'],
@@ -105,6 +121,34 @@ class CourseController extends Controller
             'success' => true,
             'message' => 'Topic started.',
             'lastTopicStarted' => $topicId,
+        ]);
+    }
+
+    public function unlockProgress(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $request->validate([
+            'topic_id' => 'required|integer|exists:topics,id',
+            'max_unlocked_index' => 'required|integer|min:0',
+        ]);
+
+        $progress = UserProgress::firstOrCreate(
+            ['user_id' => $user->id, 'topic_id' => $request->topic_id]
+        );
+
+        // Only update if the new index is higher
+        if ($request->max_unlocked_index > $progress->max_unlocked_index) {
+            $progress->max_unlocked_index = $request->max_unlocked_index;
+            $progress->save();
+        }
+
+        return response()->json([
+            'success' => true,
+            'max_unlocked_index' => $progress->max_unlocked_index
         ]);
     }
 
