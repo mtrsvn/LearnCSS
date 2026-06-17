@@ -14,12 +14,7 @@
     .course-info p { color: var(--text-muted); margin: 0; font-size: 0.9rem; }
 </style>
 
-<div class="tabs">
-    <a class="tab" href="{{ route('admin.content.index') }}">Overview</a>
-    <a class="tab active" href="{{ route('admin.content.courses') }}">Courses</a>
-    <a class="tab" href="{{ route('admin.content.topics') }}">Topics and subtopics</a>
-    <a class="tab" href="{{ route('admin.content.quizzes') }}">Quizzes and final exam</a>
-</div>
+<!-- Removed old tabs -->
 
 <div class="split-grid">
     <section class="panel">
@@ -44,6 +39,7 @@
                         <p>{{ $course->description }}</p>
                     </div>
                     <div class="course-actions">
+                        <a href="{{ route('admin.content.topics', $course->id) }}" class="btn-primary" style="text-decoration:none;">Manage Content</a>
                         <button class="btn-ghost" type="button" onclick="openEditCourseModal({{ $course->id }}, '{{ addslashes($course->title) }}', '{{ addslashes($course->description) }}')">Edit</button>
                         <form action="{{ route('admin.content.courses.destroy', $course->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Delete this course?');">
                             @csrf

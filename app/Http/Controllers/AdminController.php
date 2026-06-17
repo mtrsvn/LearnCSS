@@ -383,20 +383,20 @@ class AdminController extends Controller
         return back()->with('success', 'Course deleted successfully.');
     }
 
-    public function contentTopics(Request $request)
+    public function contentTopics(Request $request, $course_id)
     {
-        $courses = Course::orderBy('created_at', 'desc')->get();
-        $query = Topic::with(['subtopics', 'course'])->orderBy('sort_order');
-        if ($request->filled('course_id')) {
-            $query->where('course_id', $request->input('course_id'));
-        }
-        $topics = $query->get();
-        return view('admin.content.topics', compact('topics', 'courses'));
+        $course = Course::findOrFail($course_id);
+        $topics = Topic::with(['subtopics', 'course'])
+                    ->where('course_id', $course->id)
+                    ->orderBy('sort_order')
+                    ->get();
+        return view('admin.content.topics', compact('topics', 'course'));
     }
 
-    public function contentQuizzes(Request $request)
+    public function contentQuizzes(Request $request, $course_id)
     {
-        $query = QuizQuestion::with('topic');
+        $course = Course::findOrFail($course_id);
+        $query = QuizQuestion::with('topic')->where('course_id', $course->id);
         
         if ($request->filled('search')) {
             $search = $request->input('search');
@@ -404,12 +404,12 @@ class AdminController extends Controller
         }
         
         $quizzes = $query->paginate(5);
-        $topics = Topic::orderBy('sort_order')->get();
-        return view('admin.content.quizzes', compact('quizzes', 'topics'));
+        $topics = Topic::where('course_id', $course->id)->orderBy('sort_order')->get();
+        return view('admin.content.quizzes', compact('quizzes', 'topics', 'course'));
     }
 
     // ─── TOPIC CRUD ──────────────────────────────────────────────
-    public function reorderTopics(Request $request)
+    public function reorderTopics(Request $request, $course_id)
     {
         $request->validate([
             'ordered_ids' => 'required|array',
@@ -425,21 +425,22 @@ class AdminController extends Controller
 
 
 
-    public function storeTopic(Request $request)
+    public function storeTopic(Request $request, $course_id)
     {
         $request->validate([
             'title'       => 'required|string|max:255',
             'description' => 'nullable|string',
-            'course_id'   => 'required|exists:courses,id'
         ]);
 
+        $course = Course::findOrFail($course_id);
+
         $status       = (Auth::user()->is_admin || Auth::user()->role === 'admin') ? 'approved' : 'pending';
-        $maxSortOrder = Topic::where('course_id', $request->input('course_id'))->max('sort_order') ?? 0;
+        $maxSortOrder = Topic::where('course_id', $course->id)->max('sort_order') ?? 0;
 
         $topic = Topic::create([
             'title'       => $request->input('title'),
             'description' => $request->input('description'),
-            'course_id'   => $request->input('course_id'),
+            'course_id'   => $course->id,
             'sort_order'  => $maxSortOrder + 1,
             'status'      => $status,
         ]);
@@ -454,7 +455,7 @@ class AdminController extends Controller
         return back()->with('success', 'Topic created successfully.');
     }
 
-    public function updateTopic(Request $request, $id)
+    public function updateTopic(Request $request, $course_id, $id)
     {
         $topic = Topic::findOrFail($id);
         $request->validate([
@@ -477,7 +478,7 @@ class AdminController extends Controller
         return back()->with('success', 'Topic updated successfully.');
     }
 
-    public function destroyTopic(Request $request, $id)
+    public function destroyTopic(Request $request, $course_id, $id)
     {
         $topic = Topic::findOrFail($id);
         $title = $topic->title;
@@ -495,7 +496,7 @@ class AdminController extends Controller
 
 
     // ─── SUBTOPIC CRUD ───────────────────────────────────────────
-    public function storeSubtopic(Request $request)
+    public function storeSubtopic(Request $request, $course_id)
     {
         $request->validate([
             'topic_id'    => 'required|exists:topics,id',
@@ -535,7 +536,7 @@ class AdminController extends Controller
         return back()->with('success', 'Subtopic created successfully.');
     }
 
-    public function updateSubtopic(Request $request, $id)
+    public function updateSubtopic(Request $request, $course_id, $id)
     {
         $sub = Subtopic::findOrFail($id);
         $request->validate([
@@ -573,7 +574,7 @@ class AdminController extends Controller
         return back()->with('success', 'Subtopic updated successfully.');
     }
 
-    public function destroySubtopic(Request $request, $id)
+    public function destroySubtopic(Request $request, $course_id, $id)
     {
         $sub   = Subtopic::findOrFail($id);
         $title = $sub->title;
@@ -589,7 +590,7 @@ class AdminController extends Controller
         return back()->with('success', 'Subtopic deleted successfully.');
     }
 
-    public function approveSubtopic(Request $request, $id)
+    public function approveSubtopic(Request $request, $course_id, $id)
     {
         if (!Auth::user()->is_admin && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized action.');
@@ -601,7 +602,7 @@ class AdminController extends Controller
 
 
     // ─── QUIZ CRUD ───────────────────────────────────────────────
-    public function storeQuiz(Request $request)
+    public function storeQuiz(Request $request, $course_id)
     {
         $request->validate([
             'topic_id' => 'nullable|exists:topics,id',
@@ -614,11 +615,12 @@ class AdminController extends Controller
         $status = (Auth::user()->is_admin || Auth::user()->role === 'admin') ? 'approved' : 'pending';
 
         $quiz = QuizQuestion::create([
-            'topic_id' => $request->input('topic_id'),
-            'question' => $request->input('question'),
-            'options' => $request->input('options'),
-            'answer' => $request->input('answer'),
-            'status' => $status
+            'topic_id'  => $request->input('topic_id') ?: null,
+            'course_id' => $course_id,
+            'question'  => $request->input('question'),
+            'options'   => $request->input('options'),
+            'answer'    => $request->input('answer'),
+            'status'    => $status,
         ]);
 
         AuditLog::create([
@@ -631,7 +633,7 @@ class AdminController extends Controller
         return back()->with('success', 'Question created successfully.');
     }
 
-    public function updateQuiz(Request $request, $id)
+    public function updateQuiz(Request $request, $course_id, $id)
     {
         $quiz = QuizQuestion::findOrFail($id);
         $request->validate([
@@ -643,10 +645,11 @@ class AdminController extends Controller
         ]);
 
         $quiz->update([
-            'topic_id' => $request->input('topic_id'),
-            'question' => $request->input('question'),
-            'options' => $request->input('options'),
-            'answer' => $request->input('answer'),
+            'topic_id'  => $request->input('topic_id') ?: null,
+            'course_id' => $course_id,
+            'question'  => $request->input('question'),
+            'options'   => $request->input('options'),
+            'answer'    => $request->input('answer'),
         ]);
 
         AuditLog::create([
@@ -659,7 +662,7 @@ class AdminController extends Controller
         return back()->with('success', 'Question updated successfully.');
     }
 
-    public function destroyQuiz(Request $request, $id)
+    public function destroyQuiz(Request $request, $course_id, $id)
     {
         $quiz = QuizQuestion::findOrFail($id);
         $desc = substr($quiz->question, 0, 50);
@@ -676,7 +679,7 @@ class AdminController extends Controller
     }
 
     // ─── APPROVAL METHODS ────────────────────────────────────────
-    public function approveTopic($id)
+    public function approveTopic($course_id, $id)
     {
         if (!Auth::user()->is_admin && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized action.');
@@ -688,7 +691,7 @@ class AdminController extends Controller
 
 
 
-    public function approveQuiz($id)
+    public function approveQuiz($course_id, $id)
     {
         if (!Auth::user()->is_admin && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized action.');

@@ -137,10 +137,14 @@
     .subtopic-actions { display: flex; gap: 0.35rem; }
 </style>
 
+<div style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem;">
+    <a href="{{ route('admin.content.index') }}" class="btn-ghost" style="padding: 0.5rem; color: var(--text-muted); text-decoration: none;"><i data-lucide="arrow-left" style="width:16px;height:16px;"></i> Back to Courses</a>
+    <h2 style="margin:0; font-family: 'Outfit', sans-serif;">{{ $course->title }}</h2>
+</div>
+
 <div class="tabs">
-    <a class="tab" href="{{ route('admin.content.index') }}">Overview</a>
-    <a class="tab active" href="{{ route('admin.content.topics') }}">Topics and subtopics</a>
-    <a class="tab" href="{{ route('admin.content.quizzes') }}">Quizzes and final exam</a>
+    <a class="tab active" href="{{ route('admin.content.topics', $course->id) }}">Topics and subtopics</a>
+    <a class="tab" href="{{ route('admin.content.quizzes', $course->id) }}">Quizzes and final exam</a>
 </div>
 
 <div class="split-grid">
@@ -301,7 +305,7 @@
 
 <!-- ADD TOPIC MODAL -->
 <div id="addTopicModal" class="admin-modal">
-    <form action="{{ route('admin.content.topics.store') }}" method="POST" enctype="multipart/form-data" class="admin-modal-content">
+    <form action="{{ route('admin.content.topics.store', $course->id) }}" method="POST" enctype="multipart/form-data" class="admin-modal-content">
         @csrf
         <div class="admin-modal-header">
             <h3 class="admin-modal-title">Add New Topic</h3>
@@ -309,14 +313,6 @@
         </div>
         <div class="admin-modal-body">
             <div class="form-grid" style="grid-template-columns: 1fr;">
-                <div class="field">
-                    <label for="add_course_id">Course</label>
-                    <select id="add_course_id" name="course_id" required style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1.5px solid var(--border); background: rgba(255,255,255,0.02); color: var(--text);">
-                        @foreach($courses as $course)
-                            <option value="{{ $course->id }}" style="color: black;">{{ $course->title }}</option>
-                        @endforeach
-                    </select>
-                </div>
                 <div class="field">
                     <label for="add_title">Topic Title</label>
                     <input type="text" id="add_title" name="title" required placeholder="e.g. CSS Box Model">
@@ -363,7 +359,7 @@
 
 <!-- ADD SUBTOPIC MODAL -->
 <div id="addSubtopicModal" class="admin-modal">
-    <form id="addSubtopicForm" action="{{ route('admin.content.subtopics.store') }}" method="POST" enctype="multipart/form-data" class="admin-modal-content">
+    <form id="addSubtopicForm" action="{{ route('admin.content.subtopics.store', $course->id) }}" method="POST" enctype="multipart/form-data" class="admin-modal-content">
         @csrf
         <input type="hidden" id="add_sub_topic_id" name="topic_id">
         <div class="admin-modal-header">
@@ -472,7 +468,7 @@
 
             document.getElementById('edit_title').value       = title;
             document.getElementById('edit_description').value = description || '';
-            document.getElementById('editTopicForm').action   = `/admin/content/topics/${id}`;
+            document.getElementById('editTopicForm').action   = `/admin/content/courses/{{ $course->id }}/topics/${id}`;
             openModal('editTopicModal');
         });
     });
@@ -499,7 +495,7 @@
             document.getElementById('edit_sub_title').value  = title;
             document.getElementById('edit_sub_video').value  = video || '';
             document.getElementById('edit_sub_sort').value   = sort || '';
-            document.getElementById('editSubtopicForm').action = `/admin/content/subtopics/${id}`;
+            document.getElementById('editSubtopicForm').action = `/admin/content/courses/{{ $course->id }}/subtopics/${id}`;
 
             const docInfo = document.getElementById('current_sub_doc_info');
             if (doc) {
@@ -535,7 +531,7 @@
                         const orderCell = card.querySelector('.sort-order-cell');
                         if (orderCell) orderCell.textContent = index + 1;
                     });
-                    fetch('{{ route("admin.content.topics.reorder") }}', {
+                    fetch('{{ route("admin.content.topics.reorder", $course->id) }}', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
                         body: JSON.stringify({ ordered_ids: orderedIds })

@@ -18,6 +18,7 @@ class Topic extends Model
         'videos',
         'documentation_path',
         'documentation_filename',
+        'course_id',
     ];
 
     protected $casts = [
@@ -37,5 +38,10 @@ class Topic extends Model
     public function quizQuestions()
     {
         return $this->hasMany(QuizQuestion::class);
+    }
+
+    public function course()
+    {
+        return $this->belongsTo(Course::class);
     }
 }

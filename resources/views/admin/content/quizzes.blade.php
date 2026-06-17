@@ -12,10 +12,14 @@
     $isAdmin = Auth::user()->is_admin || trim(strtolower(Auth::user()->role)) === 'admin';
     $isInstructor = trim(strtolower(Auth::user()->role)) === 'instructor' && !Auth::user()->is_admin;
 @endphp
+<div style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem;">
+    <a href="{{ route('admin.content.index') }}" class="btn-ghost" style="padding: 0.5rem; color: var(--text-muted); text-decoration: none;"><i data-lucide="arrow-left" style="width:16px;height:16px;"></i> Back to Courses</a>
+    <h2 style="margin:0; font-family: 'Outfit', sans-serif;">{{ $course->title }}</h2>
+</div>
+
 <div class="tabs">
-    <a class="tab" href="{{ route('admin.content.index') }}">Overview</a>
-    <a class="tab" href="{{ route('admin.content.topics') }}">Topics and lessons</a>
-    <a class="tab active" href="{{ route('admin.content.quizzes') }}">Quizzes and final exam</a>
+    <a class="tab" href="{{ route('admin.content.topics', $course->id) }}">Topics and subtopics</a>
+    <a class="tab active" href="{{ route('admin.content.quizzes', $course->id) }}">Quizzes and final exam</a>
 </div>
 
 <div class="split-grid">
@@ -47,7 +51,7 @@
             <p class="panel-label">Question bank</p>
             <h2 class="panel-title" style="margin-bottom: 0;">Active Database Questions</h2>
         </div>
-        <form action="{{ route('admin.content.quizzes') }}" method="GET" style="display: flex; gap: 0.5rem; margin: 0;">
+        <form action="{{ route('admin.content.quizzes', $course->id) }}" method="GET" style="display: flex; gap: 0.5rem; margin: 0;">
             <input type="text" name="search" value="{{ request('search') }}" placeholder="Search questions..." style="padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); min-width: 250px;">
             <button type="submit" class="btn-primary" style="padding: 0.5rem 1rem;">Search</button>
         </form>
@@ -215,7 +219,7 @@
         document.getElementById('q_opt3').value = '';
         document.getElementById('q_answer').value = '0';
         
-        document.getElementById('questionForm').action = "{{ route('admin.content.quizzes.store') }}";
+        document.getElementById('questionForm').action = "{{ route('admin.content.quizzes.store', $course->id) }}";
         document.getElementById('question_method').value = 'POST';
         document.getElementById('saveQuestionBtn').textContent = 'Create Question';
     }
@@ -253,7 +257,7 @@
             
             document.getElementById('q_answer').value = answer;
             
-            document.getElementById('questionForm').action = `/admin/content/quizzes/${id}`;
+            document.getElementById('questionForm').action = `/admin/content/courses/{{ $course->id }}/quizzes/${id}`;
             document.getElementById('question_method').value = 'POST'; // POST method with Route override
             document.getElementById('saveQuestionBtn').textContent = 'Save Question Changes';
             

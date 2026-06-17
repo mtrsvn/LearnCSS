@@ -9,7 +9,7 @@ class QuizQuestion extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['topic_id', 'question', 'options', 'answer', 'status'];
+    protected $fillable = ['topic_id', 'question', 'options', 'answer', 'status', 'course_id'];
 
     protected function casts(): array
     {
@@ -21,5 +21,10 @@ class QuizQuestion extends Model
     public function topic()
     {
         return $this->belongsTo(Topic::class);
+    }
+
+    public function course()
+    {
+        return $this->belongsTo(Course::class);
     }
 }

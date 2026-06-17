@@ -121,35 +121,37 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/users/{user}/role', [AdminController::class, 'updateUserRole'])->name('users.role');
 
         // Content
-        Route::get('/content', [AdminController::class, 'content'])->name('content.index');
-        Route::get('/content/courses', [AdminController::class, 'contentCourses'])->name('content.courses');
-        Route::get('/content/topics', [AdminController::class, 'contentTopics'])->name('content.topics');
-        Route::get('/content/quizzes', [AdminController::class, 'contentQuizzes'])->name('content.quizzes');
+        Route::get('/content', [AdminController::class, 'contentCourses'])->name('content.index');
         
+        // Course specific content
+        Route::prefix('/content/courses/{course}')->group(function () {
+            Route::get('/topics', [AdminController::class, 'contentTopics'])->name('content.topics');
+            Route::get('/quizzes', [AdminController::class, 'contentQuizzes'])->name('content.quizzes');
+
+            // Topics CRUD
+            Route::post('/topics/reorder', [AdminController::class, 'reorderTopics'])->name('content.topics.reorder');
+            Route::post('/topics/{topic}/approve', [AdminController::class, 'approveTopic'])->name('content.topics.approve');
+            Route::post('/topics', [AdminController::class, 'storeTopic'])->name('content.topics.store');
+            Route::post('/topics/{topic}', [AdminController::class, 'updateTopic'])->name('content.topics.update');
+            Route::delete('/topics/{topic}', [AdminController::class, 'destroyTopic'])->name('content.topics.destroy');
+
+            // Subtopics CRUD
+            Route::post('/subtopics', [AdminController::class, 'storeSubtopic'])->name('content.subtopics.store');
+            Route::post('/subtopics/{subtopic}/approve', [AdminController::class, 'approveSubtopic'])->name('content.subtopics.approve');
+            Route::post('/subtopics/{subtopic}', [AdminController::class, 'updateSubtopic'])->name('content.subtopics.update');
+            Route::delete('/subtopics/{subtopic}', [AdminController::class, 'destroySubtopic'])->name('content.subtopics.destroy');
+
+            // Quizzes CRUD
+            Route::post('/quizzes/{quiz}/approve', [AdminController::class, 'approveQuiz'])->name('content.quizzes.approve');
+            Route::post('/quizzes', [AdminController::class, 'storeQuiz'])->name('content.quizzes.store');
+            Route::post('/quizzes/{quiz}', [AdminController::class, 'updateQuiz'])->name('content.quizzes.update');
+            Route::delete('/quizzes/{quiz}', [AdminController::class, 'destroyQuiz'])->name('content.quizzes.destroy');
+        });
+
         // Courses CRUD
         Route::post('/content/courses', [AdminController::class, 'storeCourse'])->name('content.courses.store');
         Route::post('/content/courses/{course}', [AdminController::class, 'updateCourse'])->name('content.courses.update');
         Route::delete('/content/courses/{course}', [AdminController::class, 'destroyCourse'])->name('content.courses.destroy');
-        
-        // Topics CRUD
-        Route::post('/content/topics/reorder', [AdminController::class, 'reorderTopics'])->name('content.topics.reorder');
-        Route::post('/content/topics/{topic}/approve', [AdminController::class, 'approveTopic'])->name('content.topics.approve');
-        Route::post('/content/topics', [AdminController::class, 'storeTopic'])->name('content.topics.store');
-        Route::post('/content/topics/{topic}', [AdminController::class, 'updateTopic'])->name('content.topics.update');
-        Route::delete('/content/topics/{topic}', [AdminController::class, 'destroyTopic'])->name('content.topics.destroy');
-
-        // Subtopics CRUD
-        Route::post('/content/subtopics', [AdminController::class, 'storeSubtopic'])->name('content.subtopics.store');
-        Route::post('/content/subtopics/{subtopic}/approve', [AdminController::class, 'approveSubtopic'])->name('content.subtopics.approve');
-        Route::post('/content/subtopics/{subtopic}', [AdminController::class, 'updateSubtopic'])->name('content.subtopics.update');
-        Route::delete('/content/subtopics/{subtopic}', [AdminController::class, 'destroySubtopic'])->name('content.subtopics.destroy');
-
-
-        // Quizzes CRUD
-        Route::post('/content/quizzes/{quiz}/approve', [AdminController::class, 'approveQuiz'])->name('content.quizzes.approve');
-        Route::post('/content/quizzes', [AdminController::class, 'storeQuiz'])->name('content.quizzes.store');
-        Route::post('/content/quizzes/{quiz}', [AdminController::class, 'updateQuiz'])->name('content.quizzes.update');
-        Route::delete('/content/quizzes/{quiz}', [AdminController::class, 'destroyQuiz'])->name('content.quizzes.destroy');
 
         // Activity Logs
         Route::get('/progress', [AdminController::class, 'progress'])->name('progress.index');
