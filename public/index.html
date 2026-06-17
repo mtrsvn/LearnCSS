@@ -570,11 +570,17 @@
                                 <span id="dashboard-hero-name">User</span>.
                             </h1>
                             <p class="dashboard-hero-text">
-                                Track your progress through the CSS
-                                certification path, complete each topic, and
-                                unlock the final exam when you’re ready.
+                                Choose from our library of courses. Track your
+                                progress, master each topic, and earn your
+                                verified certification when you're ready.
                             </p>
                             <div class="dashboard-hero-actions">
+                                <button
+                                    id="explore-courses-btn"
+                                    class="btn-primary"
+                                >
+                                    Continue Learning
+                                </button>
                                 <button
                                     id="resume-module-btn"
                                     class="btn-primary hidden"
@@ -629,13 +635,13 @@
                             </div>
                             <div class="dashboard-metrics">
                                 <div class="hero-metric">
-                                    <span class="metric-label">Progress</span>
+                                    <span class="metric-label" id="metric-1-label">Progress</span>
                                     <strong id="dashboard-progress-summary"
                                         >0%</strong
                                     >
                                 </div>
                                 <div class="hero-metric">
-                                    <span class="metric-label"
+                                    <span class="metric-label" id="metric-2-label"
                                         >Modules Completed</span
                                     >
                                     <strong id="dashboard-modules-completed"
@@ -651,10 +657,15 @@
                         id="dashboard-courses-head"
                     >
                         <p class="section-label">Your Courses</p>
-                        <p class="section-subtitle">
-                            Select a course to view topics and continue
-                            learning.
-                        </p>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <p class="section-subtitle" style="margin: 0;">
+                                Select a course to view topics and continue learning.
+                            </p>
+                            <div class="layout-toggle" style="display:flex; gap:0.25rem; background: rgba(0,0,0,0.05); padding: 4px; border-radius: 8px;">
+                                <button class="btn-icon-round view-grid-btn" title="Tiles View"><i data-lucide="layout-grid"></i></button>
+                                <button class="btn-icon-round view-list-btn active-layout" title="Column View" style="color: var(--accent);"><i data-lucide="list"></i></button>
+                            </div>
+                        </div>
                     </div>
                     <div class="topics-grid" id="courses-container"></div>
 
@@ -669,14 +680,20 @@
                         <div class="dashboard-section-head">
                             <h2
                                 id="course-details-title"
-                                style="margin-bottom: 0.5rem"
+                                style="margin-bottom: 0"
                             >
                                 Course Title
                             </h2>
-                            <p class="section-label">Course Topics</p>
-                            <p class="section-subtitle">
-                                Select a topic card to continue the lesson flow.
-                            </p>
+                            <p class="section-label" style="display: none;">Course Topics</p>
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <p class="section-subtitle" style="margin: 0;">
+                                    Select a topic card to continue the lesson flow.
+                                </p>
+                                <div class="layout-toggle" style="display:flex; gap:0.25rem; background: rgba(0,0,0,0.05); padding: 4px; border-radius: 8px;">
+                                    <button class="btn-icon-round view-grid-btn" title="Tiles View"><i data-lucide="layout-grid"></i></button>
+                                    <button class="btn-icon-round view-list-btn active-layout" title="Column View" style="color: var(--accent);"><i data-lucide="list"></i></button>
+                                </div>
+                            </div>
                         </div>
                         <div class="topics-grid" id="topics-container"></div>
                         <div

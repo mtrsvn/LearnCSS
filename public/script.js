@@ -500,8 +500,48 @@ if (redeemBtn) {
     });
 }
 
+function fadeTransition(elementsToHide, elementsToShow, showDisplays) {
+    const allHiding = elementsToHide.filter(e => e && e.style.display !== 'none');
+    allHiding.forEach(el => {
+        el.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(10px)';
+    });
+    setTimeout(() => {
+        allHiding.forEach(el => el.style.display = 'none');
+        elementsToShow.forEach((el, idx) => {
+            if (!el) return;
+            el.style.transition = 'none';
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(10px)';
+            el.style.display = showDisplays[idx] || '';
+        });
+        void document.body.offsetHeight; // force reflow
+        elementsToShow.forEach(el => {
+            if (!el) return;
+            el.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+        });
+    }, allHiding.length ? 200 : 0);
+}
+
 // ─── Dashboard ───────────────────────────────────────────
 function renderDashboard() {
+    const resumeBtn = $('resume-module-btn');
+    if (resumeBtn) resumeBtn.classList.add('hidden');
+    const exploreBtn = $('explore-courses-btn');
+    if (exploreBtn) exploreBtn.classList.remove('hidden');
+
+    const m1Label = $('metric-1-label');
+    const m1Val = $('dashboard-progress-summary');
+    const m2Label = $('metric-2-label');
+    const m2Val = $('dashboard-modules-completed');
+    if (m1Label) m1Label.textContent = 'Certificates';
+    if (m1Val) m1Val.textContent = state.certificates ? String(state.certificates.length) : '0';
+    if (m2Label) m2Label.textContent = 'Courses Available';
+    if (m2Val) m2Val.textContent = String(courses.length);
+
     const cContainer = $('courses-container');
     if (cContainer) {
         cContainer.innerHTML = '';
@@ -516,11 +556,14 @@ function renderDashboard() {
             `;
             card.addEventListener('click', async () => {
                 currentCourseId = course.id;
+                localStorage.setItem('last_course_id', course.id);
                 const titleEl = $('course-details-title');
                 if (titleEl) titleEl.textContent = course.title;
-                $('dashboard-courses-head').style.display = 'none';
-                cContainer.style.display = 'none';
-                $('course-details-area').style.display = 'block';
+                fadeTransition(
+                    [$('dashboard-courses-head'), cContainer],
+                    [$('course-details-area')],
+                    ['block']
+                );
                 
                 await loadTopicsIfNeeded(course.id);
                 // Also fetch progress for this specific course
@@ -538,9 +581,24 @@ function renderDashboard() {
         const backBtn = $('back-to-courses-btn');
         if (backBtn) {
             backBtn.onclick = () => {
-                $('course-details-area').style.display = 'none';
-                $('dashboard-courses-head').style.display = 'block';
-                cContainer.style.display = 'grid';
+                fadeTransition(
+                    [$('course-details-area')],
+                    [$('dashboard-courses-head'), cContainer],
+                    ['', '']
+                );
+                const resumeBtn = $('resume-module-btn');
+                if (resumeBtn) resumeBtn.classList.add('hidden');
+                const exploreBtn = $('explore-courses-btn');
+                if (exploreBtn) exploreBtn.classList.remove('hidden');
+
+                const m1Label = $('metric-1-label');
+                const m1Val = $('dashboard-progress-summary');
+                const m2Label = $('metric-2-label');
+                const m2Val = $('dashboard-modules-completed');
+                if (m1Label) m1Label.textContent = 'Certificates';
+                if (m1Val) m1Val.textContent = state.certificates ? String(state.certificates.length) : '0';
+                if (m2Label) m2Label.textContent = 'Courses Available';
+                if (m2Val) m2Val.textContent = String(courses.length);
             };
         }
     }
@@ -615,8 +673,16 @@ function renderTopics() {
 
     const pct = topics.length > 0 ? Math.round((state.completedTopics.length / topics.length) * 100) : 0;
 
+    const exploreBtn = $('explore-courses-btn');
+    if (exploreBtn) exploreBtn.classList.add('hidden');
+
+    const m1Label = $('metric-1-label');
+    if (m1Label) m1Label.textContent = 'Progress';
     const summaryEl = $('dashboard-progress-summary');
     if (summaryEl) summaryEl.textContent = `${pct}%`;
+
+    const m2Label = $('metric-2-label');
+    if (m2Label) m2Label.textContent = 'Modules Completed';
     const completedEl = $('dashboard-modules-completed');
     if (completedEl) completedEl.textContent = `${state.completedTopics.length} / ${topics.length}`;
 
@@ -1633,6 +1699,58 @@ document.addEventListener('keydown', (e) => {
             docOverlay.classList.add('hidden');
         }
     }
+});
+
+const ecBtn = $('explore-courses-btn');
+if (ecBtn) {
+    ecBtn.addEventListener('click', () => {
+        const lastCourseId = localStorage.getItem('last_course_id');
+        const cContainer = $('courses-container');
+        if (cContainer && cContainer.children.length > 0) {
+            let targetCard = null;
+            if (lastCourseId) {
+                const idx = courses.findIndex(c => c.id == lastCourseId);
+                if (idx !== -1 && cContainer.children[idx]) {
+                    targetCard = cContainer.children[idx];
+                }
+            }
+            if (!targetCard) {
+                targetCard = cContainer.children[0];
+            }
+            targetCard.click();
+        }
+    });
+}
+
+// Layout Toggles
+document.querySelectorAll('.view-grid-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.topics-grid').forEach(grid => {
+            grid.style.transition = 'opacity 0.15s ease';
+            grid.style.opacity = '0';
+            setTimeout(() => {
+                grid.classList.add('grid-view');
+                grid.style.opacity = '1';
+            }, 150);
+        });
+        document.querySelectorAll('.view-grid-btn').forEach(b => { b.classList.add('active-layout'); b.style.color = 'var(--accent)'; });
+        document.querySelectorAll('.view-list-btn').forEach(b => { b.classList.remove('active-layout'); b.style.color = ''; });
+    });
+});
+
+document.querySelectorAll('.view-list-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.topics-grid').forEach(grid => {
+            grid.style.transition = 'opacity 0.15s ease';
+            grid.style.opacity = '0';
+            setTimeout(() => {
+                grid.classList.remove('grid-view');
+                grid.style.opacity = '1';
+            }, 150);
+        });
+        document.querySelectorAll('.view-list-btn').forEach(b => { b.classList.add('active-layout'); b.style.color = 'var(--accent)'; });
+        document.querySelectorAll('.view-grid-btn').forEach(b => { b.classList.remove('active-layout'); b.style.color = ''; });
+    });
 });
 
 // "No CSS" gimmick link
