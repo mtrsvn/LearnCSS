@@ -81,9 +81,9 @@
 </head>
 <body>
     <div class="container">
-        <div class="logo">LearnCSS</div>
+        <div class="logo">StudySync</div>
         <h2>Payment Successful!</h2>
-        <p>Thank you for investing in your future with the LearnCSS Certification. Your payment has been confirmed.</p>
+        <p>Thank you for investing in your future with the StudySync Certification. Your payment has been confirmed.</p>
         
         <div class="success-box">
             <p class="success-text">Here is your voucher code:</p>
@@ -92,7 +92,7 @@
         </div>
 
         <div class="footer">
-            © {{ date('Y') }} LearnCSS. All rights reserved.
+            © {{ date('Y') }} StudySync. All rights reserved.
         </div>
     </div>
 </body>

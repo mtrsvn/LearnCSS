@@ -32,7 +32,7 @@ class VoucherPurchased extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Your LearnCSS Certification Voucher',
+            subject: 'Your StudySync Certification Voucher',
         );
     }
 

@@ -15,7 +15,8 @@ Route::get('/', function () {
 
 // ─── PUBLIC API ROUTES ─────────────────────────────────────────
 Route::prefix('api')->group(function () {
-    Route::get('/public/topics', [CourseController::class, 'getPublicTopics']);
+    Route::get('/public/courses', [CourseController::class, 'getPublicCourses']);
+    Route::get('/public/courses/{course}/topics', [CourseController::class, 'getPublicTopics']);
 });
 
 // ─── CUSTOMER BACKEND API ROUTES ─────────────────────────────
@@ -30,7 +31,8 @@ Route::prefix('api')->group(function () {
     // Authenticated API endpoints
     Route::middleware('auth')->group(function () {
         // Course & Progress
-        Route::get('/topics', [CourseController::class, 'getTopics']);
+        Route::get('/courses', [CourseController::class, 'getCourses']);
+        Route::get('/courses/{course}/topics', [CourseController::class, 'getTopics']);
         Route::get('/progress', [CourseController::class, 'getProgress']);
         Route::post('/progress/start', [CourseController::class, 'startTopic']);
         Route::post('/progress/unlock', [CourseController::class, 'unlockProgress']);
@@ -42,9 +44,9 @@ Route::prefix('api')->group(function () {
         Route::post('/voucher/redeem', [VoucherController::class, 'redeem']);
 
         // Exam & Certificate
-        Route::get('/exam/questions', [ExamController::class, 'getQuestions']);
-        Route::post('/exam/submit', [ExamController::class, 'submit']);
-        Route::get('/certificate', [ExamController::class, 'getCertificate']);
+        Route::get('/courses/{course}/exam/questions', [ExamController::class, 'getQuestions']);
+        Route::post('/courses/{course}/exam/submit', [ExamController::class, 'submit']);
+        Route::get('/courses/{course}/certificate', [ExamController::class, 'getCertificate']);
 
         // Notifications / Announcements API
         Route::get('/notifications', function () {
@@ -120,8 +122,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Content
         Route::get('/content', [AdminController::class, 'content'])->name('content.index');
+        Route::get('/content/courses', [AdminController::class, 'contentCourses'])->name('content.courses');
         Route::get('/content/topics', [AdminController::class, 'contentTopics'])->name('content.topics');
         Route::get('/content/quizzes', [AdminController::class, 'contentQuizzes'])->name('content.quizzes');
+        
+        // Courses CRUD
+        Route::post('/content/courses', [AdminController::class, 'storeCourse'])->name('content.courses.store');
+        Route::post('/content/courses/{course}', [AdminController::class, 'updateCourse'])->name('content.courses.update');
+        Route::delete('/content/courses/{course}', [AdminController::class, 'destroyCourse'])->name('content.courses.destroy');
         
         // Topics CRUD
         Route::post('/content/topics/reorder', [AdminController::class, 'reorderTopics'])->name('content.topics.reorder');

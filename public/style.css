@@ -136,7 +136,7 @@ body { background:var(--bg); color:var(--text); font-family:'Plus Jakarta Sans',
 
 .hero { flex:1; display:flex; flex-direction:row; justify-content:space-between; align-items:center; text-align:left; padding:6rem 4rem 4rem; position:relative; max-width: 1300px; margin: 0 auto; gap: 8rem; width: 100%; }
 .hero-content { flex: 1; max-width: 600px; }
-.hero h1 { font-family:'Outfit',sans-serif; font-size:clamp(2.5rem,5vw,4.5rem); font-weight:800; line-height:1.08; letter-spacing:-.03em; margin-bottom:1.25rem; position:relative; }
+.hero h1 { font-family:'Outfit',sans-serif; font-size:clamp(2rem,4vw,3.5rem); font-weight:800; line-height:1.08; letter-spacing:-.03em; margin-bottom:1.25rem; position:relative; }
 .hero h1 .gradient-text { background:var(--gradient); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
 .hero-desc { font-size:1.05rem; color:var(--text-muted); line-height:1.65; margin-bottom:2.5rem; max-width:100%; text-align:left; }
 .hero-cta { display:flex; gap:1rem; justify-content:flex-start; flex-wrap:wrap; }
@@ -742,7 +742,7 @@ body.light-mode .dashboard-hero-copy::before { background:radial-gradient(circle
     #docs-iframe-wrap iframe { min-height: 400px; }
     .dashboard-body { padding:1.5rem; }
     .hero { flex-direction: column; padding: 4rem 2rem; text-align: center; gap: 3rem; }
-    .hero h1 { font-size:2.4rem; text-align: center; }
+    .hero h1 { font-size:1.8rem; text-align: center; }
     .hero-desc { text-align: center; }
     .hero-cta { justify-content: center; }
     .hero-certificate { transform: none; }

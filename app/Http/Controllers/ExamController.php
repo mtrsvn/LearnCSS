@@ -9,11 +9,12 @@ use App\Models\QuizAttempt;
 use App\Models\Voucher;
 use App\Models\Certificate;
 use App\Models\AuditLog;
+use App\Models\Course;
 use Carbon\Carbon;
 
 class ExamController extends Controller
 {
-    public function getQuestions(Request $request)
+    public function getQuestions(Request $request, $courseId)
     {
         $type = $request->query('type', 'final');
         $user = Auth::user();
@@ -23,20 +24,23 @@ class ExamController extends Controller
         }
 
         if ($type === 'mid') {
-            $totalTopics = \App\Models\Topic::where('status', 'approved')->count();
+            $totalTopics = \App\Models\Topic::where('course_id', $courseId)->where('status', 'approved')->count();
             $midpoint = floor($totalTopics / 2);
-            $topics = \App\Models\Topic::where('status', 'approved')->orderBy('sort_order')->take($midpoint)->pluck('id');
+            $topics = \App\Models\Topic::where('course_id', $courseId)->where('status', 'approved')->orderBy('sort_order')->take($midpoint)->pluck('id');
             $questions = QuizQuestion::whereIn('topic_id', $topics)->where('status', 'approved')->get();
         } else {
-            $questions = QuizQuestion::where('status', 'approved')->get();
+            $topics = \App\Models\Topic::where('course_id', $courseId)->where('status', 'approved')->pluck('id');
+            // assuming final exam questions are linked to topic_id=null or scattered. In original, topic_id=null meant final exam. But now topic_id=null means it's global? Let's fix that. If topic_id is null, how do we know which course? Wait. QuizQuestion has topic_id. So we just select all questions for topics in this course.
+            // Let's get 1 question from each topic for final exam.
+            $questions = QuizQuestion::whereIn('topic_id', $topics)->where('status', 'approved')->get();
         }
 
         $count = floor($questions->count() * 0.8);
         if ($count == 0) $count = $questions->count();
         $questions = $questions->random($count)->shuffle();
 
-        session()->put('exam_questions_' . $user->id, $questions->pluck('id')->toArray());
-        session()->put('exam_type_' . $user->id, $type);
+        session()->put('exam_questions_' . $user->id . '_' . $courseId, $questions->pluck('id')->toArray());
+        session()->put('exam_type_' . $user->id . '_' . $courseId, $type);
 
         $formatted = $questions->map(function ($q) {
             return [
@@ -52,7 +56,7 @@ class ExamController extends Controller
         ]);
     }
 
-    public function submit(Request $request)
+    public function submit(Request $request, $courseId)
     {
         $user = Auth::user();
         if (!$user) {
@@ -66,7 +70,8 @@ class ExamController extends Controller
             'answers' => 'required|array'
         ]);
 
-        $type = session()->get('exam_type_' . $user->id, 'final');
+        $type = session()->get('exam_type_' . $user->id . '_' . $courseId, 'final');
+        $course = Course::findOrFail($courseId);
         
         if ($type === 'final') {
             $request->validate(['voucher_code' => 'required|string']);
@@ -81,7 +86,7 @@ class ExamController extends Controller
         }
 
         $userAnswers = $request->input('answers');
-        $questionIds = session()->get('exam_questions_' . $user->id, []);
+        $questionIds = session()->get('exam_questions_' . $user->id . '_' . $courseId, []);
         
         if (empty($questionIds)) {
              return response()->json(['success' => false, 'message' => 'No active exam session found.'], 400);
@@ -105,6 +110,7 @@ class ExamController extends Controller
 
         QuizAttempt::create([
             'user_id' => $user->id,
+            'course_id' => $courseId,
             'topic_id' => null, 
             'score' => $score,
             'total' => $total,
@@ -116,7 +122,7 @@ class ExamController extends Controller
         AuditLog::create([
             'user_id' => $user->id,
             'action' => "$examName Completed",
-            'description' => "Completed the CSS Certification $examName. Scored: $score/$total. Passed: " . ($passed ? 'Yes' : 'No'),
+            'description' => "Completed the {$course->title} $examName. Scored: $score/$total. Passed: " . ($passed ? 'Yes' : 'No'),
             'ip_address' => $request->ip()
         ]);
 
@@ -124,10 +130,11 @@ class ExamController extends Controller
         if ($type === 'final' && $passed) {
             $year = date('Y');
             $serial = str_pad(Certificate::count() + 1, 4, '0', STR_PAD_LEFT);
-            $certCode = 'LC-CERT-' . $year . '-' . $serial;
+            $certCode = 'SYNC-CERT-' . $year . '-' . $serial;
 
             $certificate = Certificate::firstOrCreate([
-                'user_id' => $user->id
+                'user_id' => $user->id,
+                'course_id' => $courseId
             ], [
                 'code' => $certCode,
                 'issued_at' => Carbon::now()
@@ -137,7 +144,7 @@ class ExamController extends Controller
                 AuditLog::create([
                     'user_id' => $user->id,
                     'action' => 'Certificate Issued',
-                    'description' => 'Issued certificate ' . $certCode . ' for completing the CSS Certification Program.',
+                    'description' => 'Issued certificate ' . $certCode . ' for completing the ' . $course->title . ' Program.',
                     'ip_address' => $request->ip()
                 ]);
             }
@@ -151,12 +158,13 @@ class ExamController extends Controller
             'certificate' => $certificate ? [
                 'code' => $certificate->code,
                 'issuedAt' => Carbon::parse($certificate->issued_at)->format('F d, Y'),
-                'userName' => $user->name
+                'userName' => $user->name,
+                'courseName' => $course->title
             ] : null
         ]);
     }
 
-    public function getCertificate()
+    public function getCertificate($courseId)
     {
         $user = Auth::user();
         if (!$user) {
@@ -166,9 +174,10 @@ class ExamController extends Controller
             ], 401);
         }
 
-        $certificate = Certificate::where('user_id', $user->id)->first();
+        $certificate = Certificate::where('user_id', $user->id)->where('course_id', $courseId)->first();
+        $course = Course::find($courseId);
 
-        if (!$certificate) {
+        if (!$certificate || !$course) {
             return response()->json([
                 'success' => false,
                 'message' => 'Certificate not found.'
@@ -180,7 +189,8 @@ class ExamController extends Controller
             'certificate' => [
                 'code' => $certificate->code,
                 'issuedAt' => Carbon::parse($certificate->issued_at)->format('F d, Y'),
-                'userName' => $user->name
+                'userName' => $user->name,
+                'courseName' => $course->title
             ]
         ]);
     }

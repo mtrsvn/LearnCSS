@@ -15,7 +15,7 @@
             <div class="form-grid">
                 <div class="field full">
                     <label>Announcement Title</label>
-                    <input type="text" name="title" placeholder="e.g. LearnCSS Certification System Maintenance" required>
+                    <input type="text" name="title" placeholder="e.g. StudySync Certification System Maintenance" required>
                 </div>
                 <div class="field full">
                     <label>Broadcast Message Body</label>

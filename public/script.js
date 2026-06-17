@@ -10,8 +10,10 @@ let state = {
     hasBoughtVoucher: false
 };
 
+let courses = [];
 let topics = [];
 let finalExam = [];
+let currentCourseId = null;
 
 // ─── CSRF & API Helpers ───────────────────────────────────
 function getCsrfToken() {
@@ -299,11 +301,19 @@ if (logoutBtn) {
 }
 
 // ─── Dynamic Boot initialization ──────────────────────────
-async function loadTopicsIfNeeded() {
-    if (topics.length > 0) return;
-
+async function loadCoursesIfNeeded() {
+    if (courses.length > 0) return;
     try {
-        const topicData = await apiRequest('/api/topics');
+        const data = await apiRequest('/api/courses');
+        if (data && data.success) {
+            courses = data.courses;
+        }
+    } catch (e) { console.error(e); }
+}
+
+async function loadTopicsIfNeeded(courseId) {
+    try {
+        const topicData = await apiRequest(`/api/courses/${courseId}/topics`);
         if (topicData && topicData.success) {
             topics = topicData.topics;
         }
@@ -320,7 +330,7 @@ async function boot() {
     try {
         const sessionData = await apiRequest('/api/auth/session');
         if (sessionData && sessionData.success && sessionData.user) {
-            await loadTopicsIfNeeded();
+            await loadCoursesIfNeeded();
             await loginUser(sessionData.user);
         } else {
             showScreen('landing-screen');
@@ -340,25 +350,25 @@ async function loadPublicCurriculum() {
     if (!container) return;
 
     try {
-        const response = await fetch('/api/public/topics');
+        const response = await fetch('/api/public/courses');
         const data = await response.json();
 
         if (data && data.success) {
             container.innerHTML = '';
-            if (data.topics.length === 0) {
+            if (data.courses.length === 0) {
                 container.innerHTML = '<p style="text-align:center; padding: 2rem; color: var(--text-muted);">Curriculum coming soon.</p>';
                 return;
             }
 
-            data.topics.forEach((topic, index) => {
-                const numStr = (topic.sort_order).toString().padStart(2, '0');
+            data.courses.forEach((course, index) => {
+                const numStr = (index + 1).toString().padStart(2, '0');
                 const item = document.createElement('div');
                 item.className = 'roadmap-item';
                 item.innerHTML = `
                     <div class="roadmap-number">${numStr}</div>
                     <div class="roadmap-content">
-                        <h3>${topic.title}</h3>
-                        <p>${topic.description || 'No description available yet.'}</p>
+                        <h3>${course.title}</h3>
+                        <p>${course.description || 'No description available yet.'}</p>
                     </div>
                 `;
                 container.appendChild(item);
@@ -379,13 +389,13 @@ async function loginUser(user) {
     state.courseUnlocked = user.isCourseUnlocked || false;
     state.hasCertificate = user.hasCertificate || false;
 
-    await loadTopicsIfNeeded();
+    await loadCoursesIfNeeded();
     
-    // Fetch live progress
+    // Fetch live progress (defaults to all progress)
     try {
         const pData = await apiRequest('/api/progress');
         if (pData && pData.success) {
-            state.completedTopics = pData.completedTopics;
+            state.completedTopics = pData.completedTopics || [];
             state.topicProgressMap = pData.topicProgressMap || {};
             state.hasCertificate = pData.hasCertificate || state.hasCertificate;
             state.hasPassedMidExam = pData.hasPassedMidExam || false;
@@ -492,6 +502,51 @@ if (redeemBtn) {
 
 // ─── Dashboard ───────────────────────────────────────────
 function renderDashboard() {
+    const cContainer = $('courses-container');
+    if (cContainer) {
+        cContainer.innerHTML = '';
+        courses.forEach(course => {
+            const card = document.createElement('div');
+            card.className = 'topic-card';
+            card.style.cursor = 'pointer';
+            card.innerHTML = `
+                <p class="topic-num">Course</p>
+                <h3>${course.title}</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">${course.description || ''}</p>
+            `;
+            card.addEventListener('click', async () => {
+                currentCourseId = course.id;
+                const titleEl = $('course-details-title');
+                if (titleEl) titleEl.textContent = course.title;
+                $('dashboard-courses-head').style.display = 'none';
+                cContainer.style.display = 'none';
+                $('course-details-area').style.display = 'block';
+                
+                await loadTopicsIfNeeded(course.id);
+                // Also fetch progress for this specific course
+                const pData = await apiRequest('/api/progress?course_id=' + course.id);
+                if (pData && pData.success) {
+                    state.completedTopics = pData.completedTopics || [];
+                    state.topicProgressMap = pData.topicProgressMap || {};
+                }
+                
+                renderTopics();
+            });
+            cContainer.appendChild(card);
+        });
+        
+        const backBtn = $('back-to-courses-btn');
+        if (backBtn) {
+            backBtn.onclick = () => {
+                $('course-details-area').style.display = 'none';
+                $('dashboard-courses-head').style.display = 'block';
+                cContainer.style.display = 'grid';
+            };
+        }
+    }
+}
+
+function renderTopics() {
     const container = $('topics-container');
     if (!container) return;
     container.innerHTML = '';
@@ -536,7 +591,7 @@ function renderDashboard() {
                 midCard.addEventListener('click', async () => {
                     state.examType = 'mid';
                     try {
-                        const exam = await apiRequest('/api/exam/questions?type=mid');
+                        const exam = await apiRequest('/api/courses/' + currentCourseId + '/exam/questions?type=mid');
                         if (exam && exam.success) {
                             startQuiz(exam.questions);
                         }
@@ -642,7 +697,7 @@ function updateFinalCard() {
         $('view-cert-btn').onclick = async (e) => {
             e.stopPropagation();
             try {
-                const res = await apiRequest('/api/certificate');
+                const res = await apiRequest('/api/courses/' + currentCourseId + '/certificate');
                 if (res && res.success && res.certificate) {
                     showCertificate(res.certificate);
                 }
@@ -653,7 +708,7 @@ function updateFinalCard() {
             e.stopPropagation();
             state.examType = 'final';
             try {
-                const exam = await apiRequest('/api/exam/questions?type=final');
+                const exam = await apiRequest('/api/courses/' + currentCourseId + '/exam/questions?type=final');
                 if (exam && exam.success) {
                     finalExam = exam.questions;
                     startQuiz(finalExam);
@@ -692,7 +747,7 @@ function updateFinalCard() {
             if (state.courseUnlocked) {
                 state.examType = 'final';
                 try {
-                    const exam = await apiRequest('/api/exam/questions?type=final');
+                    const exam = await apiRequest('/api/courses/' + currentCourseId + '/exam/questions?type=final');
                     if (exam && exam.success) {
                         finalExam = exam.questions;
                         startQuiz(finalExam);
@@ -1531,7 +1586,7 @@ function downloadCertificate() {
             certNode.style.height = '';
             
             const userName = (state.user && state.user.name) ? state.user.name.replace(/[^a-zA-Z0-9]/g, '_') : 'Learner';
-            const fileName = `LearnCSS_Certificate_${userName}.png`;
+            const fileName = `StudySync_Certificate_${userName}.png`;
             
             const link = document.createElement('a');
             link.download = fileName;
@@ -1554,7 +1609,7 @@ function downloadCertificate() {
 }
 
 function shareOnLinkedIn() {
-    const text = encodeURIComponent("I just successfully completed all courses and passed the final exam in the CSS Tutorial at LearnCSS! Check out my new certification. #CSS #WebDevelopment #LearnCSS");
+    const text = encodeURIComponent("I just successfully completed all courses and passed the final exam in the CSS Tutorial at StudySync! Check out my new certification. #CSS #WebDevelopment #StudySync");
     const linkedInUrl = `https://www.linkedin.com/feed/?shareActive=true&text=${text}`;
     
     window.open(linkedInUrl, '_blank', 'noopener,noreferrer');

@@ -310,6 +310,14 @@
         <div class="admin-modal-body">
             <div class="form-grid" style="grid-template-columns: 1fr;">
                 <div class="field">
+                    <label for="add_course_id">Course</label>
+                    <select id="add_course_id" name="course_id" required style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1.5px solid var(--border); background: rgba(255,255,255,0.02); color: var(--text);">
+                        @foreach($courses as $course)
+                            <option value="{{ $course->id }}" style="color: black;">{{ $course->title }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="field">
                     <label for="add_title">Topic Title</label>
                     <input type="text" id="add_title" name="title" required placeholder="e.g. CSS Box Model">
                 </div>

@@ -29,12 +29,12 @@ class DatabaseSeeder extends Seeder
             'name' => 'Admin User',
             'first_name' => 'Admin',
             'last_name' => 'User',
-            'email' => 'admin@learncss.com',
+            'email' => 'admin@StudySync.com',
             'password' => Hash::make('admin123'),
             'phone' => '+63 912 345 6789',
             'birthdate' => '01/01/1990',
             'affiliation_type' => 'company',
-            'affiliation_name' => 'LearnCSS Team',
+            'affiliation_name' => 'StudySync Team',
             'is_admin' => true,
             'is_active' => true,
         ]);
@@ -550,8 +550,8 @@ class DatabaseSeeder extends Seeder
 
         // ─── 7. SEED ANNOUNCEMENTS ──────────────────────────────────
         Announcement::create([
-            'title' => 'LearnCSS Certification v1.0 Launch!',
-            'content' => 'Welcome to the official launch of the LearnCSS Certification platform. Learners can now access 10 full CSS chapters and claim their credentials.',
+            'title' => 'StudySync Certification v1.0 Launch!',
+            'content' => 'Welcome to the official launch of the StudySync Certification platform. Learners can now access 10 full CSS chapters and claim their credentials.',
             'created_by' => $admin->id
         ]);
     }

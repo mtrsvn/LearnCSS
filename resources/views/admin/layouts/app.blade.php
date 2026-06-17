@@ -33,7 +33,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $pageTitle }} | LearnCSS Admin</title>
+    <title>{{ $pageTitle }} | StudySync Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -147,7 +147,7 @@
     </script>
         <nav class="landing-nav" style="padding: 1rem 2.5rem; z-index: 100;">
         <div class="nav-logo" style="display: flex; align-items: center; gap: 0.5rem;">
-            LearnCSS Admin
+            StudySync Admin
         </div>
         <div class="nav-actions">
             @yield('header_actions')

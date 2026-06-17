@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\Topic;
 use App\Models\Subtopic;
+use App\Models\Course;
 
 use App\Models\QuizQuestion;
 use App\Models\UserProgress;
@@ -304,14 +305,92 @@ class AdminController extends Controller
     // ─── CONTENT MANAGEMENT ──────────────────────────────────────
     public function content()
     {
-        $topics = Topic::with(['quizQuestions'])->orderBy('sort_order')->get();
-        return view('admin.content.index', compact('topics'));
+        $courses = Course::with(['topics'])->orderBy('created_at', 'desc')->get();
+        return view('admin.content.index', compact('courses'));
     }
 
-    public function contentTopics()
+    public function contentCourses()
     {
-        $topics = Topic::with(['subtopics'])->orderBy('sort_order')->get();
-        return view('admin.content.topics', compact('topics'));
+        $courses = Course::orderBy('created_at', 'desc')->get();
+        return view('admin.content.courses', compact('courses'));
+    }
+
+    // ─── COURSE CRUD ──────────────────────────────────────────────
+    public function storeCourse(Request $request)
+    {
+        $request->validate([
+            'title'       => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'thumbnail_url' => 'nullable|string'
+        ]);
+
+        $course = Course::create([
+            'title'       => $request->input('title'),
+            'description' => $request->input('description'),
+            'thumbnail_url' => $request->input('thumbnail_url'),
+            'is_published' => true
+        ]);
+
+        AuditLog::create([
+            'user_id'     => Auth::id(),
+            'action'      => 'Create Course',
+            'description' => 'Created course: ' . $course->title,
+            'ip_address'  => $request->ip()
+        ]);
+
+        return back()->with('success', 'Course created successfully.');
+    }
+
+    public function updateCourse(Request $request, $id)
+    {
+        $course = Course::findOrFail($id);
+        $request->validate([
+            'title'       => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'thumbnail_url' => 'nullable|string'
+        ]);
+
+        $course->update([
+            'title'       => $request->input('title'),
+            'description' => $request->input('description'),
+            'thumbnail_url' => $request->input('thumbnail_url')
+        ]);
+
+        AuditLog::create([
+            'user_id'     => Auth::id(),
+            'action'      => 'Update Course',
+            'description' => 'Updated course: ' . $course->title,
+            'ip_address'  => $request->ip()
+        ]);
+
+        return back()->with('success', 'Course updated successfully.');
+    }
+
+    public function destroyCourse(Request $request, $id)
+    {
+        $course = Course::findOrFail($id);
+        $title = $course->title;
+        $course->delete();
+
+        AuditLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'Delete Course',
+            'description' => 'Deleted course: ' . $title,
+            'ip_address' => $request->ip()
+        ]);
+
+        return back()->with('success', 'Course deleted successfully.');
+    }
+
+    public function contentTopics(Request $request)
+    {
+        $courses = Course::orderBy('created_at', 'desc')->get();
+        $query = Topic::with(['subtopics', 'course'])->orderBy('sort_order');
+        if ($request->filled('course_id')) {
+            $query->where('course_id', $request->input('course_id'));
+        }
+        $topics = $query->get();
+        return view('admin.content.topics', compact('topics', 'courses'));
     }
 
     public function contentQuizzes(Request $request)
@@ -350,14 +429,16 @@ class AdminController extends Controller
         $request->validate([
             'title'       => 'required|string|max:255',
             'description' => 'nullable|string',
+            'course_id'   => 'required|exists:courses,id'
         ]);
 
         $status       = (Auth::user()->is_admin || Auth::user()->role === 'admin') ? 'approved' : 'pending';
-        $maxSortOrder = Topic::max('sort_order') ?? 0;
+        $maxSortOrder = Topic::where('course_id', $request->input('course_id'))->max('sort_order') ?? 0;
 
         $topic = Topic::create([
             'title'       => $request->input('title'),
             'description' => $request->input('description'),
+            'course_id'   => $request->input('course_id'),
             'sort_order'  => $maxSortOrder + 1,
             'status'      => $status,
         ]);

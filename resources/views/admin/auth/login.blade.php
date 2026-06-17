@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login | LearnCSS</title>
+    <title>Admin Login | StudySync</title>
     <style>
         * {
             box-sizing: border-box;
@@ -147,7 +147,7 @@
 
             <div class="field">
                 <label for="email">Email address</label>
-                <input id="email" name="email" type="email" placeholder="admin@learncss.com" autocomplete="email" required value="{{ old('email') }}">
+                <input id="email" name="email" type="email" placeholder="admin@StudySync.com" autocomplete="email" required value="{{ old('email') }}">
             </div>
             <div class="field">
                 <label for="password">Password</label>
@@ -157,10 +157,10 @@
         </form>
 
         <div class="note">
-            Use <strong>admin@learncss.com</strong> / <strong>admin123</strong> to log in. This session will write activity logs to the database in real-time.
+            Use <strong>admin@StudySync.com</strong> / <strong>admin123</strong> to log in. This session will write activity logs to the database in real-time.
         </div>
 
-        <a class="back-link" href="/">← Back to LearnCSS App</a>
+        <a class="back-link" href="/">← Back to StudySync App</a>
     </main>
 </body>
 </html>

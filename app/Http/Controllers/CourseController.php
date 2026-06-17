@@ -5,20 +5,38 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Topic;
+use App\Models\Course;
 use App\Models\UserProgress;
 use App\Models\QuizAttempt;
 use App\Models\AuditLog;
 use App\Models\User;
+use App\Models\Certificate;
 
 class CourseController extends Controller
 {
-    public function getTopics()
+    public function getCourses()
     {
-        $topics = Topic::where('status', 'approved')->orderBy('sort_order')->get();
+        $courses = Course::where('is_published', true)->get();
+        return response()->json([
+            'success' => true,
+            'courses' => $courses
+        ]);
+    }
 
-        // Map database format to matches what frontend expects:
+    public function getPublicCourses()
+    {
+        $courses = Course::where('is_published', true)->get(['id', 'title', 'description', 'thumbnail_url']);
+        return response()->json([
+            'success' => true,
+            'courses' => $courses
+        ]);
+    }
+
+    public function getTopics($courseId)
+    {
+        $topics = Topic::where('course_id', $courseId)->where('status', 'approved')->orderBy('sort_order')->get();
+
         $formattedTopics = $topics->map(function ($topic) {
-            // Build subtopics list (Coursera-style: each subtopic has its own video + doc)
             $subtopics = $topic->subtopics()->where('status', 'approved')->get()->map(function ($sub) {
                 return [
                     'id'                    => $sub->id,
@@ -35,12 +53,10 @@ class CourseController extends Controller
                 'title'      => $topic->title,
                 'sort_order' => $topic->sort_order,
                 'subtopics'  => $subtopics,
-                // Legacy fields kept for backward compatibility
                 'videoUrl'              => $topic->video_url,
                 'videos'                => $topic->videos,
                 'documentationPath'     => $topic->documentation_path,
                 'documentationFilename' => $topic->documentation_filename,
-                // Quiz questions embedded
                 'quiz' => $topic->quizQuestions()->where('status', 'approved')->get()->map(function ($q) {
                     return [
                         'question' => $q->question,
@@ -57,9 +73,9 @@ class CourseController extends Controller
         ]);
     }
 
-    public function getPublicTopics()
+    public function getPublicTopics($courseId)
     {
-        $topics = Topic::where('status', 'approved')->orderBy('sort_order')->get(['id', 'title', 'description', 'sort_order']);
+        $topics = Topic::where('course_id', $courseId)->where('status', 'approved')->orderBy('sort_order')->get(['id', 'title', 'description', 'sort_order']);
         
         return response()->json([
             'success' => true,
@@ -67,37 +83,47 @@ class CourseController extends Controller
         ]);
     }
 
-    public function getProgress()
+    public function getProgress(Request $request)
     {
         $user = Auth::user();
         if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized'
-            ], 401);
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
         }
 
-        $progressData = UserProgress::where('user_id', $user->id)
-            ->get(['topic_id', 'max_unlocked_index']);
+        $courseId = $request->query('course_id');
+
+        $query = UserProgress::where('user_id', $user->id);
+        if ($courseId) {
+            $query->where('course_id', $courseId);
+        }
+        $progressData = $query->get(['topic_id', 'course_id', 'max_unlocked_index']);
 
         $completedTopics = $progressData->pluck('topic_id')->toArray();
         $topicProgressMap = $progressData->pluck('max_unlocked_index', 'topic_id')->toArray();
 
-        $snapshot = $this->updateUserProgressSnapshot($user->id, count($completedTopics));
+        $totalTopics = Topic::where('status', 'approved')->count();
+        if ($courseId) {
+            $totalTopics = Topic::where('course_id', $courseId)->where('status', 'approved')->count();
+        }
+
+        $completedCount = count($completedTopics);
+        $progressPercentage = $totalTopics > 0 ? (int) round(($completedCount / $totalTopics) * 100) : 0;
+
+        $certExists = false;
+        if ($courseId) {
+            $certExists = Certificate::where('user_id', $user->id)->where('course_id', $courseId)->exists();
+        } else {
+            $certExists = Certificate::where('user_id', $user->id)->exists();
+        }
 
         return response()->json([
             'success' => true,
             'completedTopics' => $completedTopics,
             'topicProgressMap' => $topicProgressMap,
-            'progressPercentage' => $snapshot['progressPercentage'],
-            'modulesCompletedCount' => $snapshot['modulesCompletedCount'],
-            'examStatus' => $snapshot['examStatus'],
+            'progressPercentage' => $progressPercentage,
+            'modulesCompletedCount' => $completedCount,
             'lastTopicStarted' => $user->last_topic_id,
-            'hasCertificate' => \App\Models\Certificate::where('user_id', $user->id)->exists(),
-            'hasPassedMidExam' => \App\Models\AuditLog::where('user_id', $user->id)
-                                    ->where('action', 'Mid Exam Completed')
-                                    ->where('description', 'LIKE', '%Passed: Yes%')
-                                    ->exists(),
+            'hasCertificate' => $certExists,
         ]);
     }
 
@@ -113,7 +139,6 @@ class CourseController extends Controller
         ]);
 
         $topicId = $request->input('topic_id');
-
         $user->last_topic_id = $topicId;
         $user->save();
 
@@ -136,11 +161,13 @@ class CourseController extends Controller
             'max_unlocked_index' => 'required|integer|min:0',
         ]);
 
+        $topic = Topic::findOrFail($request->topic_id);
+
         $progress = UserProgress::firstOrCreate(
-            ['user_id' => $user->id, 'topic_id' => $request->topic_id]
+            ['user_id' => $user->id, 'topic_id' => $request->topic_id],
+            ['course_id' => $topic->course_id]
         );
 
-        // Only update if the new index is higher
         if ($request->max_unlocked_index > $progress->max_unlocked_index) {
             $progress->max_unlocked_index = $request->max_unlocked_index;
             $progress->save();
@@ -156,10 +183,7 @@ class CourseController extends Controller
     {
         $user = Auth::user();
         if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized'
-            ], 401);
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
         }
 
         $request->validate([
@@ -173,69 +197,42 @@ class CourseController extends Controller
         $score = $request->input('score');
         $total = $request->input('total');
         $passed = $request->input('passed');
+        $topic = Topic::findOrFail($topicId);
 
-        // Log the quiz attempt
         QuizAttempt::create([
             'user_id' => $user->id,
+            'course_id' => $topic->course_id,
             'topic_id' => $topicId,
             'score' => $score,
             'total' => $total,
             'passed' => $passed
         ]);
 
-        $topic = Topic::find($topicId);
-
         AuditLog::create([
             'user_id' => $user->id,
             'action' => 'Topic Quiz Completed',
-            'description' => 'Scored ' . $score . '/' . $total . ' in ' . ($topic ? $topic->title : 'Topic ' . $topicId) . ' quiz. Status: ' . ($passed ? 'Passed' : 'Failed'),
+            'description' => 'Scored ' . $score . '/' . $total . ' in ' . $topic->title . ' quiz. Status: ' . ($passed ? 'Passed' : 'Failed'),
             'ip_address' => $request->ip()
         ]);
 
-        // If passed, mark topic as completed in progress!
         if ($passed) {
             UserProgress::firstOrCreate([
                 'user_id' => $user->id,
                 'topic_id' => $topicId
-            ]);
+            ], ['course_id' => $topic->course_id]);
         }
 
-        // Get updated progress
-        $progress = UserProgress::where('user_id', $user->id)
-            ->pluck('topic_id')
-            ->toArray();
-
-        $snapshot = $this->updateUserProgressSnapshot($user->id, count($progress));
+        $progress = UserProgress::where('user_id', $user->id)->where('course_id', $topic->course_id)->pluck('topic_id')->toArray();
+        $totalTopics = Topic::where('course_id', $topic->course_id)->where('status', 'approved')->count();
+        $completedCount = count($progress);
 
         return response()->json([
             'success' => true,
             'message' => $passed ? 'Topic completed!' : 'Quiz completed.',
             'completedTopics' => $progress,
-            'progressPercentage' => $snapshot['progressPercentage'],
-            'modulesCompletedCount' => $snapshot['modulesCompletedCount'],
-            'examStatus' => $snapshot['examStatus'],
-            'hasCertificate' => \App\Models\Certificate::where('user_id', $user->id)->exists(),
-        ]);
-    }
-
-    private function updateUserProgressSnapshot(int $userId, int $completedCount): array
-    {
-        $totalTopics = Topic::where('status', 'approved')->count();
-        $progressPercentage = $totalTopics > 0
-            ? (int) round(($completedCount / $totalTopics) * 100)
-            : 0;
-        $examStatus = $completedCount >= $totalTopics && $totalTopics > 0 ? 'eligible' : 'locked';
-
-        User::where('id', $userId)->update([
-            'modules_completed_count' => $completedCount,
-            'progress_percentage' => $progressPercentage,
-            'exam_status' => $examStatus,
-        ]);
-
-        return [
+            'progressPercentage' => $totalTopics > 0 ? (int) round(($completedCount / $totalTopics) * 100) : 0,
             'modulesCompletedCount' => $completedCount,
-            'progressPercentage' => $progressPercentage,
-            'examStatus' => $examStatus,
-        ];
+            'hasCertificate' => Certificate::where('user_id', $user->id)->where('course_id', $topic->course_id)->exists(),
+        ]);
     }
 }
