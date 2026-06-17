@@ -306,7 +306,8 @@ class AdminController extends Controller
     public function content()
     {
         $courses = Course::with(['topics'])->orderBy('created_at', 'desc')->get();
-        return view('admin.content.index', compact('courses'));
+        $topics = \App\Models\Topic::all();
+        return view('admin.content.index', compact('courses', 'topics'));
     }
 
     public function contentCourses()

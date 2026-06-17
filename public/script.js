@@ -192,7 +192,7 @@ function updateVoucherButtons() {
     const buyBtn = $('buy-voucher-hero-btn');
     const redeemBtn = $('redeem-voucher-hero-btn');
     
-    if (state.courseUnlocked) {
+    if (state.isSubscribed) {
         if (buyBtn) buyBtn.classList.add('hidden');
         if (redeemBtn) redeemBtn.classList.add('hidden');
     } else {
@@ -387,6 +387,8 @@ async function loginUser(user) {
 
     state.user = user;
     state.courseUnlocked = user.isCourseUnlocked || false;
+    state.isSubscribed = user.isSubscribed || false;
+    state.subscriptionExpiresAt = user.subscriptionExpiresAt || null;
     state.hasCertificate = user.hasCertificate || false;
 
     await loadCoursesIfNeeded();
@@ -475,25 +477,12 @@ if (redeemBtn) {
                     state.voucherCode = code;
                     localStorage.setItem('cssm_voucher', code);
                     
-                    if (!state.courseUnlocked) {
-                        state.courseUnlocked = true;
-                        updateVoucherButtons();
-                        renderDashboard();
-                        showToast('Voucher accepted! You can now access the courses.', 'success');
-                    } else {
-                        const allDone = topics.length > 0 && state.completedTopics.length === topics.length;
-                        if (!allDone || !state.hasPassedMidExam) {
-                            showToast('The Final Exam can only be taken after completing all topics and the Mid Certification Exam.', 'error');
-                        } else {
-                            state.examType = 'final';
-                            const exam = await apiRequest('/api/exam/questions?type=final');
-                            if (exam && exam.success) {
-                                finalExam = exam.questions;
-                                startQuiz(finalExam);
-                                showToast('Voucher accepted! Starting exam...', 'success');
-                            }
-                        }
-                    }
+                    state.isSubscribed = true;
+                    state.subscriptionExpiresAt = redeem.subscriptionExpiresAt;
+                    updateVoucherButtons();
+                    renderDashboard();
+                    
+                    showToast(redeem.message || 'Subscription accepted! You can now access all courses.', 'success');
                 }
             }
         } catch (e) {}
@@ -626,45 +615,8 @@ function renderTopics() {
         let unlocked = index === 0 || (prevTopicId && state.completedTopics.includes(prevTopicId));
         let lockMsg = '';
         
-        const midIndex = Math.floor(topics.length / 2);
-        
-        if (index >= midIndex && !state.hasPassedMidExam && !done) {
-            if (index === midIndex && prevTopicId && state.completedTopics.includes(prevTopicId)) {
-                unlocked = false;
-                lockMsg = '<span class="topic-lock"><i data-lucide="lock"></i>Complete Mid Exam to unlock</span>';
-            } else {
-                unlocked = false;
-                lockMsg = '<span class="topic-lock"><i data-lucide="lock"></i>Complete the previous topic to unlock</span>';
-            }
-        } else {
-            lockMsg = unlocked ? '' : '<span class="topic-lock"><i data-lucide="lock"></i>Complete the previous topic to unlock</span>';
-        }
-
-        if (index === midIndex && midIndex > 0) {
-            const midDone = state.hasPassedMidExam;
-            const midUnlocked = index === 0 || (prevTopicId && state.completedTopics.includes(prevTopicId));
-            const midLockMsg = midUnlocked ? '' : '<span class="topic-lock"><i data-lucide="lock"></i>Complete previous topics to unlock Mid Exam</span>';
-            
-            const midCard = document.createElement('div');
-            midCard.className = `topic-card ${midDone ? 'completed' : ''} ${midUnlocked ? '' : 'locked'}`.trim();
-            midCard.innerHTML = `
-                <p class="topic-num" style="color: ${midDone ? 'var(--correct)' : 'var(--accent)'}; font-weight: bold;">Mid Exam</p>
-                <h3>Mid Certification Exam${midDone ? '<span class="topic-done-badge"><i data-lucide="check"></i></span>' : ''}</h3>
-                <span style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.9rem;">${midDone ? 'You have passed the Mid Certification Exam.' : 'Test your knowledge on the first half!'}</span>
-                ${midLockMsg}
-            `;
-            if (midUnlocked) {
-                midCard.addEventListener('click', async () => {
-                    state.examType = 'mid';
-                    try {
-                        const exam = await apiRequest('/api/courses/' + currentCourseId + '/exam/questions?type=mid');
-                        if (exam && exam.success) {
-                            startQuiz(exam.questions);
-                        }
-                    } catch(e) {}
-                });
-            }
-            container.appendChild(midCard);
+        if (index > 0 && !unlocked && !done) {
+            lockMsg = '<span class="topic-lock"><i data-lucide="lock"></i>Complete the previous topic to unlock</span>';
         }
 
         const card = document.createElement('div');
@@ -734,14 +686,9 @@ if (resumeCourseBtn) {
                 return index === 0 || (prevTopicId && state.completedTopics.includes(prevTopicId));
             });
         }
-        if (nextIndex >= 0) {
-            const midIndex = Math.floor(topics.length / 2);
-            if (nextIndex >= midIndex && !state.hasPassedMidExam) {
-                showToast('Please complete the Mid Exam first before continuing to the next topic.', 'warning');
-            } else {
+            if (nextIndex >= 0) {
                 openTopic(nextIndex);
             }
-        }
     });
 }
 
@@ -791,7 +738,8 @@ function updateFinalCard() {
         };
         
         btn.onclick = null;
-    } else if (!allDone || !state.hasPassedMidExam) {
+        btn.onclick = null;
+    } else if (!allDone) {
         btn.className = 'topic-card locked final-exam-card';
         btn.style.borderColor = 'var(--border)';
         btn.style.boxShadow = 'none';
@@ -799,7 +747,7 @@ function updateFinalCard() {
             <p class="topic-num" style="color: var(--text-muted); font-weight: bold;">Final Exam</p>
             <h3 style="color: var(--text-muted);">Final Certification Exam</h3>
             <span style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.9rem;">Comprehensive test covering all topics!</span>
-            <span class="topic-lock"><i data-lucide="lock"></i>Complete all topics and Mid Exam to unlock</span>
+            <span class="topic-lock"><i data-lucide="lock"></i>Complete all topics to unlock</span>
         `;
         btn.onclick = null;
     } else {
@@ -818,7 +766,7 @@ function updateFinalCard() {
             </button>
         `;
         btn.onclick = async () => {
-            if (state.courseUnlocked) {
+            if (state.isSubscribed) {
                 state.examType = 'final';
                 try {
                     const exam = await apiRequest('/api/courses/' + currentCourseId + '/exam/questions?type=final');
@@ -1382,14 +1330,29 @@ function showCertificate(certInfo) {
     }
     const credEl = $('cert-credential-id');
     const liCredEl = $('li-cred-id-modal');
-    if (credEl) {
-        credEl.textContent = certInfo.code;
-    }
-    if (liCredEl) {
-        liCredEl.textContent = certInfo.code;
-    }
+    const liCredTopEl = $('li-cert-cred-id');
+    
+    if (credEl) credEl.textContent = certInfo.code;
+    if (liCredEl) liCredEl.textContent = certInfo.code;
+    if (liCredTopEl) liCredTopEl.textContent = certInfo.code;
+    
     const userCertName = $('cert-user-name');
     if (userCertName) userCertName.textContent = certInfo.userName;
+
+    const courseName = certInfo.courseName || 'Course';
+    
+    const courseNameLarge = $('cert-course-name-large');
+    const liCourseTop = $('li-cert-course-name-top');
+    const liModalCourse = $('li-modal-course-name');
+    const certText = $('cert-course-name-text');
+    const certBottom = $('cert-course-name-bottom');
+
+    if (courseNameLarge) courseNameLarge.textContent = courseName;
+    if (liCourseTop) liCourseTop.textContent = courseName;
+    if (liModalCourse) liModalCourse.textContent = courseName;
+    if (certText) certText.textContent = courseName;
+    if (certBottom) certBottom.textContent = courseName;
+
     showScreen('certificate-screen');
 }
 // ─── Scroll Reveal Animations ─────────────────────────────
@@ -1683,7 +1646,9 @@ function downloadCertificate() {
 }
 
 function shareOnLinkedIn() {
-    const text = encodeURIComponent("I just successfully completed all courses and passed the final exam in the CSS Tutorial at StudySync! Check out my new certification. #CSS #WebDevelopment #StudySync");
+    const courseNameEl = document.getElementById('li-cert-course-name-top');
+    const courseName = courseNameEl ? courseNameEl.textContent : 'a course';
+    const text = encodeURIComponent(`I just successfully completed ${courseName} and passed the final exam at StudySync! Check out my new certification. #StudySync #WebDevelopment`);
     const linkedInUrl = `https://www.linkedin.com/feed/?shareActive=true&text=${text}`;
     
     window.open(linkedInUrl, '_blank', 'noopener,noreferrer');

@@ -13,7 +13,7 @@
 <div class="page-grid two">
     <article class="panel">
         <p class="panel-label">Topics</p>
-        <h2 class="panel-title">{{ $topics->count() }} CSS Chapters</h2>
+        <h2 class="panel-title">{{ $topics->count() }} Topics</h2>
         <p class="panel-subtitle">Manage topic titles, sorting, active status, videos, and PDFs.</p>
         <a class="btn btn-primary" href="{{ route('admin.content.topics') }}">Manage topics</a>
     </article>
