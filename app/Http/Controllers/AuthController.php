@@ -68,6 +68,8 @@ class AuthController extends Controller
                 'examStatus' => $user->exam_status,
                 'isCourseUnlocked' => (bool) $user->is_course_unlocked,
                 'hasCertificate' => \App\Models\Certificate::where('user_id', $user->id)->exists(),
+                'isSubscribed' => $user->isSubscribed(),
+                'subscriptionExpiresAt' => $user->subscription_expires_at ? $user->subscription_expires_at->toIso8601String() : null,
             ]
         ]);
     }
@@ -121,6 +123,8 @@ class AuthController extends Controller
                     'examStatus' => $user->exam_status,
                     'isCourseUnlocked' => (bool) $user->is_course_unlocked,
                     'hasCertificate' => \App\Models\Certificate::where('user_id', $user->id)->exists(),
+                    'isSubscribed' => $user->isSubscribed(),
+                    'subscriptionExpiresAt' => $user->subscription_expires_at ? $user->subscription_expires_at->toIso8601String() : null,
                 ]
             ]);
         }
@@ -165,6 +169,8 @@ class AuthController extends Controller
                 'examStatus' => $user->exam_status,
                 'isCourseUnlocked' => (bool) $user->is_course_unlocked,
                 'hasCertificate' => \App\Models\Certificate::where('user_id', $user->id)->exists(),
+                'isSubscribed' => $user->isSubscribed(),
+                'subscriptionExpiresAt' => $user->subscription_expires_at ? $user->subscription_expires_at->toIso8601String() : null,
             ]
         ]);
     }
@@ -220,6 +226,8 @@ class AuthController extends Controller
                     'examStatus' => $user->exam_status,
                     'isCourseUnlocked' => (bool) $user->is_course_unlocked,
                     'hasCertificate' => \App\Models\Certificate::where('user_id', $user->id)->exists(),
+                    'isSubscribed' => $user->isSubscribed(),
+                    'subscriptionExpiresAt' => $user->subscription_expires_at ? $user->subscription_expires_at->toIso8601String() : null,
                 ]
             ]);
         }

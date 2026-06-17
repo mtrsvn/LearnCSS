@@ -34,6 +34,7 @@ class VoucherController extends Controller
         $voucher = Voucher::create([
             'code' => $code,
             'price' => 299.00,
+            'duration_days' => 30,
             'status' => 'pending_payment',
             'used' => false,
             'used_by' => $user->id,
@@ -48,7 +49,7 @@ class VoucherController extends Controller
                 'external_id' => $code,
                 'amount' => 299,
                 'payer_email' => $user->email,
-                'description' => 'CertApp CSS Certification Voucher',
+                'description' => 'StudySync Monthly Subscription (30 days access to all courses)',
                 'success_redirect_url' => url('/api/voucher/xendit/success?code=' . $code),
                 'failure_redirect_url' => url('/')
             ]);
@@ -88,10 +89,26 @@ class VoucherController extends Controller
             \Illuminate\Support\Facades\Log::info('Xendit Invoices:', $invoices);
             if (count($invoices) > 0 && in_array($invoices[0]['status'], ['PAID', 'SETTLED'])) {
                 $voucher->status = 'active';
+                $voucher->used = true;
+                $voucher->used_at = Carbon::now();
+                $voucher->redeemed_at = Carbon::now();
                 $voucher->save();
 
+                // Activate subscription for the user
                 $user = \App\Models\User::find($voucher->used_by);
                 if ($user) {
+                    $now = Carbon::now();
+                    $currentExpiry = $user->subscription_expires_at;
+                    
+                    // If they already have an active subscription, extend it
+                    if ($currentExpiry && Carbon::parse($currentExpiry)->isFuture()) {
+                        $user->subscription_expires_at = Carbon::parse($currentExpiry)->addDays($voucher->duration_days);
+                    } else {
+                        $user->subscription_expires_at = $now->addDays($voucher->duration_days);
+                    }
+                    $user->is_course_unlocked = true;
+                    $user->save();
+
                     \Illuminate\Support\Facades\Log::info('Sending email to: ' . $user->email);
                     try {
                         Mail::to($user->email)->send(new VoucherPurchased($voucher, $user));
@@ -105,8 +122,8 @@ class VoucherController extends Controller
 
                 AuditLog::create([
                     'user_id' => $voucher->used_by,
-                    'action' => 'Voucher Purchase',
-                    'description' => 'Purchased voucher code ' . $code . ' for ₱299 via Xendit.',
+                    'action' => 'Subscription Purchase',
+                    'description' => 'Purchased subscription code ' . $code . ' for ₱299 via Xendit (30 days access).',
                     'ip_address' => $request->ip()
                 ]);
 
@@ -133,20 +150,20 @@ class VoucherController extends Controller
         if (!$voucher) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid voucher code.'
+                'message' => 'Invalid subscription code.'
             ], 404);
         }
 
         if ($voucher->used) {
             return response()->json([
                 'success' => false,
-                'message' => 'This voucher has already been redeemed.'
+                'message' => 'This subscription code has already been redeemed.'
             ], 400);
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Voucher code is valid and ready to redeem.'
+            'message' => 'Subscription code is valid and ready to activate.'
         ]);
     }
 
@@ -170,14 +187,14 @@ class VoucherController extends Controller
         if (!$voucher) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid voucher code.'
+                'message' => 'Invalid subscription code.'
             ], 404);
         }
 
         if ($voucher->used) {
             return response()->json([
                 'success' => false,
-                'message' => 'This voucher has already been redeemed.'
+                'message' => 'This subscription code has already been redeemed.'
             ], 400);
         }
 
@@ -185,23 +202,35 @@ class VoucherController extends Controller
         $voucher->update([
             'used' => true,
             'used_by' => $user->id,
-            'used_at' => Carbon::now()
+            'used_at' => Carbon::now(),
+            'redeemed_at' => Carbon::now(),
         ]);
 
+        // Activate subscription
+        $now = Carbon::now();
+        $currentExpiry = $user->subscription_expires_at;
+        $durationDays = $voucher->duration_days ?: 30;
+        
+        if ($currentExpiry && Carbon::parse($currentExpiry)->isFuture()) {
+            $user->subscription_expires_at = Carbon::parse($currentExpiry)->addDays($durationDays);
+        } else {
+            $user->subscription_expires_at = $now->addDays($durationDays);
+        }
         $user->is_course_unlocked = true;
         $user->save();
 
         AuditLog::create([
             'user_id' => $user->id,
-            'action' => 'Voucher Redemption',
-            'description' => 'Redeemed voucher code ' . $code . ' to access the Final Certification Exam.',
+            'action' => 'Subscription Activated',
+            'description' => 'Redeemed subscription code ' . $code . ' for ' . $durationDays . ' days access to all courses.',
             'ip_address' => $request->ip()
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Voucher successfully redeemed! Starting final exam...',
-            'voucher' => $code
+            'message' => 'Subscription activated! You now have ' . $durationDays . ' days of full access to all courses.',
+            'subscriptionExpiresAt' => $user->subscription_expires_at->toIso8601String(),
+            'isSubscribed' => true,
         ]);
     }
 }

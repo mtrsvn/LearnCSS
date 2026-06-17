@@ -528,6 +528,14 @@ function fadeTransition(elementsToHide, elementsToShow, showDisplays) {
 
 // ─── Dashboard ───────────────────────────────────────────
 function renderDashboard() {
+    // Reset view to courses menu
+    const cdArea = $('course-details-area');
+    const dcHead = $('dashboard-courses-head');
+    const cCont = $('courses-container');
+    if (cdArea) { cdArea.style.display = 'none'; cdArea.style.opacity = '0'; }
+    if (dcHead) { dcHead.style.display = ''; dcHead.style.opacity = '1'; dcHead.style.transform = 'none'; }
+    if (cCont) { cCont.style.display = ''; cCont.style.opacity = '1'; cCont.style.transform = 'none'; }
+
     const resumeBtn = $('resume-module-btn');
     if (resumeBtn) resumeBtn.classList.add('hidden');
     const exploreBtn = $('explore-courses-btn');

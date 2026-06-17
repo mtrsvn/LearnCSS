@@ -74,13 +74,10 @@ class ExamController extends Controller
         $course = Course::findOrFail($courseId);
         
         if ($type === 'final') {
-            $request->validate(['voucher_code' => 'required|string']);
-            $voucherCode = strtoupper(trim($request->input('voucher_code')));
-            $voucher = Voucher::where('code', $voucherCode)->where('used_by', $user->id)->first();
-            if (!$voucher) {
+            if (!$user->isSubscribed()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Invalid exam entry. A verified voucher code is required to submit the final exam.'
+                    'message' => 'An active subscription is required to submit the final exam. Please subscribe first.'
                 ], 400);
             }
         }

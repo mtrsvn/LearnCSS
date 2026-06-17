@@ -33,6 +33,7 @@ class User extends Authenticatable
         'progress_percentage',
         'modules_completed_count',
         'exam_status',
+        'subscription_expires_at',
     ];
 
     /**
@@ -55,7 +56,13 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'subscription_expires_at' => 'datetime',
         ];
+    }
+
+    public function isSubscribed(): bool
+    {
+        return $this->subscription_expires_at && $this->subscription_expires_at->isFuture();
     }
 
     public function progress()
