@@ -23,6 +23,13 @@ class ExamController extends Controller
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
         }
 
+        if (!$user->isSubscribed()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An active subscription is required to access the exam.'
+            ], 403);
+        }
+
         if ($type === 'mid') {
             $totalTopics = \App\Models\Topic::where('course_id', $courseId)->where('status', 'approved')->count();
             $midpoint = floor($totalTopics / 2);
@@ -66,21 +73,19 @@ class ExamController extends Controller
             ], 401);
         }
 
+        if (!$user->isSubscribed()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An active subscription is required to submit the exam. Please subscribe first.'
+            ], 403);
+        }
+
         $request->validate([
             'answers' => 'required|array'
         ]);
 
         $type = session()->get('exam_type_' . $user->id . '_' . $courseId, 'final');
         $course = Course::findOrFail($courseId);
-        
-        if ($type === 'final') {
-            if (!$user->isSubscribed()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'An active subscription is required to submit the final exam. Please subscribe first.'
-                ], 400);
-            }
-        }
 
         $userAnswers = $request->input('answers');
         $questionIds = session()->get('exam_questions_' . $user->id . '_' . $courseId, []);

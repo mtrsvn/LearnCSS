@@ -89,26 +89,14 @@ class VoucherController extends Controller
             \Illuminate\Support\Facades\Log::info('Xendit Invoices:', $invoices);
             if (count($invoices) > 0 && in_array($invoices[0]['status'], ['PAID', 'SETTLED'])) {
                 $voucher->status = 'active';
-                $voucher->used = true;
-                $voucher->used_at = Carbon::now();
-                $voucher->redeemed_at = Carbon::now();
+                $voucher->used = false;
+                $voucher->used_at = null;
+                $voucher->redeemed_at = null;
                 $voucher->save();
 
-                // Activate subscription for the user
+                // Send email to the user with the voucher details, but do not activate subscription automatically
                 $user = \App\Models\User::find($voucher->used_by);
                 if ($user) {
-                    $now = Carbon::now();
-                    $currentExpiry = $user->subscription_expires_at;
-                    
-                    // If they already have an active subscription, extend it
-                    if ($currentExpiry && Carbon::parse($currentExpiry)->isFuture()) {
-                        $user->subscription_expires_at = Carbon::parse($currentExpiry)->addDays($voucher->duration_days);
-                    } else {
-                        $user->subscription_expires_at = $now->addDays($voucher->duration_days);
-                    }
-                    $user->is_course_unlocked = true;
-                    $user->save();
-
                     \Illuminate\Support\Facades\Log::info('Sending email to: ' . $user->email);
                     try {
                         Mail::to($user->email)->send(new VoucherPurchased($voucher, $user));

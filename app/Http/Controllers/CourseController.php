@@ -34,6 +34,14 @@ class CourseController extends Controller
 
     public function getTopics($courseId)
     {
+        $user = Auth::user();
+        if (!$user || !$user->isSubscribed()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Subscription required to access course content.'
+            ], 403);
+        }
+
         $topics = Topic::where('course_id', $courseId)->where('status', 'approved')->orderBy('sort_order')->get();
 
         $formattedTopics = $topics->map(function ($topic) {
@@ -134,6 +142,13 @@ class CourseController extends Controller
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
         }
 
+        if (!$user->isSubscribed()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Subscription required to access course content.'
+            ], 403);
+        }
+
         $request->validate([
             'topic_id' => 'required|integer|exists:topics,id',
         ]);
@@ -154,6 +169,13 @@ class CourseController extends Controller
         $user = Auth::user();
         if (!$user) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        if (!$user->isSubscribed()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Subscription required to access course content.'
+            ], 403);
         }
 
         $request->validate([
@@ -184,6 +206,13 @@ class CourseController extends Controller
         $user = Auth::user();
         if (!$user) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        if (!$user->isSubscribed()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Subscription required to access course content.'
+            ], 403);
         }
 
         $request->validate([

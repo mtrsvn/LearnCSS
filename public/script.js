@@ -544,14 +544,27 @@ function renderDashboard() {
         cContainer.innerHTML = '';
         courses.forEach(course => {
             const card = document.createElement('div');
-            card.className = 'topic-card';
-            card.style.cursor = 'pointer';
+            const isLocked = !state.isSubscribed;
+            card.className = `topic-card ${isLocked ? 'locked' : ''}`.trim();
+            card.style.cursor = isLocked ? 'not-allowed' : 'pointer';
+
+            let lockMsg = '';
+            if (isLocked) {
+                lockMsg = '<span class="topic-lock"><i data-lucide="lock"></i>Subscription required</span>';
+            }
+
             card.innerHTML = `
                 <p class="topic-num">Course</p>
                 <h3>${course.title}</h3>
                 <p style="color: var(--text-muted); font-size: 0.9rem;">${course.description || ''}</p>
+                ${lockMsg}
             `;
             card.addEventListener('click', async () => {
+                if (isLocked) {
+                    showToast('Please activate a subscription code to access courses.', 'info');
+                    openModal('modal-enter-voucher');
+                    return;
+                }
                 currentCourseId = course.id;
                 localStorage.setItem('last_course_id', course.id);
                 const titleEl = $('course-details-title');
@@ -574,6 +587,7 @@ function renderDashboard() {
             });
             cContainer.appendChild(card);
         });
+        if (window.lucide) lucide.createIcons();
         
         const backBtn = $('back-to-courses-btn');
         if (backBtn) {
